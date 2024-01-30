@@ -1,9 +1,6 @@
 import Webcam from "react-webcam";
 import Navbar from "./Navbar";
-import { useEffect, useState, useRef, useCallback}from "react";
-import { notification } from "antd";
-import axios from "axios";
-import { UploadOutlined } from '@ant-design/icons';
+import { useState, useRef, useCallback}from "react";
 
 
 function LiveVideo() {
