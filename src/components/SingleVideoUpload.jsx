@@ -10,17 +10,18 @@ function SingleVideoUpload({ video }) {
     const { videos, setVideos } = useContext(VideoContext)
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (Object.keys(values).length === 1) {
+        console.log(video);
+        if (video) {
             const formData = new FormData();
-            formData.append("video", getVideo());
+            formData.append("video", video);
             axios({
                 method: 'post',
-                url: '',
+                url: 'http://127.0.0.1:5000/upload',
                 data: formData,
                 headers: {'Content-Type': 'multipart/form-data' }
             })
             .then(() => {
-                setShouldSubmit(true);
+                console.log("Video uploaded");
                 })
             .catch(function (error) {
                 // handle error
@@ -30,14 +31,7 @@ function SingleVideoUpload({ video }) {
         }
       }
 
-    const getVideo = () => {
-        console.log(videos);
-        for(v in videos) {
-            if(videos.name === video.name) {
-                return v;
-            }
-        }
-    }
+    
 
     const deleteVideo = (e) => {
         e.preventDefault();
@@ -45,11 +39,12 @@ function SingleVideoUpload({ video }) {
         setVideos(videos.filter(videos => videos.name !== video.name));
     }
     return (
-        <div className="flex gap-2 content-center shadow-lg ">
+        <div className="flex content-center justify-between shadow-lg rounded-full hover:shadow-lg hover:bg-blue-300">
             <FileOutlined style={{ fontSize: '250%'}}/>
-            <span>{video.name}</span>
-            <button onClick={e => deleteVideo(e)}><DeleteOutlined style={{ fontSize: '250%'}}/></button>
+            <p>{video.name}</p>
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}</button>
+            <button onClick={e => deleteVideo(e)}><DeleteOutlined style={{ fontSize: '250%'}}/></button>
+           
         </div>
     );
 }
