@@ -22,6 +22,7 @@ function SingleVideoUpload({ video }) {
             })
             .then(() => {
                 console.log("Video uploaded");
+                deleteVideo(e);
                 })
             .catch(function (error) {
                 // handle error
@@ -39,11 +40,11 @@ function SingleVideoUpload({ video }) {
         setVideos(videos.filter(videos => videos.name !== video.name));
     }
     return (
-        <div className="flex content-center justify-between shadow-lg rounded-full hover:shadow-lg hover:bg-blue-300">
+        <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
             <FileOutlined style={{ fontSize: '250%'}}/>
-            <p>{video.name}</p>
+            <h3 className="pt-3">{video.name}</h3>
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}</button>
-            <button onClick={e => deleteVideo(e)}><DeleteOutlined style={{ fontSize: '250%'}}/></button>
+            <button onClick={e => deleteVideo(e)}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
            
         </div>
     );
