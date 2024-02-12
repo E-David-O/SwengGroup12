@@ -8,6 +8,7 @@ import { useContext, useState, useEffect } from "react";
 import io from 'socket.io-client';
 import { Link } from "react-router-dom";
 
+
 function SingleVideoUpload({ video }) {
     const { videos, setVideos } = useContext(VideoContext)
     const [uploadProgress, setUploadProgress] = useState(null)
@@ -28,7 +29,7 @@ function SingleVideoUpload({ video }) {
             formData.append("video", video);
             axios({
                 method: 'post',
-                url: 'http://localhost:5000/upload',
+                url: "http://localhost:8000/upload",
                 data: formData,
                 headers: {'Content-Type': 'multipart/form-data' }
             })

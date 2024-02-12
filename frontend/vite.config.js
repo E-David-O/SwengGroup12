@@ -12,6 +12,6 @@ export default defineConfig({
     host: true,
     strictPort: true,
     port: 3000,
-    origin: "http://172.22.0.2:5000"
+    origin: "http:/localhost:5000"
   }
 })
