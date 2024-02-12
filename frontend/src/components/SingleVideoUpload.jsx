@@ -4,10 +4,22 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { VideoContext} from "./VideoUtil";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
+import io from 'socket.io-client';
+import { Link } from "react-router-dom";
 
 function SingleVideoUpload({ video }) {
     const { videos, setVideos } = useContext(VideoContext)
+    const [uploadProgress, setUploadProgress] = useState(null)
+    const [uploaded, setUploaded] = useState(false)
+    {
+    // useEffect(() => {
+    //     const socket = io("")
+    //     socket.on("uploadProgress", (data) => {
+    //         setUploadProgress(data) 
+    //     })
+    // }, [])
+}
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(video);
@@ -16,12 +28,13 @@ function SingleVideoUpload({ video }) {
             formData.append("video", video);
             axios({
                 method: 'post',
-                url: 'http://127.0.0.1:5000/upload',
+                url: 'http://localhost:5000/upload',
                 data: formData,
                 headers: {'Content-Type': 'multipart/form-data' }
             })
             .then(() => {
                 console.log("Video uploaded");
+                setUploaded(true);
                 deleteVideo(e);
                 })
             .catch(function (error) {
@@ -40,12 +53,25 @@ function SingleVideoUpload({ video }) {
         setVideos(videos.filter(videos => videos.name !== video.name));
     }
     return (
+        <div>
+        { uploaded ? ( uploadProgress ? ( uploadProgress === 100 ? (
+            <div>
+                <Link to={`/analysis/${video.name}`}>Click Here to View Analysis</Link>
+            </div> ) : (
+            (
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{ width: `${uploadProgress}%` }}>
+                </div>
+            </div> ))) : null )
+         : (
         <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
             <FileOutlined style={{ fontSize: '250%'}}/>
             <h3 className="pt-3">{video.name}</h3>
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}</button>
             <button onClick={e => deleteVideo(e)}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
-           
+        </div> )}
         </div>
     );
 }

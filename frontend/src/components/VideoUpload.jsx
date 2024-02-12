@@ -29,10 +29,12 @@ function VideoUpload() {
     
     function handleFile(e) {
         e.persist();
-        if(videos.length > 0) {
+        if(videos.length > 0 && videos.length < 4) {
             setVideos([...videos, e.target.files[0]]);
-        } else {
+        } else if(videos.length === 0){
             setVideos([e.target.files[0]]);
+        } else {
+            alert("You can only upload 4 videos at a time");
         }
         console.log(videos);
         console.log(videos.length);
@@ -65,6 +67,7 @@ function VideoUpload() {
                         {videos.length > 0? [...videos].map((video, index) => (<SingleVideoUpload key={index} video={video} />))
                         : null}
                         </div>
+                       { videos.length > 0 ? <hr className="my-12 h-0.5 border-t-0 bg-neutral-100 opacity-100 dark:opacity-50" /> : null }
                 <div className="grid grid-flow-row auto-rows-max">
                     {[...cachedVideos].map((video, index) => (
                       <VideoRow key={index} video={video} 
