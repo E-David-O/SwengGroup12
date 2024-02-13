@@ -7,11 +7,14 @@ import { VideoContext} from "./VideoUtil";
 import { useContext, useState, useEffect } from "react";
 import io from 'socket.io-client';
 import { Link } from "react-router-dom";
+import DropDown from "./dropdown";
 
 
 function SingleVideoUpload({ video }) {
     const { videos, setVideos } = useContext(VideoContext)
     const [uploadProgress, setUploadProgress] = useState(null)
+    const [frameRate, setFrameRate] = useState("")
+    const [resolution, setResolution] = useState("")
     {
     // useEffect(() => {
     //     const socket = io("")
@@ -21,7 +24,7 @@ function SingleVideoUpload({ video }) {
     // }, [])
 }
     useEffect(() => {
-    if(!video.analysed) {
+    if(video.analysed !== true) {
         const intervalId = setInterval(() => {
         setUploadProgress((uploadProgress) => {
             if (uploadProgress >= 100) {
@@ -49,6 +52,8 @@ function SingleVideoUpload({ video }) {
         if (video) {
             const formData = new FormData();
             formData.append("video", video);
+            formData.append("resolution", resolution);
+            formData.append("frameRate", frameRate);
             axios({
                 method: 'post',
                 url: "http://localhost:8000/upload",
@@ -96,6 +101,8 @@ function SingleVideoUpload({ video }) {
             <FileOutlined style={{ fontSize: '250%'}}/>
             <h3 className="pt-3">{video.name}</h3>
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}</button>
+            <DropDown label={"Select Resolution"} options={["Auto","1080","720","480"]} selected={resolution} setSelected={setResolution} />
+            <DropDown label={"Select Frame Rate"} options={["Auto","60","30","15"]} selected={frameRate} setSelected={setFrameRate} />
             <button onClick={e => deleteVideo(e)}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
         </div> )}
         </div>

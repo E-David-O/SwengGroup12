@@ -1,4 +1,4 @@
-import { useEffect} from "react";
+import { useEffect, useState} from "react";
 import Navbar from "./Navbar";
 import { useParams } from "react-router-dom";
 import { Player } from "video-react";
