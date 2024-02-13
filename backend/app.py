@@ -14,7 +14,7 @@ cors = CORS(app, resources={r"/*": {"origins": "*", "allow_headers": "*", "expos
 
 @app.route("/upload", methods=['POST'])
 def upload():
-    uploaded_file = request.files['file']
+    uploaded_file = request.files['video']
     if uploaded_file.filename != '':
        uploaded_file.save(uploaded_file.filename)
     return { "video-id": "ef1d3c7b-257c-4d5e-9f61-38750a1e06d1" }

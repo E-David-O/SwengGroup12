@@ -12,7 +12,6 @@ import { Link } from "react-router-dom";
 function SingleVideoUpload({ video }) {
     const { videos, setVideos } = useContext(VideoContext)
     const [uploadProgress, setUploadProgress] = useState(null)
-    const [uploaded, setUploaded] = useState(false)
     {
     // useEffect(() => {
     //     const socket = io("")
@@ -21,6 +20,29 @@ function SingleVideoUpload({ video }) {
     //     })
     // }, [])
 }
+    useEffect(() => {
+    if(!video.analysed) {
+        const intervalId = setInterval(() => {
+        setUploadProgress((uploadProgress) => {
+            if (uploadProgress >= 100) {
+            clearInterval(intervalId);
+            return 100;
+            } else {
+            return uploadProgress + 10;
+            }
+        });
+        }, 1000);
+        return () => clearInterval(intervalId);
+    }
+    }, [video.uploaded])
+
+    useEffect(() => {
+        console.log(uploadProgress);
+        if (uploadProgress === 100) {
+            video.analysed = true;
+        }
+    }, [uploadProgress])
+
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(video);
@@ -35,8 +57,7 @@ function SingleVideoUpload({ video }) {
             })
             .then(() => {
                 console.log("Video uploaded");
-                setUploaded(true);
-                deleteVideo(e);
+                video.uploaded = true;
                 })
             .catch(function (error) {
                 // handle error
@@ -55,17 +76,21 @@ function SingleVideoUpload({ video }) {
     }
     return (
         <div>
-        { uploaded ? ( uploadProgress ? ( uploadProgress === 100 ? (
-            <div>
-                <Link to={`/analysis/${video.name}`}>Click Here to View Analysis</Link>
+        { video.uploaded ? ( (video.analysed || (uploadProgress === 100)) ? ( 
+           <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+                <Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" to={`/analysis/${video.name}`}>Click Here to View Analysis of {video.name}</Link>
+                <button onClick={e => deleteVideo(e)}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
             </div> ) : (
             (
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+            <div className="w-full bg-gray-200 content-centre rounded-full h-2.5 dark:bg-gray-700 shadow-lg">
                 <div
                 className="bg-blue-600 h-2.5 rounded-full"
                 style={{ width: `${uploadProgress}%` }}>
                 </div>
-            </div> ))) : null )
+                <span>Analysing {video.name} ...</span>
+            </div> 
+            </div>)))
          : (
         <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
             <FileOutlined style={{ fontSize: '250%'}}/>
