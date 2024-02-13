@@ -7,7 +7,7 @@ import { VideoContext} from "./VideoUtil";
 import { useContext, useState, useEffect } from "react";
 import io from 'socket.io-client';
 import { Link } from "react-router-dom";
-import DropDown from "./dropdown";
+import DropDown from "./DropDown";
 
 
 function SingleVideoUpload({ video }) {
@@ -19,7 +19,7 @@ function SingleVideoUpload({ video }) {
     // useEffect(() => {
     //     const socket = io("")
     //     socket.on("uploadProgress", (data) => {
-    //         setUploadProgress(data) 
+    //       s  setUploadProgress(data) 
     //     })
     // }, [])
 }
