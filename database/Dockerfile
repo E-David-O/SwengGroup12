@@ -5,10 +5,8 @@ RUN apt-get install python3 python3-pip -y
 RUN pip3 install --upgrade pip
 WORKDIR /app
 
-COPY ./requirements.txt /app/requirements.txt
+RUN pip install psycopg2-binary
 
-RUN pip3 install -r requirements.txt
+COPY ./setup_db.py /app
 
-COPY ./test.py /app
-
-CMD python3 test.py
+CMD python3 setup_db.py
