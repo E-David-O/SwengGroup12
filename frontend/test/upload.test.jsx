@@ -31,7 +31,7 @@ describe('VideoUpload', () => {
             </MemoryRouter>
         );
         expect(screen.getByText("Analysing test.mp4 ...")).toBeInTheDocument();
-        screen.debug();
+        //screen.debug();
         await waitFor(() => expect(screen.getByText("Click Here to View Analysis of test.mp4")).toBeInTheDocument(),{
             timeout: 11000,
         });
