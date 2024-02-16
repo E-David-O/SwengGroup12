@@ -24,7 +24,8 @@ function SingleVideoUpload({ video }) {
     // }, [])
 }
     useEffect(() => {
-    if(video.analysed !== true) {
+    console.log(video);
+    if(video.analysed !== true && video.uploaded === true) {
         const intervalId = setInterval(() => {
         setUploadProgress((uploadProgress) => {
             if (uploadProgress >= 100) {
@@ -51,7 +52,7 @@ function SingleVideoUpload({ video }) {
         console.log(video);
         if (video) {
             const formData = new FormData();
-            formData.append("video", video);
+            formData.append("video", video.file);
             formData.append("resolution", resolution);
             formData.append("frameRate", frameRate);
             axios({

@@ -29,10 +29,10 @@ function VideoUpload() {
     
     function handleFile(e) {
         e.persist();
-        if(videos.length > 0 && videos.length < 4) {
-            setVideos([...videos, e.target.files[0]]);
-        } else if(videos.length === 0){
-            setVideos([e.target.files[0]]);
+        if (videos.length > 0 && videos.length < 4) {
+            setVideos([...videos, { file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name }]);
+        } else if (videos.length === 0) {
+            setVideos([{ file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name }]);
         } else {
             alert("You can only upload 4 videos at a time");
         }

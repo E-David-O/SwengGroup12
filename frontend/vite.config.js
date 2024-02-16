@@ -13,5 +13,11 @@ export default defineConfig({
     strictPort: true,
     port: 3000,
     origin: "http:/localhost:5000"
-  }
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./test/setupTests.js'],
+    testMatch: ['./test/**/*.test.jsx'],
+  },
 })
