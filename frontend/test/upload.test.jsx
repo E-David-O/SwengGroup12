@@ -8,7 +8,7 @@ import { MemoryRouter } from "react-router-dom";
 describe('VideoUpload', () => {
     const testFile = new File(['test'], 'test.mp4', { type: 'video/mp4' });
     const user = userEvent.setup();
-    it('renders the component', () => {
+    it('first test check', () => {
         expect(1).toBe(1);
     }); 
     it('renders the component', async () => {
@@ -21,7 +21,6 @@ describe('VideoUpload', () => {
         );
         expect(screen.findByRole('button', {name: 'Submit'})).toBeDefined();
         await user.click(screen.getByRole('button', {name: 'Submit'}));
-        
     }); 
     it('changes when submitted', async () => {
         render(
@@ -36,7 +35,7 @@ describe('VideoUpload', () => {
         await waitFor(() => expect(screen.getByText("Click Here to View Analysis of test.mp4")).toBeInTheDocument(),{
             timeout: 11000,
         });
-        screen.debug();
+        //screen.debug();
         });
         
 }, {
