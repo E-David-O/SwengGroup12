@@ -6,7 +6,6 @@ name: Node.js CI
 on:
   push:
     branches: [ "descale" ]
-    paths : ["./frontend/"]
   pull_request:
     branches: [ "main" ]
 
