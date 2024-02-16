@@ -9,27 +9,6 @@ SIMILARITY_LIMIT = 50                               #The treshold of similarity 
 VIDEO_TO_BREAKDOWN = 'TCD_short.mp4'                #The source video
 
 
-def connect_to_database():
-    try:
-        # Change these values according to your PostgreSQL configuration
-        connection = psycopg2.connect(
-            user="postgres",
-            password="postgres",
-            host="localhost",
-            port="5432",
-            database="DB"
-        )
-        cursor = connection.cursor()
-        return connection, cursor
-    except (Exception, psycopg2.Error) as error:
-        print("Error while connecting to PostgreSQL", error)
-        return None, None
-
-
-def frame_to_database(frame):
-    try database_connect, cursor = connect_to_database():
-        
-
 def frameSelect(video):
     start_time = time.time()
     path = os.getcwd()
