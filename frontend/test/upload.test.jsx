@@ -39,5 +39,5 @@ describe('VideoUpload', () => {
         });
         
 }, {
-    timeout: 30000,
+    timeout: 15000,
 });
