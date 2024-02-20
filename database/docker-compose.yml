@@ -1,0 +1,41 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+    container_name: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=DB
+    ports:
+      - '5432:5432'
+    networks:
+      db-network:
+        ipv4_address: 172.20.0.10 
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf  # Mount the custom configuration file
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+  database-setup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./setup.py:/app/setup.py
+    depends_on:
+      - db
+    networks:
+      - db-network
+
+volumes:
+  db_data:
+
+networks:
+  db-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
