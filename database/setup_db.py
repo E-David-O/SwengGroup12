@@ -1,3 +1,13 @@
+# Run in terminal cd into the SwEng folder
+# start up
+# docker-compose build && docker-compose up -d
+# tear down
+# docker-compose down
+
+# install psycopg2-binary
+
+
+
 import psycopg2
 import time
 def connect_to_database():
@@ -9,7 +19,8 @@ def connect_to_database():
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            host="172.20.0.10",
+            # host="172.20.0.10",
+            host="localhost",
             port="5432",
             database="DB"
         )
