@@ -40,7 +40,7 @@ function SingleVideoUpload({ video }) {
             clearInterval(intervalId);
             return 0;
             } else {
-            return uploadProgress + 50;
+            return uploadProgress + 10;
             }
         });
         }, 1000);

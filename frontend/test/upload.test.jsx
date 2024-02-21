@@ -31,10 +31,11 @@ describe('VideoUpload', () => {
             </VideoContext.Provider>
             </MemoryRouter>
         );
-        expect(screen.getByText("Analysing test.mp4 ...")).toBeInTheDocument();
+        await waitFor(() => expect(screen.getByText("Analysing test.mp4 ...")).toBeInTheDocument(),{
+        });
         //screen.debug();
         await waitFor(() => expect(screen.getByText("Click Here to View Analysis of test.mp4")).toBeInTheDocument(),{
-            timeout: 11000,
+            timeout: 15000,
         });
         //screen.debug();
         });
