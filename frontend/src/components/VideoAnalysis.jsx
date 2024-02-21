@@ -1,7 +1,6 @@
 import { useContext, useEffect, useRef, useState} from "react";
 import Navbar from "./Navbar";
 import { useParams } from "react-router-dom";
-import ReactPlayer from "react-player";
 import axios from "axios";
 import { VideoContext } from "./VideoUtil";
 import VideoJS from "./VideoPlayer";
