@@ -1,12 +1,12 @@
 services:
-  rabbitmq:
-    image: 'rabbitmq:3-management'
-    ports:
-      - '5672:5672'
-      - '15672:15672'
-    networks:
-      - backnet
-      - frontnet
+  # rabbitmq:
+  #   image: 'rabbitmq:3-management'
+  #   ports:
+  #     - '5672:5672'
+  #     - '15672:15672'
+  #   networks:
+  #     - backnet
+  #     - frontnet
   backend:
     build: 
       context: ./backend
@@ -17,14 +17,14 @@ services:
       - backnet
       - frontnet
 
-  frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    networks:
-      - frontnet
+  # frontend:
+  #   build: 
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - frontnet
 
 networks:
   backnet:

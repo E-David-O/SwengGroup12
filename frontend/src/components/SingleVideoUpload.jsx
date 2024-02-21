@@ -8,13 +8,21 @@ import { useContext, useState, useEffect } from "react";
 import io from 'socket.io-client';
 import { Link } from "react-router-dom";
 import DropDown from "./DropDown";
-
-
+import './typedef'
+/** 
+ * @param {Video} video
+ * @returns SingleVideoUpload component
+ * @description This component is used to upload a single video to the server
+ * @example 
+ * <SingleVideoUpload video={{file:testFile, uploaded : false, analysed: false, name: "test.mp4"}} />
+ */
+// @ts-ignore
 function SingleVideoUpload({ video }) {
     const { videos, setVideos } = useContext(VideoContext)
     const [uploadProgress, setUploadProgress] = useState(null)
     const [frameRate, setFrameRate] = useState("")
     const [resolution, setResolution] = useState("")
+    const [isUploaded, setIsUploaded] = useState(false)
     {
     // useEffect(() => {
     //     const socket = io("")
@@ -24,21 +32,21 @@ function SingleVideoUpload({ video }) {
     // }, [])
 }
     useEffect(() => {
-    console.log(video);
+    console.log(uploadProgress);
     if(video.analysed !== true && video.uploaded === true) {
         const intervalId = setInterval(() => {
         setUploadProgress((uploadProgress) => {
             if (uploadProgress >= 100) {
             clearInterval(intervalId);
-            return 100;
+            return 0;
             } else {
-            return uploadProgress + 10;
+            return uploadProgress + 50;
             }
         });
         }, 1000);
         return () => clearInterval(intervalId);
     }
-    }, [video.uploaded])
+    }, [isUploaded])
 
     useEffect(() => {
         console.log(uploadProgress);
@@ -47,6 +55,13 @@ function SingleVideoUpload({ video }) {
         }
     }, [uploadProgress])
 
+    
+
+    /**
+     * @param {MouseEvent} e
+     * @returns {void}
+     * @description This function is used to handle the file upload 
+     */
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(video);
@@ -64,6 +79,7 @@ function SingleVideoUpload({ video }) {
             .then(() => {
                 console.log("Video uploaded");
                 video.uploaded = true;
+                setIsUploaded(true);
                 })
             .catch(function (error) {
                 // handle error
@@ -73,7 +89,12 @@ function SingleVideoUpload({ video }) {
         }
       }
 
-    
+    /**
+     * @typedef {Object} MouseEvent
+     * @param {MouseEvent} e
+     * @returns {void}
+     * @description This function is used to delete the video from the list of videos 
+     */
 
     const deleteVideo = (e) => {
         e.preventDefault();
@@ -90,11 +111,15 @@ function SingleVideoUpload({ video }) {
             (
                 <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
             <div className="w-full bg-gray-200 content-centre rounded-full h-2.5 dark:bg-gray-700 shadow-lg">
+                {uploadProgress ?
+                <><div
+                    className="bg-blue-600 h-2.5 rounded-full"
+                    style={{ width: `${uploadProgress}%` }}>
+                </div><span>Analysing {video.name} ...</span></> : 
                 <div
                 className="bg-blue-600 h-2.5 rounded-full"
-                style={{ width: `${uploadProgress}%` }}>
-                </div>
-                <span>Analysing {video.name} ...</span>
+                style={{ width: `0%` }}>
+                </div> }
             </div> 
             </div>)))
          : (
