@@ -23,6 +23,7 @@ function SingleVideoUpload({ video }) {
     const [frameRate, setFrameRate] = useState("")
     const [resolution, setResolution] = useState("")
     const [isUploaded, setIsUploaded] = useState(false)
+    const [isAnalyzed, setIsAnalyzed] = useState(false)
     {
     // useEffect(() => {
     //     const socket = io("")
@@ -40,7 +41,7 @@ function SingleVideoUpload({ video }) {
             clearInterval(intervalId);
             return 0;
             } else {
-            return uploadProgress + 10;
+            return uploadProgress + 2;
             }
         });
         }, 1000);
@@ -48,13 +49,7 @@ function SingleVideoUpload({ video }) {
     }
     }, [isUploaded])
 
-    useEffect(() => {
-        console.log(uploadProgress);
-        if (uploadProgress === 100) {
-            video.analysed = true;
-        }
-    }, [uploadProgress])
-
+   
     
 
     /**
@@ -70,6 +65,8 @@ function SingleVideoUpload({ video }) {
             formData.append("video", video.file);
             formData.append("resolution", resolution);
             formData.append("frameRate", frameRate);
+            video.uploaded = true;
+            setIsUploaded(true);
             axios({
                 method: 'post',
                 url: "http://localhost:8000/upload",
@@ -78,8 +75,8 @@ function SingleVideoUpload({ video }) {
             })
             .then(() => {
                 console.log("Video uploaded");
-                video.uploaded = true;
-                setIsUploaded(true);
+                video.analysed = true;
+                
                 })
             .catch(function (error) {
                 // handle error
