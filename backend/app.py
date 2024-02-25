@@ -1,14 +1,42 @@
 import os
+import sys
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from typing import NamedTuple
-
+from celery import Celery, chain
+import cv2
+from skimage.metrics import structural_similarity
+import os
+import sys
+import time
+import base64
+import tempfile
+import json
+from io import BytesIO
+from PIL import Image
+from ultralytics import YOLO
 UPLOAD_FOLDER = '/path/to/the/uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 cors = CORS(app, resources={r"/*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}})
+
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        broker=f'pyamqp://rabbitmq:5672//',
+    )
+    
+    class ContextTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
+celery = make_celery(app)
 
 class Video(NamedTuple):
     video: any
@@ -18,9 +46,20 @@ class Video(NamedTuple):
 @app.route("/upload", methods=['POST'])
 def upload():
     uploaded_file = Video(request.files['video'], request.form['resolution'], request.form['frameRate'])
-    if uploaded_file.video.filename != '':
-       uploaded_file.video.save(uploaded_file.video.filename)
-    return { "video-id": "ef1d3c7b-257c-4d5e-9f61-38750a1e06d1" }
+    print(uploaded_file.video, file=sys.stderr)
+    select_frames(uploaded_file.video)
+    # video = uploaded_file.video.read()
+    # byte = base64.b64encode(video)  
+    # data = {
+    #     'video': byte.decode('utf-8'),
+    #     'name': uploaded_file.video.filename,
+    # }
+    # analyse_video = chain(select_frames.s(data), analyze_task.s())
+    # taks_id = analyse_video.apply_async()
+    response = {
+        'task_id': ""
+    }
+    return response
 
 
 @app.route("/frames/<uuid:video_id>")
@@ -31,4 +70,83 @@ def frames(video_id):
 @app.route("/results/<uuid:video_id>")
 def results(video_id):
     return { "total-score": [], "frame-scores": [] }
+
+model = YOLO('yolov8n.pt')
+
+@celery.task
+def analyze_task(frame):
+    load = json.loads(frame)
+    imdata = base64.b64decode(load['image'])
+    im = Image.open(BytesIO(imdata))
+    results = model(im, stream=False, device='mps')
+    for result in results:
+        boxes = result.boxes  # Boxes object for bounding box outputs
+        masks = result.masks  # Masks object for segmentation masks outputs
+        keypoints = result.keypoints  # Keypoints object for pose outputs
+        probs = result.probs  # Probs object for classification outputs
+        print(result, file=sys.stderr)
+
+FRAME_SKIP = 30                                     #Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
+SIMILARITY_LIMIT = 50                               #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+
+def convert_frame_to_bin(frame):
+    _, imdata = cv2.imencode('.jpg',frame)
+    jstr = json.dumps({"image": base64.b64encode(imdata).decode('ascii')})
+    return jstr
+
+#@celery.task
+def select_frames(video):
+   # list_of_frames = []
+    # empty temp file
+    # byte_data = video['video'].encode('utf-8')
+    # b = base64.b64decode(byte_data)
+
+    tf = tempfile.NamedTemporaryFile()
+    tf.write(video.read())
+    # video contents
+    # with open(f'/{video.name}', 'wb') as tf:
+    #     tf.write(b)
+    
+    analyze_count = 0
+    vidcap = cv2.VideoCapture(tf.name)       #Loads the video in to opencvs capture
+    if not vidcap.isOpened:
+        print('Video broken', file=sys.stderr)
+    while True:
+        success,image = vidcap.read()
+        if image is None:
+            print('Image broken', file=sys.stderr)
+
+        if success == True:
+            break
+
+       
+    start_time = time.time()
+    count = 1
+    analyze_task.delay(convert_frame_to_bin(image))
+    #list_of_frames.append(convert_frame_to_bin(image))
+    #cv2.imwrite(os.path.join(path , 'analyze_frame%d.jpg' % analyze_count), image) #The very first frame is saved since it will be our first frame to be analyzed
+    analyze_count += 1
+    first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    while success:                                                                 #If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        success,image = vidcap.read()
+        newframe = image
+        print('Read frames read: ', count)
+        if count > 1 and newframe is not None:
+            new_gray = cv2.cvtColor(newframe, cv2.COLOR_BGR2GRAY)                  #Convert current frame to grayscale (needed for structural similarity check)
+            score = structural_similarity(first_gray, new_gray, full=False)        #Structural similarity test.
+            print("Similarity Score: {:.3f}%".format(score * 100))
+            if score * 100 < SIMILARITY_LIMIT:
+                analyze_task.delay(convert_frame_to_bin(newframe))
+                #list_of_frames.append(convert_frame_to_bin(newframe))
+                #cv2.imwrite(os.path.join(path , 'analyze_frame%d.jpg' % analyze_count), newframe)   #If its below the treshhold send new frame to analysis
+                analyze_count += 1
+                first_gray = new_gray
+        count += FRAME_SKIP                                                        
+        vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)                                  #Skip ahead 30 frames from current frame
+
+    tf.close()
+    end_time = time.time()
+    run_time = end_time - start_time
+    print("Out of the %(frames)d images %(analyzed)d where sent for further analysis. \nTotal time: %(time)ds" % {"frames": count, "analyzed" :analyze_count, "time": run_time})
+    #return list_of_frames
 

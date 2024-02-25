@@ -1,1 +1,0 @@
-This prototype does not like to run if the file is in a cloned repo moved this entire folder somewhere eles if you want to run it.
