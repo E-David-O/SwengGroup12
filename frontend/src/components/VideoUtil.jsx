@@ -8,10 +8,11 @@ export const VideoProvider = ({children }) => {
      * @type {Video[]}
      */
     const [videos, setVideos] = useState([]);
+    const [resultList, setResultList] = useState([{}])
   
 
   return (
-    <VideoContext.Provider value={{ videos, setVideos }}>
+    <VideoContext.Provider value={{ videos, setVideos, resultList, setResultList }}>
       {children}</VideoContext.Provider>
   );
 };

@@ -1,9 +1,11 @@
 flask
 flask-cors
 typing
-celery 
+celery[redis]
 ultralytics
 numpy
 moviepy
 Pillow
+psycopg2-binary
+
 

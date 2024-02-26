@@ -7,6 +7,15 @@ services:
     networks:
       - backnet
       - frontnet
+  
+  redis:
+    image: redis:latest
+    hostname: redis
+    networks:
+      - backnet
+      - frontnet
+
+
   backend:
     build: 
       context: ./backend
@@ -17,7 +26,37 @@ services:
       - ./backend:/app
     networks:
       - backnet
-      - frontnet
+      - frontnet 
+
+  # db:
+  #   image: postgres
+  #   restart: unless-stopped
+  #   container_name: db
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_DB=DB
+  #   ports:
+  #     - '5432:5432'
+  #   networks:
+  #     db-network:
+  #       ipv4_address: 172.20.0.10 
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+  #     - ./database/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+  #     - ./database/postgresql.conf:/etc/postgresql/postgresql.conf  # Mount the custom configuration file
+  #   command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+
+  # database-setup:
+  #   build:
+  #     context: ./database/
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./database/setup.py:/app/setup.py
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - db-network
 
   worker:
     build:
@@ -27,6 +66,7 @@ services:
       - ./backend:/app
     links:
       - rabbitmq
+      - redis
     environment:
         - CELERY_BROKER=pyamqp://rabbitmq:5672//
     networks:
@@ -40,10 +80,18 @@ services:
   #   networks:
   #     - frontnet
 
+# volumes:
+#   db_data:
+
 networks:
   backnet:
     driver: bridge
   frontnet:
      driver: bridge
+  # db-network:
+  #   driver: bridge
+  #   ipam:
+  #     config:
+  #       - subnet: 172.20.0.0/24
 
 

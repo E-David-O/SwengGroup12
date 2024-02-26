@@ -1,6 +1,6 @@
 import os
 import sys
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, Response
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from typing import NamedTuple
@@ -10,6 +10,8 @@ from skimage.metrics import structural_similarity
 import os
 import sys
 import time
+import psycopg2
+from datetime import timezone
 import base64
 import tempfile
 import json
@@ -26,6 +28,7 @@ def make_celery(app):
     celery = Celery(
         app.import_name,
         broker=f'pyamqp://rabbitmq:5672//',
+        backend=f'redis://redis:6379/0'
     )
     
     class ContextTask(celery.Task):
@@ -38,6 +41,27 @@ def make_celery(app):
 
 celery = make_celery(app)
 
+
+# def connect_to_database():
+#     try:
+#         # Change these values according to your PostgreSQL configuration
+#         connection = psycopg2.connect(
+#             user="postgres",
+#             password="postgres",
+#             host="172.20.0.10",
+#             port="5432",
+#             database="DB"
+#         )
+#         cursor = connection.cursor()
+#         print("Connected to db")
+#         return connection, cursor
+#     except (Exception, psycopg2.Error) as error:
+#         print("Error while connecting to PostgreSQL", error)
+#         return None, None
+    
+
+
+
 class Video(NamedTuple):
     video: any
     resolution: str
@@ -47,7 +71,7 @@ class Video(NamedTuple):
 def upload():
     uploaded_file = Video(request.files['video'], request.form['resolution'], request.form['frameRate'])
     print(uploaded_file.video, file=sys.stderr)
-    select_frames(uploaded_file.video)
+    results = select_frames(uploaded_file.video)
     # video = uploaded_file.video.read()
     # byte = base64.b64encode(video)  
     # data = {
@@ -56,10 +80,8 @@ def upload():
     # }
     # analyse_video = chain(select_frames.s(data), analyze_task.s())
     # taks_id = analyse_video.apply_async()
-    response = {
-        'task_id': ""
-    }
-    return response
+    print(results, file=sys.stderr)
+    return Response(json.dumps(results),  mimetype='application/json')
 
 
 @app.route("/frames/<uuid:video_id>")
@@ -79,15 +101,43 @@ def analyze_task(frame):
     imdata = base64.b64decode(load['image'])
     im = Image.open(BytesIO(imdata))
     results = model(im, stream=False, device='mps')
+    list_of_results = []
     for result in results:
-        boxes = result.boxes  # Boxes object for bounding box outputs
-        masks = result.masks  # Masks object for segmentation masks outputs
-        keypoints = result.keypoints  # Keypoints object for pose outputs
-        probs = result.probs  # Probs object for classification outputs
-        print(result, file=sys.stderr)
-
+        for box in result.boxes:
+            print(result.names[box.cls[0].item()], file=sys.stderr)
+            print(box.conf[0].item(), file=sys.stderr)
+            data = {
+            'class_id' :result.names[box.cls[0].item()],
+            'conf' : round(box.conf[0].item(), 2),
+            }
+            list_of_results.append(data)
+        # boxes = result.boxes.numpy()  # Boxes object for bounding box outputs
+        # xyxys = boxes.xyxy
+        # print(xyxys, file=sys.stderr)
+    print(list_of_results, file=sys.stderr)
+    return list_of_results 
 FRAME_SKIP = 30                                     #Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
 SIMILARITY_LIMIT = 50                               #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+
+# def insert_frame_info_to_db(frame_data):
+#     try:
+#         connection, cursor = connect_to_database()
+#         if connection and cursor:
+#             # Change "your_table_name" to the actual name of your table
+#             postgres_insert_query = """ INSERT INTO Analyzed (id_video, frame_resolution, _timestamp) VALUES (%s,%s,%s)"""
+#             # Adjust column names and data accordingly
+#             record_to_insert = (frame_data['video_id'], frame_data['resolution'], frame_data['timestamp'])
+#             cursor.execute(postgres_insert_query, record_to_insert)
+#             connection.commit()
+#             cursor.execute("SELECT * FROM Image_Metadata;")
+#             print("Data inserted successfully into the table")
+#     except (Exception, psycopg2.Error) as error:
+#         if connection:
+#             print("Failed to insert data into PostgreSQL table", error)
+#     finally:
+#         if connection:
+#             cursor.close()
+#             connection.close()
 
 def convert_frame_to_bin(frame):
     _, imdata = cv2.imencode('.jpg',frame)
@@ -96,6 +146,8 @@ def convert_frame_to_bin(frame):
 
 #@celery.task
 def select_frames(video):
+    task_list = []
+    results_list = []
    # list_of_frames = []
     # empty temp file
     # byte_data = video['video'].encode('utf-8')
@@ -136,7 +188,11 @@ def select_frames(video):
             score = structural_similarity(first_gray, new_gray, full=False)        #Structural similarity test.
             print("Similarity Score: {:.3f}%".format(score * 100))
             if score * 100 < SIMILARITY_LIMIT:
-                analyze_task.delay(convert_frame_to_bin(newframe))
+                data = {
+                    'frame_number': count,
+                    'results' : analyze_task.delay(convert_frame_to_bin(newframe)),
+                }
+                results_list.append(data)
                 #list_of_frames.append(convert_frame_to_bin(newframe))
                 #cv2.imwrite(os.path.join(path , 'analyze_frame%d.jpg' % analyze_count), newframe)   #If its below the treshhold send new frame to analysis
                 analyze_count += 1
@@ -148,5 +204,10 @@ def select_frames(video):
     end_time = time.time()
     run_time = end_time - start_time
     print("Out of the %(frames)d images %(analyzed)d where sent for further analysis. \nTotal time: %(time)ds" % {"frames": count, "analyzed" :analyze_count, "time": run_time})
-    #return list_of_frames
+    print(type(results_list), file=sys.stderr)
+    print(results_list, file=sys.stderr)
+    for entry in results_list:
+        entry['results'] = entry['results'].get()
+    
+    return results_list
 

@@ -9,6 +9,7 @@ import io from 'socket.io-client';
 import { Link } from "react-router-dom";
 import DropDown from "./DropDown";
 import './typedef'
+
 /** 
  * @param {Video} video
  * @returns SingleVideoUpload component
@@ -18,7 +19,7 @@ import './typedef'
  */
 // @ts-ignore
 function SingleVideoUpload({ video }) {
-    const { videos, setVideos } = useContext(VideoContext)
+    const { videos, setVideos, resultList, setResultList } = useContext(VideoContext)
     const [uploadProgress, setUploadProgress] = useState(null)
     const [frameRate, setFrameRate] = useState("")
     const [resolution, setResolution] = useState("")
@@ -38,10 +39,9 @@ function SingleVideoUpload({ video }) {
         const intervalId = setInterval(() => {
         setUploadProgress((uploadProgress) => {
             if (uploadProgress >= 100) {
-            clearInterval(intervalId);
-            return 0;
+                return 100;
             } else {
-            return uploadProgress + 2;
+                return uploadProgress + 1;
             }
         });
         }, 1000);
@@ -73,13 +73,18 @@ function SingleVideoUpload({ video }) {
                 data: formData,
                 headers: {'Content-Type': 'multipart/form-data' }
             })
-            .then(() => {
+            .then((response) => {
                 console.log("Video uploaded");
                 video.analysed = true;
-                
+                setIsAnalyzed(true);
+                console.log(response.data);
+                setResultList([...resultList, { name: video.name, results: response.data }]);
                 })
             .catch(function (error) {
                 // handle error
+                video.uploaded = false;
+                setIsUploaded(false);
+                setUploadProgress(null);
                 console.log(error);
             });  
             
