@@ -95,7 +95,7 @@ def results(video_id):
 
 model = YOLO('yolov8n.pt')
 
-@celery.task
+@celery.task(ignore_result=False)
 def analyze_task(frame):
     load = json.loads(frame)
     imdata = base64.b64decode(load['image'])
@@ -174,7 +174,11 @@ def select_frames(video):
        
     start_time = time.time()
     count = 1
-    analyze_task.delay(convert_frame_to_bin(image))
+    data = {
+        'frame_number': count,
+        'results' : analyze_task.delay(convert_frame_to_bin(image)),
+    }
+    results_list.append(data)
     #list_of_frames.append(convert_frame_to_bin(image))
     #cv2.imwrite(os.path.join(path , 'analyze_frame%d.jpg' % analyze_count), image) #The very first frame is saved since it will be our first frame to be analyzed
     analyze_count += 1
@@ -192,6 +196,8 @@ def select_frames(video):
                     'frame_number': count,
                     'results' : analyze_task.delay(convert_frame_to_bin(newframe)),
                 }
+                print(type(data), file=sys.stderr)
+                print(data, file=sys.stderr)
                 results_list.append(data)
                 #list_of_frames.append(convert_frame_to_bin(newframe))
                 #cv2.imwrite(os.path.join(path , 'analyze_frame%d.jpg' % analyze_count), newframe)   #If its below the treshhold send new frame to analysis
