@@ -100,7 +100,7 @@ function SingleVideoUpload({ video }) {
     }
     return (
         <div>
-        { video.uploaded ? ( (video.analysed || (uploadProgress === 100)) ? ( 
+        { video.uploaded ? ( (video.analysed) ? ( 
            <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
                 <Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" to={`/analysis/${video.name}`}>Click Here to View Analysis of {video.name}</Link>
                 <button onClick={e => deleteVideo(e)}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
