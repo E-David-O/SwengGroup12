@@ -34,18 +34,18 @@ users = {
     }
 }
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET'])
 def login():
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
+    # username = request.json.get('username', None)
+    # password = request.json.get('password', None)
 
-    if not username or not password:
-        return jsonify({"msg": "Missing username or password"}), 400
+    # if not username or not password:
+    #     return jsonify({"msg": "Missing username or password"}), 400
 
-    if username not in users or users[username]['password'] != password:
-        return jsonify({"msg": "Invalid credentials"}), 401
+    # if username not in users or users[username]['password'] != password:
+    #     return jsonify({"msg": "Invalid credentials"}), 401
 
-    access_token = create_access_token(identity=username)
+    access_token = create_access_token(identity='username')
     return jsonify(access_token=access_token), 200
 
 def make_celery(app):
@@ -92,6 +92,7 @@ class Video(NamedTuple):
     frameRate: str
 
 @app.route("/upload", methods=['POST'])
+@jwt_required()
 def upload():
     uploaded_file = Video(request.files['video'], request.form['resolution'], request.form['frameRate'])
     print(uploaded_file.video, file=sys.stderr)
@@ -104,6 +105,8 @@ def upload():
     # }
     # analyse_video = chain(select_frames.s(data), analyze_task.s())
     # taks_id = analyse_video.apply_async()
+    current_user = get_jwt_identity()
+    print(f'Video uploaded by {current_user}')
     print(results, file=sys.stderr)
     return Response(json.dumps(results),  mimetype='application/json')
 

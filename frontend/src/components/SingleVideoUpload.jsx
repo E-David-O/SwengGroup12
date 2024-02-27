@@ -66,12 +66,17 @@ function SingleVideoUpload({ video }) {
             formData.append("resolution", resolution);
             formData.append("frameRate", frameRate);
             video.uploaded = true;
+            const token = localStorage.getItem('access_token');
             setIsUploaded(true);
             axios({
                 method: 'post',
                 url: "http://localhost:8000/upload",
                 data: formData,
-                headers: {'Content-Type': 'multipart/form-data' }
+                headers: {
+                    'Content-Type': 'multipart/form-data', 
+                    'Authorization': `Bearer ${token}`
+                },
+                
             })
             .then((response) => {
                 console.log("Video uploaded");
