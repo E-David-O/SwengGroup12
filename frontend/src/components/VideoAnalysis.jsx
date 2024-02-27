@@ -1,10 +1,11 @@
-import { useContext, useEffect, useRef, useState} from "react";
+import { useContext, useMemo, useRef, useState} from "react";
 import Navbar from "./Navbar";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams} from "react-router-dom";
 import axios from "axios";
 import { VideoContext } from "./VideoUtil";
 import VideoJS from "./VideoPlayer";
 import videojs from "video.js";
+
 
 function VideoAnalysis() {
         const title = useParams();
@@ -15,6 +16,29 @@ function VideoAnalysis() {
         const [currentTime, setCurrentTime] = useState(0);
         const [percentComplete, setPercentComplete] = useState(0);
         const [currentFrame, setCurrentFrame] = useState(null);
+        const [closest, setClosest] = useState(null);
+        const calculateData = () => {
+            let data = {};
+            results.forEach((f) => {
+                f.results.forEach((r) => {
+                    if (data[r.class_id]) {
+                            data[r.class_id] += 1;
+                    } else {
+                            data[r.class_id] = 1;
+                    }
+                });
+            });
+            let sortable = [];
+            for(let object in data) {
+                sortable.push([object, data[object]])
+            };
+            sortable.sort(function(a,b) {
+                return b[1] - a[1];
+            })
+            return sortable;
+        }
+        const data = useMemo(() => calculateData(), [results]);
+      
         // useEffect(() => {
         //     const url = `http://localhost:8000/${title.id}`;
         //     axios
@@ -38,6 +62,7 @@ function VideoAnalysis() {
                     const closestFrame = results.map(f => f.frame_number).reduce((a,b) => {
                         return Math.abs(b -(time * 59.97)) < Math.abs(a - (time * 59.97)) ? b : a;
                     });
+                    setClosest(closestFrame);
                     console.log(closestFrame);
                     console.log(results.find(f => f.frame_number === closestFrame).results);
                     setCurrentFrame(results.find(f => f.frame_number === closestFrame).results);
@@ -70,10 +95,21 @@ function VideoAnalysis() {
                                 <div>
                                         <p>{currentTime.toFixed(2)} seconds elapsed</p>
                                         <p>{percentComplete.toFixed(2)}%</p>
+                                        <p>Total frames analysed {results.length}</p>
                                         <p>Current frame {(currentTime * 59.97).toPrecision(6)}</p>
-                                        { currentFrame?.map((f, i) => {
-                                                return <p key={i}>Object: {f.class_id}, confidence: {f.conf}</p>
-                                        }) }
+                                        <p>Closest Analysed Frame: {closest}</p>
+                                        <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Closest Frame Analysis</p>
+                                        <div className="grid grid-cols-3 gap-1 m-1">
+                                        { currentFrame.length !== 0 ? currentFrame?.map((f, i) => {
+                                                return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f.class_id}, confidence: {f.conf}</div>
+                                        }) : <p>No objects detected</p>}
+                                        </div>
+                                        <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis</p>
+                                        <div className="grid grid-cols-3 gap-1 m-1">
+                                        { data.length !== 0 ? data?.map((f, i) => {
+                                                return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}</div>
+                                        }) : <p>No Total Results</p>}
+                                        </div>
                                 </div>
                         : null }
                 </>

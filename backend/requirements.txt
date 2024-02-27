@@ -4,7 +4,6 @@ typing
 celery[redis]
 ultralytics
 numpy
-moviepy
 Pillow
 psycopg2-binary
 

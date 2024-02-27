@@ -44,6 +44,7 @@ function LiveVideo() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       document.body.appendChild(a);
+      // @ts-ignore
       a.style = "display: none";
       a.href = url;
       a.download = "react-webcam-stream-capture.webm";

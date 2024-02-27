@@ -6,6 +6,7 @@ RUN apt-get install python3 python3-pip -y
 RUN pip3 install --upgrade pip
 RUN apt-get install libsm6 libxext6  -y
 RUN apt-get install -y python3-opencv
+RUN apt-get -y update && apt-get -y upgrade && apt-get install -y --no-install-recommends ffmpeg
 WORKDIR /app
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_APP=app.py

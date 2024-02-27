@@ -9,6 +9,7 @@ import cv2
 from skimage.metrics import structural_similarity
 import os
 import sys
+import ffmpeg
 import time
 import psycopg2
 from datetime import timezone
@@ -95,6 +96,22 @@ def results(video_id):
 
 model = YOLO('yolov8n.pt')
 
+def vid_resize(vid_path, output_path, width):
+    '''
+    use ffmpeg to resize the input video to the width given, keeping aspect ratio
+    '''
+    if not( os.path.isdir(os.path.dirname(output_path))):
+        raise ValueError(f'output_path directory does not exists: {os.path.dirname(output_path)}')
+    (
+        ffmpeg
+        .input(vid_path)
+        .filter('scale', width, -2)
+        .filter('format', pix_fmts='yuv420p')
+        .output(output_path, format='mp4', crf=18)
+        .overwrite_output()
+        .run()
+    )
+
 @celery.task(ignore_result=False)
 def analyze_task(frame):
     load = json.loads(frame)
@@ -117,7 +134,7 @@ def analyze_task(frame):
     print(list_of_results, file=sys.stderr)
     return list_of_results 
 FRAME_SKIP = 30                                     #Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
-SIMILARITY_LIMIT = 50                               #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+SIMILARITY_LIMIT = 80                               #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
 
 # def insert_frame_info_to_db(frame_data):
 #     try:
@@ -146,7 +163,6 @@ def convert_frame_to_bin(frame):
 
 #@celery.task
 def select_frames(video):
-    task_list = []
     results_list = []
    # list_of_frames = []
     # empty temp file
@@ -154,13 +170,18 @@ def select_frames(video):
     # b = base64.b64decode(byte_data)
 
     tf = tempfile.NamedTemporaryFile()
+    rf = tempfile.NamedTemporaryFile()
     tf.write(video.read())
+    print(tf.name, file=sys.stderr)
+    vid_resize(tf.name, rf.name, 480)
+    print(rf, file=sys.stderr)
+    tf.close()
     # video contents
     # with open(f'/{video.name}', 'wb') as tf:
     #     tf.write(b)
     
     analyze_count = 0
-    vidcap = cv2.VideoCapture(tf.name)       #Loads the video in to opencvs capture
+    vidcap = cv2.VideoCapture(rf.name)       #Loads the video in to opencvs capture
     if not vidcap.isOpened:
         print('Video broken', file=sys.stderr)
     while True:
@@ -190,14 +211,12 @@ def select_frames(video):
         if count > 1 and newframe is not None:
             new_gray = cv2.cvtColor(newframe, cv2.COLOR_BGR2GRAY)                  #Convert current frame to grayscale (needed for structural similarity check)
             score = structural_similarity(first_gray, new_gray, full=False)        #Structural similarity test.
-            print("Similarity Score: {:.3f}%".format(score * 100))
+            print("Similarity Score: {:.3f}%".format(score * 100), file=sys.stderr)
             if score * 100 < SIMILARITY_LIMIT:
                 data = {
                     'frame_number': count,
                     'results' : analyze_task.delay(convert_frame_to_bin(newframe)),
                 }
-                print(type(data), file=sys.stderr)
-                print(data, file=sys.stderr)
                 results_list.append(data)
                 #list_of_frames.append(convert_frame_to_bin(newframe))
                 #cv2.imwrite(os.path.join(path , 'analyze_frame%d.jpg' % analyze_count), newframe)   #If its below the treshhold send new frame to analysis
@@ -206,7 +225,7 @@ def select_frames(video):
         count += FRAME_SKIP                                                        
         vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)                                  #Skip ahead 30 frames from current frame
 
-    tf.close()
+    rf.close()
     end_time = time.time()
     run_time = end_time - start_time
     print("Out of the %(frames)d images %(analyzed)d where sent for further analysis. \nTotal time: %(time)ds" % {"frames": count, "analyzed" :analyze_count, "time": run_time})

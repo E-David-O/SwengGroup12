@@ -4,7 +4,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { VideoContext} from "./VideoUtil";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useCallback } from "react";
 import io from 'socket.io-client';
 import { Link } from "react-router-dom";
 import DropDown from "./DropDown";
@@ -98,17 +98,16 @@ function SingleVideoUpload({ video }) {
      * @description This function is used to delete the video from the list of videos 
      */
 
-    const deleteVideo = (e) => {
-        e.preventDefault();
+    const deleteVideo = useCallback(() => {
         console.log(videos);
         setVideos(videos.filter(videos => videos.name !== video.name));
-    }
+    }, [videos, video, setVideos])
     return (
         <div>
         { video.uploaded ? ( (video.analysed) ? ( 
            <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
                 <Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" to={`/analysis/${video.name}`}>Click Here to View Analysis of {video.name}</Link>
-                <button onClick={e => deleteVideo(e)}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
+                <button onClick={deleteVideo}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
             </div> ) : (
             (
                 <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
@@ -131,7 +130,7 @@ function SingleVideoUpload({ video }) {
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}</button>
             <DropDown label={"Select Resolution"} options={["Auto","1080","720","480"]} selected={resolution} setSelected={setResolution} />
             <DropDown label={"Select Frame Rate"} options={["Auto","60","30","15"]} selected={frameRate} setSelected={setFrameRate} />
-            <button onClick={e => deleteVideo(e)}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
+            <button onClick={deleteVideo}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
         </div> )}
         </div>
     );
