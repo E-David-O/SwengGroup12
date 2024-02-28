@@ -10,6 +10,7 @@ from skimage.metrics import structural_similarity
 import os
 import sys
 import ffmpeg
+import numpy as np
 import time
 import psycopg2
 from datetime import timezone
@@ -84,6 +85,12 @@ def upload():
     print(results, file=sys.stderr)
     return Response(json.dumps(results),  mimetype='application/json')
 
+@app.route("/uploadLive", methods=['POST'])
+def upload_live():
+    uploaded_file = request.form.getlist('files')
+    results = select_frames_live(uploaded_file)
+    print(results, file=sys.stderr)
+    return Response(json.dumps(results),  mimetype='application/json')
 
 @app.route("/frames/<uuid:video_id>")
 def frames(video_id):
@@ -236,3 +243,67 @@ def select_frames(video):
     
     return results_list
 
+
+most_recent_frame = None
+
+def select_frames_live(frame_list):
+    results_list = []
+    global most_recent_frame
+   # list_of_frames = []
+    # empty temp file
+    # byte_data = video['video'].encode('utf-8')
+    # b = base64.b64decode(byte_data)
+    im = base64.b64decode(frame_list[0].split(",")[1])
+    image = np.array(Image.open(BytesIO(im)))
+    start_time = time.time()
+    count = 1
+    analyze_count = 0
+    new_gray = cv2.cvtColor(cv2.resize(image,(300,300)), cv2.COLOR_BGR2GRAY) 
+    if(most_recent_frame is not None):                                          #If there is a previous frame, test it to the current frame
+        first_gray = cv2.cvtColor(cv2.resize(most_recent_frame, (300,300) ), cv2.COLOR_BGR2GRAY)
+        score = structural_similarity(first_gray, new_gray, full=False)        #Structural similarity test.
+        print("Similarity Score: {:.3f}%".format(score * 100), file=sys.stderr)
+        if score * 100 < SIMILARITY_LIMIT:
+            data = {
+                'results' : analyze_task.delay(convert_frame_to_bin(image)),
+            }
+            first_gray = new_gray
+            results_list.append(data)
+            analyze_count = 1
+            most_recent_frame = image
+    else:        
+        data = {
+            'results' : analyze_task.delay(convert_frame_to_bin(image)),
+        }
+        results_list.append(data)
+        
+        analyze_count = 1
+        most_recent_frame = image
+        first_gray = new_gray                                                            #If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+    
+    for i in range (1, len(frame_list)):                                                               #If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        image = np.array(Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1]))))
+        newframe = image
+        print('Read frames read: ', count)
+        if count > 1 and newframe is not None:
+            new_gray = cv2.cvtColor(cv2.resize(newframe, (300,300)), cv2.COLOR_BGR2GRAY)                  #Convert current frame to grayscale (needed for structural similarity check)
+            score = structural_similarity(first_gray, new_gray, full=False)        #Structural similarity test.
+            print("Similarity Score: {:.3f}%".format(score * 100), file=sys.stderr)
+            if score * 100 < SIMILARITY_LIMIT:
+                data = {
+                    'results' : analyze_task.delay(convert_frame_to_bin(newframe)),
+                }
+                results_list.append(data)
+                analyze_count += 1
+                first_gray = new_gray
+        count += 1                                                        
+        
+    end_time = time.time()
+    run_time = end_time - start_time
+    print("Out of the %(frames)d images %(analyzed)d where sent for further analysis. \nTotal time: %(time)ds" % {"frames": count, "analyzed" :analyze_count, "time": run_time})
+    print(type(results_list), file=sys.stderr)
+    print(results_list, file=sys.stderr)
+    for entry in results_list:
+        entry['results'] = entry['results'].get()
+    
+    return results_list
