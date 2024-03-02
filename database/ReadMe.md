@@ -1,34 +1,30 @@
-# Databases
-## Image Metadata Database
-- id : unqiue serial id of the frame/image (Cannot be NULL)
-- id_video : the unique id of the video which the frame/image was from
-- frame_resolution : the resolution of the frame
-- timestamp : timestamp for when frame was sent into the database
+# Database Tables
+## Users
+- id `UNIQUE SERIAL PRIMARY KEY` : Unique serial primary key assign to each user
+- username `VARCHAR(60000)`: The username for the user 
+- _password `VARCHAR(60000)` : A hash version of the users password
+- json_auth_token `VARCHAR(60000)` : A hash of the authentication token tied to the users
+- _timestamp `TIMESTAMP`: Timestamp of when the user was signed up
 
-## Frame Analyzer Database (Still need to add columns for)
-- id : unique serial id of the frame which was analyzed
-- 
-- timestamp : timestamp when the frame was analyzed
+## Videos
+- id `UNIQUE SERIAL PRIMARY KEY` : Unique serial primary key to identify all submitted videos
+- id_account `INT` : ID of the account the videos are tied to
+- videoPath `VARCHAR(60000)`: The path to the video in the MinIO bucket
+- fileFormat `VARCHAR(60000)` : File format of the submitted video
+- frameRate `INT` : Frame rate of the video
+- videoLength `INT` : Length of the video in seconds
+- frame_resolution `VARCHAR(60000)` : The resolution of the submitted video in the format of '1920x1080'
+- _timestamp `TIMESTAMP`: Timestamp of when the video as submitted and added to the database
 
-## Objects Detected Database
-- id : unqiue id for the individual object
-- id_frame : id of the frame which the object was found in (with this we can consult the metadata db to access the video id)
-- _object : object detected in from the image
-- confidence : confidence of the frame analyzer of what the object is
+## Selected Frame
+- id `INT` : The id of the frame in respect to the video it came from
+- id_video `INT` : The id of the video which the frame is from
+- frameNumber `INT` : The frame number from the video to help calculate - where in time the frame was from
+- _timestamp `TIMESTAMP` : When the selected frame was added to the database
 
-
-## User Table Database (Login Info)
-- id : unique serial id for the user login info
-- username : string of the username with a limit of 255 characters (Cannot be NULL)
-- password : string of the password with a limit of 255 characters (maybe later we will work on encrypting) (Cannot be NULL)
-- json_auth_token : json authentication token which is tied to the account (Cannot be NULL)
-- timestamp : when was the account was created (Cannot be NULL)
-
-## Access Table Database (Who Logs in)
-- id : unique serial id for each instance of the login attempts (Cannot be NULL)
-- success : was the signin successful (TRUE or FALSE)
-- id_of_account : the id of the account that was attempted be accessed (Can be NULL as if they input the wrong username)
-- timestamp : timestamp of this action
-
-## Event Database (Actions happening throughout the project)
-- Maybe will implement later
+## Analyzed Frames
+id `UNIQUE SERIAL PRIMARY KEY` : Serial unqiue id for the objects from the selected frames
+id_image `INT`: ID of the image which the object was found in
+objectDetected `VARCHAR(60000)` : What the object detected was
+confidence : The confidence of the model that object detected is the actual object
+_timestamp `TIMESTAMP` : When the object was found during the analyzing of the frame
