@@ -28,3 +28,11 @@ id_image `INT`: ID of the image which the object was found in
 objectDetected `VARCHAR(60000)` : What the object detected was
 confidence : The confidence of the model that object detected is the actual object
 _timestamp `TIMESTAMP` : When the object was found during the analyzing of the frame
+
+
+# MinIO Buckets
+## Videos
+This bucket stores all of the submitted videos send from the frontend. They will be descaled for more optimal storage
+
+## Images
+This bucket will store all of the analyzed images with boxes around the objects detected in the frames
