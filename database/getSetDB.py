@@ -1,15 +1,19 @@
 import psycopg2
 import time
 import json
+import os
+from minio import Minio
+from minio.error import ResponseError
+from datetime import datetime
 
 def connect_to_database():
-
     try:
         # Change these values according to your PostgreSQL configuration
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            host="172.20.0.10",
+            #host="172.20.0.10",
+            host="localhost"
             port="5432",
             database="DB"
         )
@@ -18,6 +22,52 @@ def connect_to_database():
     except (Exception, psycopg2.Error) as error:
         print("Error while connecting to PostgreSQL", error)
         return None, None
+
+def connect_to_minio():
+    try:
+        minio_client = Minio(
+            #"172.20.0.50:9000",
+            "localhost:9000",
+            access_key="minioConnect"
+            secret_key="connectMinio",
+            secure=False
+        )
+        return minio_client
+    except ResponseError as error
+        print("MinIO error: ", error)
+        return None
+
+def sendVideoToBucket():
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor
+            try:
+                minio_client = connect_to_minio()
+                if minio_client:
+                    video_path = "/testVideo.mp4"
+                    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format timestamp
+                    # new_file_name = f"video_{timestamp}{extension}" 
+                    # os.rename(video_path, new_file_name)
+                    video_name = os.path.basename(video_path)
+
+                    bucket_name = "videos"
+                    minio_client.fput_object(bucket_name, video_name, video_path)
+
+                    video_url = minio_client.presigned_get_object(bucket_name, video_name)
+
+                    cursor.execute("""INSERT INTO Videos
+                                (id_account, videoLink, videoPath, fileFormat, frameRate, videoLength, frame_resolution) 
+                                VALUES (1, %s, %s, 'mp4', 30, '1 hour', '1920x1080')""", (video_url, video_path))
+                    connection.commit()
+
+        except(Exception, psycopg2.Error, ResponseError) as error:
+            if connection:
+                print("Error: ", erorr)
+        finally:
+            if connection:
+                cursor.close()
+                connection.close()
+
 
 #image metadata set get
 def set_image_metadata(vid_id, frame_res):

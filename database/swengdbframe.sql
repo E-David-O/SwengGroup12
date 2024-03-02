@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS SelectedFrame (
                 id INT,
                 id_video INT,
                 frameNumber INT,
+                framePath VARCHAR(255),
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
