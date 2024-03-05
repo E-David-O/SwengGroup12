@@ -2,24 +2,25 @@ CREATE TABLE IF NOT EXISTS Users (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
                 username VARCHAR(60000) NOT NULL,
                 _password VARCHAR(60000) NOT NULL,
-                json_auth_token VARCHAR(60000) NOT NULL,
+                jsonAuthToken VARCHAR(60000) NOT NULL,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
 CREATE TABLE IF NOT EXISTS Videos (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                id_account INT,
+                idAccount INT,
                 videoPath VARCHAR(60000),
                 fileFormat VARCHAR(60000),
                 frameRate INT,
                 videoLength INT,
-                frame_resolution VARCHAR(60000),
+                frameResolution VARCHAR(60000),
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
 CREATE TABLE IF NOT EXISTS SelectedFrame (
-                id INT,
-                id_video INT,
+                id SERIAL UNIQUE PRIMARY KEY,
+                idFrame INT,
+                idVideo INT,
                 frameNumber INT,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS SelectedFrame (
 
 CREATE TABLE IF NOT EXISTS AnalyzedFrames (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                id_image VARCHAR(60000),
+                idFrame VARCHAR(60000),
                 objectDetected VARCHAR(60000),
                 confidence FLOAT,
                 framePath VARCHAR(60000),
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS AnalyzedFrames (
 CREATE TABLE IF NOT EXISTS AccessLog (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
                 _success BOOL NOT NULL,
-                id_account INT NOT NULL REFERENCES User_Table (id),
+                idAccount INT NOT NULL REFERENCES User_Table (id),
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 

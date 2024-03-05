@@ -10,24 +10,8 @@
 
 import psycopg2
 import time
-def connect_to_database():
+import connect_to_database from getSetDB
 
-    time.sleep(5)
-
-    try:
-        # Change these values according to your PostgreSQL configuration
-        connection = psycopg2.connect(
-            user="postgres",
-            password="postgres",
-            host="172.20.0.10",
-            #host="localhost",
-            port="5432",
-            database="DB"
-        )
-        cursor = connection.cursor()
-        return connection, cursor
-    except (Exception, psycopg2.Error) as error:
-        print("Error while connecting to PostgreSQL", error)
         return None, None
 
 def setup_tables():
@@ -49,13 +33,13 @@ def setup_tables():
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
                 username VARCHAR(60000) NOT NULL,
                 _password VARCHAR(60000) NOT NULL,
-                json_auth_token VARCHAR(60000) NOT NULL,
+                jsonAuthToken VARCHAR(60000) NOT NULL,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 
             cursor.execute("""CREATE TABLE IF NOT EXISTS Videos (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                id_account INT,
+                idAccount INT,
                 videoPath VARCHAR(60000),
                 fileFormat VARCHAR(60000),
                 frameRate INT,
@@ -65,15 +49,16 @@ def setup_tables():
             );""")
 
             cursor.execute("""CREATE TABLE IF NOT EXISTS SelectedFrame (
-                id INT,
-                id_video INT,
+                id SERIAL UNIQUE PRIMARY KEY,
+                idFrame INT,
+                idVideo INT,
                 frameNumber INT,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
             cursor.execute("""CREATE TABLE IF NOT EXISTS AnalyzedFrames (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                id_image VARCHAR(60000),
+                idFrame VARCHAR(60000),
                 objectDetected VARCHAR(60000),
                 confidence FLOAT,
                 framePath VARCHAR(60000),
@@ -83,7 +68,7 @@ def setup_tables():
             cursor.execute("""CREATE TABLE IF NOT EXISTS AccessLog (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
                 _success BOOL NOT NULL,
-                id_account INT NOT NULL,
+                idAccount INT NOT NULL,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 
