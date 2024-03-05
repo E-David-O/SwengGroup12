@@ -12,8 +12,8 @@ def connect_to_database():
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            #host="172.20.0.10",
-            host="localhost"
+            host="172.20.0.10",
+            #host="localhost"
             port="5432",
             database="DB"
         )
@@ -68,6 +68,45 @@ def sendVideoToBucket():
                 cursor.close()
                 connection.close()
 
+
+
+# For testing the database on docker with github actions
+def testing_database_github():
+    testing_str = "testing for github"
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor:
+
+            cursor.execute("""CREATE TABLE IF NOT EXIST TestingDB (
+                id SERIAL PRIMARY KEY UNIQUE NOT NULL,
+                testTimestamp TIMESTAMP DEFUALT CURRENT_TIMESTAMP,
+                testValue VARCHAR(60000)
+            );""")
+
+            cursor.execute(""" INSERT INTO TestingDB (testValue) VALUES(%s);""", testing_str)
+
+            cursor.execute("""SELECT * FROM TestingDB WHERE testValue = %s;""", testing_str)
+
+            rows = cursor.fetchall()
+
+            cursor.execute("""DROP TABLE TestingDB;""")
+
+            count = 0
+            for row in rows:
+                count = count + 1
+            if count == 1:
+                return True
+            else:
+                return False
+        except (Exception, psycopg2.Error) as error:
+            if connection:
+                print("Error with trying to test the database, but was able to connect: ", error)
+                return False
+        finally:
+            if connection:
+                connection.commit()
+                cursor.close()
+                connection.close()
 
 #image metadata set get
 def set_image_metadata(vid_id, frame_res):
