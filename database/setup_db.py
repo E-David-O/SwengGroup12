@@ -10,8 +10,22 @@
 
 import psycopg2
 import time
-import connect_to_database from getSetDB
 
+def connect_to_database():
+    try:
+        # Change these values according to your PostgreSQL configuration
+        connection = psycopg2.connect(
+            user="postgres",
+            password="postgres",
+            host="172.20.0.10",
+            #host="localhost"
+            port="5432",
+            database="DB"
+        )
+        cursor = connection.cursor()
+        return connection, cursor
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
         return None, None
 
 def setup_tables():
@@ -84,7 +98,6 @@ def setup_tables():
 
 
 if __name__ == "__main__" :
-    time.sleep(5)
-    print("Start")
+    time.sleep(3)
     setup_tables()
-    print("Something")  
+    print("Table setup has been ran ")
