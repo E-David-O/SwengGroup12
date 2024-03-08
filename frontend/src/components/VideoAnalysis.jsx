@@ -65,7 +65,7 @@ function VideoAnalysis() {
                     setClosest(closestFrame);
                     console.log(closestFrame);
                     console.log(results.find(f => f.frame_number === closestFrame).results);
-                    setCurrentFrame(results.find(f => f.frame_number === closestFrame).results);
+                    setCurrentFrame(results.find(f => f.frame_number === closestFrame));
                 });
                 player.on("waiting", () => {
                     console.log("player is waiting");
@@ -100,7 +100,7 @@ function VideoAnalysis() {
                                         <p>Closest Analysed Frame: {closest}</p>
                                         <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Closest Frame Analysis</p>
                                         <div className="grid grid-cols-3 gap-1 m-1">
-                                        { currentFrame.length !== 0 ? currentFrame?.map((f, i) => {
+                                        { currentFrame.results.length !== 0 ? currentFrame.results?.map((f, i) => {
                                                 return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f.class_id}, confidence: {f.conf}</div>
                                         }) : <p>No objects detected</p>}
                                         </div>
@@ -110,6 +110,7 @@ function VideoAnalysis() {
                                                 return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}</div>
                                         }) : <p>No Total Results</p>}
                                         </div>
+                                        <img src={`data:image/jpeg;base64,${currentFrame.image}`}/>
                                 </div>
                         : null }
                 </>

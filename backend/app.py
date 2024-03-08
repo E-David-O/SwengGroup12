@@ -126,23 +126,33 @@ def analyze_task(frame):
     im = Image.open(BytesIO(imdata))
     results = model(im, stream=False, device='mps')
     list_of_results = []
-    for result in results:
-        for box in result.boxes:
-            print(result.names[box.cls[0].item()], file=sys.stderr)
-            print(box.conf[0].item(), file=sys.stderr)
-            data = {
-            'class_id' :result.names[box.cls[0].item()],
-            'conf' : round(box.conf[0].item(), 2),
-            }
-            list_of_results.append(data)
-        # boxes = result.boxes.numpy()  # Boxes object for bounding box outputs
-        # xyxys = boxes.xyxy
-        # print(xyxys, file=sys.stderr)
+    boxed_image = imdata
+    if results is not None:
+        pil_img  = Image.fromarray(results[0].plot())
+        buff = BytesIO()
+        pil_img.save(buff, format="JPEG")
+        boxed_image = base64.b64encode(buff.getvalue()).decode("utf-8")
+        for result in results:
+            for box in result.boxes:
+                print(result.names[box.cls[0].item()], file=sys.stderr)
+                print(box.conf[0].item(), file=sys.stderr)
+                data = {
+                'class_id' :result.names[box.cls[0].item()],
+                'conf' : round(box.conf[0].item(), 2),
+                }
+                list_of_results.append(data)
+            # boxes = result.boxes.numpy()  # Boxes object for bounding box outputs
+            # xyxys = boxes.xyxy
+            # print(xyxys, file=sys.stderr)
     print(list_of_results, file=sys.stderr)
-    return list_of_results 
+    dict = {
+        'results': list_of_results,
+        'image': boxed_image
+    }
+    return dict
 FRAME_SKIP = 30                                     #Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
 SIMILARITY_LIMIT = 80                               #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
-
+SIMILARITY_LIMIT_LIVE = 40                             #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
 # def insert_frame_info_to_db(frame_data):
 #     try:
 #         connection, cursor = connect_to_database()
@@ -236,10 +246,10 @@ def select_frames(video):
     end_time = time.time()
     run_time = end_time - start_time
     print("Out of the %(frames)d images %(analyzed)d where sent for further analysis. \nTotal time: %(time)ds" % {"frames": count, "analyzed" :analyze_count, "time": run_time})
-    print(type(results_list), file=sys.stderr)
-    print(results_list, file=sys.stderr)
     for entry in results_list:
-        entry['results'] = entry['results'].get()
+        result = entry['results'].get()
+        entry['results'] = result['results']
+        entry['image'] = result['image']
     
     return results_list
 
@@ -301,9 +311,9 @@ def select_frames_live(frame_list):
     end_time = time.time()
     run_time = end_time - start_time
     print("Out of the %(frames)d images %(analyzed)d where sent for further analysis. \nTotal time: %(time)ds" % {"frames": count, "analyzed" :analyze_count, "time": run_time})
-    print(type(results_list), file=sys.stderr)
-    print(results_list, file=sys.stderr)
     for entry in results_list:
-        entry['results'] = entry['results'].get()
+        result = entry['results'].get()
+        entry['results'] = result['results']
+        entry['image'] = result['image']
     
     return results_list

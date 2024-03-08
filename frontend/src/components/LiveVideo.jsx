@@ -12,8 +12,9 @@ function LiveVideo() {
   const [camEnabled, setCamEnabled] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [results, setResults] = useState([]);
-  const [mostRecent, setMostRecent] = useState(null);
+  const [mostRecent, setMostRecent] = useState([]);
   let data = [];
+  let images = [];
   const handleStartCaptureClick = useCallback(() => {
     setCapturing(true);
   }, [setCapturing]);
@@ -41,84 +42,52 @@ function LiveVideo() {
             return sortable;
   
         }
-           data = useMemo(() => calculateData(), [results]);
-        
+        const calculateDataArray = () => {
+          let data = [];
+          results.forEach((f) => {
+              console.log(f)
+              data.push(f.image);
+            });
+            return data;
+        }
+        data = useMemo(() => calculateData(), [results]);
+        images = useMemo(() => calculateDataArray(), [results]);
           useEffect(() => {
-            if(capturing) {
-             
-              if(recordedChunks.length <= 100) {
-              setRecordedChunks([...recordedChunks, webcamRef.current.getScreenshot()])
-              } else {
-                const formData = new FormData();
-                console.log(recordedChunks);
-                for (let i = 0; i < recordedChunks.length; i++) {
-                  formData.append("files",  recordedChunks[i]);
-                }
-              setRecordedChunks([]);
-              axios({
-                method: 'post',
-                url: "http://localhost:8000/uploadLive",
-                data: formData,
-                headers: {'Content-Type': 'multipart/form-data' }
-              })
-              .then((response) => {
-                console.log("Chunks uploaded");
-                console.log(response.data);
-                setResults([...results, response.data]);
-                setMostRecent(response.data);
-              })
-              .catch(function (error) {
-                // handle error
-                console.log(error);
-              });  
+            const interval = setInterval(() => {
+              if(capturing) {
+              
+                if(recordedChunks.length <= 100) {
+                setRecordedChunks([...recordedChunks, webcamRef.current.getScreenshot()])
+                } else {
+                  const formData = new FormData();
+                  console.log(recordedChunks);
+                  for (let i = 0; i < recordedChunks.length; i++) {
+                    formData.append("files",  recordedChunks[i]);
+                  }
+                setRecordedChunks([]);
+                axios({
+                  method: 'post',
+                  url: "http://localhost:8000/uploadLive",
+                  data: formData,
+                  headers: {'Content-Type': 'multipart/form-data' }
+                })
+                .then((response) => {
+                  console.log("Chunks uploaded");
+                  console.log(response.data);
+                  setResults([...results, response.data]);
+                  setMostRecent(response.data);
+                })
+                .catch(function (error) {
+                  // handle error
+                  console.log(error);
+                });  
+            }
           }
-        
-          
-    }
+      }, 100);
+      return () => clearInterval(interval);
   }, [capturing, recordedChunks, results, data, setResults, setMostRecent, setRecordedChunks]); 
 
-  // const handleJPGChunk = useCallback(() => {
-  //   setCapturing(true);
-  //   console.log(recordedChunks);
-  //   mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream);
-  //   mediaRecorderRef.current.addEventListener(
-  //     "dataavailable",
-  //     handleDataAvailable
-  //   );
-  //   mediaRecorderRef.current.start();
-  // }, [webcamRef, setCapturing, mediaRecorderRef]);
-
-
-  // const handleDataAvailable = useCallback(
-  //   ({ data }) => {
-  //     console.log(recordedChunks);
-  //     if (data.size > 0 && recordedChunks.length < 10) {
-  //       setRecordedChunks([...recordedChunks, data]);
-  //     } else if (recordedChunks.length >= 100) {
-  //         const formData = new FormData();
-  //         const blob = new Blob(recordedChunks);
-  //         setRecordedChunks([]);
-  //         formData.append("files",  blob.slice(0, blob.size, "image/jpeg") );
-  //         axios({
-  //           method: 'post',
-  //           url: "http://localhost:8000/uploadLive",
-  //           data: formData,
-  //           headers: {'Content-Type': 'multipart/form-data' }
-  //         })
-  //         .then((response) => {
-  //           console.log("Chunks uploaded");
-  //           setResults([...results, response.data.results]);
-  //           setMostRecent(response.data.results);
-  //           data = useMemo(() => calculateData(), [results]);
-  //         })
-  //         .catch(function (error) {
-  //           // handle error
-  //           console.log(error);
-  //         });  
-  //     }
-  //   },
-  //   [setRecordedChunks, recordedChunks]
-  // );
+  
 
   const handleStopCaptureClick = useCallback(() => {
     setCapturing(false);
@@ -150,11 +119,13 @@ function LiveVideo() {
     <p>Closest Analysed Chunk</p>
     <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Most Recent Chunk Analysis</p>
     <div className="grid grid-cols-3 gap-1 m-1">
-    {mostRecent?.map((f, i) => {
-            for (let j = 0; j < f.results.length; j++) {
-              return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i+j}>Object: {f.results[i].class_id}, confidence: {f.results[i].conf}</div>
-            }
-    })} 
+    {mostRecent.length !== 0 ? mostRecent?.map((f, i) => (
+      
+      <img src={`data:image/jpeg;base64,${f.image}`} key={i}/>
+      
+    )) 
+    : <p>No Recent Results</p>}
+    
     </div>
     <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis</p>
     <div className="grid grid-cols-3 gap-1 m-1">
