@@ -6,8 +6,8 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CORE__FERNET_KEY=_VbJMFmQmpoQzoPwm0Wdeeckto5eglcPTIOU2AcHRnA=
       - AIRFLOW__WEBSERVER__SECRET_KEY=b2JmYXZkaGwgZGVrZmpoZ2hrZGVqZg
-    depends_on:
-      - postgres
+    # depends_on:
+    #   - postgres
     ports:
       - "8080:8080"
     command: webserver
@@ -24,15 +24,15 @@ services:
       - AIRFLOW__CORE__FERNET_KEY=_VbJMFmQmpoQzoPwm0Wdeeckto5eglcPTIOU2AcHRnA=
     depends_on:
       - webserver
-      - postgres
+      # - postgres
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
     command: scheduler
 
-volumes:
-  postgres_db_data:
+# volumes:
+#   postgres_db_data:
 
   rabbitmq:
     image: 'rabbitmq:3-management'
@@ -126,5 +126,3 @@ networks:
   #   ipam:
   #     config:
   #       - subnet: 172.20.0.0/24
-
-
