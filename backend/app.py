@@ -41,7 +41,7 @@ def make_celery(app):
     celery.Task = ContextTask
     return celery
 
-celery = make_celery(app)
+# celery = make_celery(app)
 
 
 # def connect_to_database():
@@ -74,14 +74,6 @@ def upload():
     uploaded_file = Video(request.files['video'], request.form['resolution'], request.form['frameRate'])
     print(uploaded_file.video, file=sys.stderr)
     results = select_frames(uploaded_file.video)
-    # video = uploaded_file.video.read()
-    # byte = base64.b64encode(video)  
-    # data = {
-    #     'video': byte.decode('utf-8'),
-    #     'name': uploaded_file.video.filename,
-    # }
-    # analyse_video = chain(select_frames.s(data), analyze_task.s())
-    # taks_id = analyse_video.apply_async()
     print(results, file=sys.stderr)
     return Response(json.dumps(results),  mimetype='application/json')
 
@@ -119,7 +111,7 @@ def vid_resize(vid_path, output_path, width):
         .run()
     )
 
-@celery.task(ignore_result=False)
+# @celery.task(ignore_result=False)
 def analyze_task(frame):
     load = json.loads(frame)
     imdata = base64.b64decode(load['image'])
@@ -178,7 +170,7 @@ def convert_frame_to_bin(frame):
     jstr = json.dumps({"image": base64.b64encode(imdata).decode('ascii')})
     return jstr
 
-#@celery.task
+
 def select_frames(video):
     results_list = []
    # list_of_frames = []
@@ -214,7 +206,7 @@ def select_frames(video):
     count = 1
     data = {
         'frame_number': count,
-        'results' : analyze_task.delay(convert_frame_to_bin(image)),
+        'results' : analyze_task(convert_frame_to_bin(image)),
     }
     results_list.append(data)
     #list_of_frames.append(convert_frame_to_bin(image))
@@ -232,7 +224,7 @@ def select_frames(video):
             if score * 100 < SIMILARITY_LIMIT:
                 data = {
                     'frame_number': count,
-                    'results' : analyze_task.delay(convert_frame_to_bin(newframe)),
+                    'results' : analyze_task(convert_frame_to_bin(newframe)),
                 }
                 results_list.append(data)
                 #list_of_frames.append(convert_frame_to_bin(newframe))
@@ -247,7 +239,7 @@ def select_frames(video):
     run_time = end_time - start_time
     print("Out of the %(frames)d images %(analyzed)d where sent for further analysis. \nTotal time: %(time)ds" % {"frames": count, "analyzed" :analyze_count, "time": run_time})
     for entry in results_list:
-        result = entry['results'].get()
+        result = entry['results']
         entry['results'] = result['results']
         entry['image'] = result['image']
     
