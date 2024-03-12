@@ -1,22 +1,22 @@
 "Classes to select frames from a video."
 
-import logging
 import base64
+import logging
 import os
-import time
-import cv2
-import numpy as np
-import json
-import ffmpeg
 import tempfile
-from PIL import Image
+import time
 from abc import ABC, abstractmethod
-from typing import List, TypedDict
-from skimage.metrics import structural_similarity
 from io import BytesIO
+from typing import List, NamedTuple, Iterator
+
+import cv2
+import ffmpeg
+import numpy as np
+from PIL import Image
+from skimage.metrics import structural_similarity
 
 
-def vid_resize(vid_path, output_path, width):
+def resize_video(vid_path: str, output_path: str, width: int):
     """
     Use ffmpeg to resize the input video to the width given while keeping aspect ratio.
     """
@@ -34,7 +34,7 @@ def vid_resize(vid_path, output_path, width):
     )
 
 
-class SelectedFrame(TypedDict):
+class SelectedFrame(NamedTuple):
     "The metadata of a selected frame."
     frame_number: int
     image: any
@@ -62,12 +62,12 @@ class StructuralSimilaritySelector(FrameSelector):
         "Selects frames from a video, using structural similarity to ignore similar frames."
         return list(self.__generate_frames(video))
 
-    def __generate_frames(self, video):
+    def __generate_frames(self, video) -> Iterator[SelectedFrame]:
         with tempfile.NamedTemporaryFile() as rf:
             with tempfile.NamedTemporaryFile() as tf:
                 tf.write(video.read())
                 logging.info(tf.name)
-                vid_resize(tf.name, rf.name, 480)
+                resize_video(tf.name, rf.name, 480)
                 logging.info(rf)
 
             # Loads the video in to opencvs capture
@@ -85,10 +85,7 @@ class StructuralSimilaritySelector(FrameSelector):
 
             start_time = time.time()
             count = 1
-            yield {
-                "frame_number": count,
-                "image": image,
-            }
+            yield SelectedFrame(count, image)
             analyze_count = 1
             first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
@@ -103,10 +100,7 @@ class StructuralSimilaritySelector(FrameSelector):
                     score = structural_similarity(first_gray, new_gray, full=False)
                     logging.info(f"Similarity Score: {score*100:.3f}%")
                     if score * 100 < self.SIMILARITY_LIMIT:
-                        yield {
-                            "frame_number": count,
-                            "image": newframe,
-                        }
+                        yield SelectedFrame(count, newframe)
                         analyze_count += 1
                         first_gray = new_gray
                 count += self.FRAME_SKIP
@@ -118,7 +112,6 @@ class StructuralSimilaritySelector(FrameSelector):
         logging.info(
             f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
         )
-        return
 
 
 class LiveSelector(FrameSelector):
@@ -139,7 +132,7 @@ class LiveSelector(FrameSelector):
         "select_frames() but for streaming data."
         return list(self.__generate_frames(video))
 
-    def __generate_frames(self, frame_list):
+    def __generate_frames(self, frame_list) -> Iterator[SelectedFrame]:
         im = base64.b64decode(frame_list[0].split(",")[1])
         image = np.array(Image.open(BytesIO(im)))
         start_time = time.time()
@@ -158,7 +151,6 @@ class LiveSelector(FrameSelector):
             if score * 100 < self.SIMILARITY_LIMIT:
                 yield {
                     "image": image,
-                    # "results": analyze_frame(convert_frame_to_bin(image)),
                 }
                 first_gray = new_gray
                 analyze_count = 1
@@ -166,7 +158,6 @@ class LiveSelector(FrameSelector):
         else:
             yield {
                 "image": image,
-                # "results": analyze_frame(convert_frame_to_bin(image)),
             }
             analyze_count = 1
             self.most_recent_frame = image

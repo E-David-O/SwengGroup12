@@ -1,2 +1,3 @@
 [FORMAT]
 max-line-length=240
+disable=W1203,R0903

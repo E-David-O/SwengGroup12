@@ -7,7 +7,7 @@ import os
 import tempfile
 import time
 from io import BytesIO
-from typing import NamedTuple
+from typing import Any, List, NamedTuple
 
 import cv2
 import frameselector
@@ -33,20 +33,30 @@ class Video(NamedTuple):
     frameRate: str
 
 
+class ResultResponse(NamedTuple):
+    "Returned to the frontend."
+    frame_number: int
+    image: str
+    results: Any
+
+
 @app.route("/upload", methods=["POST"])
 def upload():
     "Receives an uploaded video to be analyzed."
     uploaded_file = Video(
         request.files["video"], request.form["resolution"], request.form["frameRate"]
     )
-    results = frameselector.StructuralSimilaritySelector().select_frames(
+    frames = frameselector.StructuralSimilaritySelector().select_frames(
         uploaded_file.video
     )
-    for entry in results:
-        entry["results"] = analyze_frame(convert_frame_to_bin(entry["image"]))
-        result = entry["results"]
-        entry["results"] = result["results"]
-        entry["image"] = result["image"]
+    results: List[ResultResponse] = []
+    for frame in frames:
+        analysis_result = analyze_frame(convert_frame_to_bin(frame.image))
+        results.append(
+            ResultResponse(
+                frame.frame_number, analysis_result.image, analysis_result.results
+            )
+        )
     return Response(json.dumps(results), mimetype="application/json")
 
 
@@ -54,22 +64,31 @@ def upload():
 def upload_live():
     "Receives a live stream of video data to be analyzed."
     uploaded_file = request.form.getlist("files")
-    results = frameselector.LiveSelector().select_frames(uploaded_file)
-    for entry in results:
-        entry["results"] = analyze_frame(convert_frame_to_bin(entry["image"]))
-        result = entry["results"]
-        entry["results"] = result["results"]
-        entry["image"] = result["image"]
+    frames = frameselector.LiveSelector().select_frames(uploaded_file)
+    results: List[ResultResponse] = []
+    for frame in frames:
+        analysis_result = analyze_frame(convert_frame_to_bin(frame.image))
+        results.append(
+            ResultResponse(
+                frame.frame_number, analysis_result.image, analysis_result.results
+            )
+        )
     return Response(json.dumps(results), mimetype="application/json")
 
 
-def convert_frame_to_bin(frame):
+def convert_frame_to_bin(frame) -> str:
     "Returns the data of JPEG file in base-64."
     _, imdata = cv2.imencode(".jpg", frame)
     return json.dumps({"image": base64.b64encode(imdata).decode("ascii")})
 
 
-def analyze_frame(frame):
+class AnalysisResult(NamedTuple):
+    "Returned by analyze_frame."
+    results: Any
+    image: str
+
+
+def analyze_frame(frame) -> AnalysisResult:
     "Uses the YOLOv8 model to detect objects in a base-64 encoded frame."
 
     load = json.loads(frame)
@@ -93,4 +112,4 @@ def analyze_frame(frame):
                 }
                 list_of_results.append(data)
     logging.info(list_of_results)
-    return {"results": list_of_results, "image": boxed_image}
+    return AnalysisResult(list_of_results, boxed_image)
