@@ -126,12 +126,12 @@ input[type="password"] {
   background-color: #fff; /* Ensure background is light for contrast */
 }
 
-
 button {
   width: calc(100% - 20px); /* Adjust button width to account for padding */
   padding: 12px;
   border: 1px;
   border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   background-color: #007bff;
   color: black;
   font-size: 16px;
