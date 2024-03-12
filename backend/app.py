@@ -101,7 +101,7 @@ def frames(video_id):
 def results(video_id):
     return { "total-score": [], "frame-scores": [] }
 
-model = YOLO('yolov8n.pt')
+model = YOLO('yolov8x.pt')
 
 def vid_resize(vid_path, output_path, width):
     '''
