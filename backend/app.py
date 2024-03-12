@@ -82,14 +82,12 @@ def upload():
     # }
     # analyse_video = chain(select_frames.s(data), analyze_task.s())
     # taks_id = analyse_video.apply_async()
-    print(results, file=sys.stderr)
     return Response(json.dumps(results),  mimetype='application/json')
 
 @app.route("/uploadLive", methods=['POST'])
 def upload_live():
     uploaded_file = request.form.getlist('files')
     results = select_frames_live(uploaded_file)
-    print(results, file=sys.stderr)
     return Response(json.dumps(results),  mimetype='application/json')
 
 @app.route("/frames/<uuid:video_id>")
@@ -152,7 +150,7 @@ def analyze_task(frame):
     return dict
 FRAME_SKIP = 30                                     #Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
 SIMILARITY_LIMIT = 80                               #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
-SIMILARITY_LIMIT_LIVE = 40                             #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+SIMILARITY_LIMIT_LIVE = 65                           #The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
 # def insert_frame_info_to_db(frame_data):
 #     try:
 #         connection, cursor = connect_to_database()
@@ -273,7 +271,7 @@ def select_frames_live(frame_list):
         first_gray = cv2.cvtColor(cv2.resize(most_recent_frame, (300,300) ), cv2.COLOR_BGR2GRAY)
         score = structural_similarity(first_gray, new_gray, full=False)        #Structural similarity test.
         print("Similarity Score: {:.3f}%".format(score * 100), file=sys.stderr)
-        if score * 100 < SIMILARITY_LIMIT:
+        if score * 100 < SIMILARITY_LIMIT_LIVE:
             data = {
                 'results' : analyze_task.delay(convert_frame_to_bin(image)),
             }
@@ -299,7 +297,7 @@ def select_frames_live(frame_list):
             new_gray = cv2.cvtColor(cv2.resize(newframe, (300,300)), cv2.COLOR_BGR2GRAY)                  #Convert current frame to grayscale (needed for structural similarity check)
             score = structural_similarity(first_gray, new_gray, full=False)        #Structural similarity test.
             print("Similarity Score: {:.3f}%".format(score * 100), file=sys.stderr)
-            if score * 100 < SIMILARITY_LIMIT:
+            if score * 100 < SIMILARITY_LIMIT_LIVE:
                 data = {
                     'results' : analyze_task.delay(convert_frame_to_bin(newframe)),
                 }

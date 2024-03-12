@@ -83,7 +83,7 @@ function LiveVideo() {
                 });  
             }
           }
-      }, 100);
+      }, 50);
       return () => clearInterval(interval);
   }, [capturing, recordedChunks, results, data, setResults, setMostRecent, setRecordedChunks]); 
 
