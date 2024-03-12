@@ -13,7 +13,7 @@ function LoginPage() {
   return (
     <div className="login-container">
       <form onSubmit={handleSubmit}>
-        <h2>Login</h2>
+        <h2 className="login">Login</h2>
         <div>
           <label htmlFor="email">Email</label>
           <input

@@ -9,13 +9,14 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #d4d4d4;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 /*
 a {
   font-weight: 500;
@@ -75,39 +76,57 @@ button:focus-visible {
   max-width: 400px;
   margin: 100px auto;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  background-color: white; /* Set the background to white */
+  border-radius: 10px; /* More pronounced rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slight shadow for 3D effect */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.login-container:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
 }
 
 form > div {
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Increase space between form elements */
 }
 
 label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 10px; /* Increase space below the label */
+  font-size: 14px; /* Adjust label font size */
+  color: #333; /* Darker text for better readability */
+}
+
+.login {
+  color: #333;
 }
 
 input[type="email"],
 input[type="password"] {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 10px; /* Slightly larger padding for input fields */
+  margin-bottom: 15px; /* Increase bottom margin */
+  border: 1px solid #ddd; /* Lighter border color */
+  border-radius: 5px; /* Rounded corners for input fields */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle inner shadow */
 }
 
 button {
   width: 100%;
-  padding: 10px;
+  padding: 12px; /* Slightly larger padding for better clickability */
   border: none;
   border-radius: 5px;
   background-color: #007bff;
   color: white;
+  font-size: 16px; /* Larger font size for button text */
+  letter-spacing: 1px; /* Space out letters slightly */
   cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth background color transition */
 }
 
 button:hover {
   background-color: #0056b3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Slight shadow on hover */
 }
+
 
