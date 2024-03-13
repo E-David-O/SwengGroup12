@@ -1,4 +1,34 @@
 services:
+<<<<<<< HEAD
+=======
+  beam-dev:
+    image: python:3.8-slim
+    volumes:
+      - ./beam:/app # Adjust the volume to where your Beam scripts are located
+    working_dir: /app
+    command: bash -c "pip install apache-beam[gcp] && python your_beam_script.py" # Install Apache Beam and run your script
+    networks:
+      - backnet
+
+# volumes:
+#   postgres_db_data:
+
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    networks:
+      - backnet
+      - frontnet
+  
+  redis:
+    image: redis:latest
+    hostname: redis
+    networks:
+      - backnet
+      - frontnet
+>>>>>>> 17ff0a9 (removed airflow and added apache beam to compose file)
   backend:
     build:
       context: ./backend
