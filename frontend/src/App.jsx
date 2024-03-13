@@ -15,11 +15,11 @@ function App() {
           <Route path="*" element={<VideoUpload />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/objectaccuracy" element={
-  <ObjectAccuracy objectAccuracyData={[
-    { object: 'Cat', accuracy: 98.5 },
-    { object: 'Dog', accuracy: 89.7 }
-  ]}/>
-}/>
+            <ObjectAccuracy objectAccuracyData={[
+              { object: 'Cat', accuracy: 98.5 },
+              { object: 'Dog', accuracy: 89.7 }
+            ]}/>
+          }/>
 
           <Route path="/video" element={<VideoUpload />} />
           <Route path="/live" element={<LiveVideo />} />
