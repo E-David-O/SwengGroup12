@@ -67,9 +67,13 @@ function SingleVideoUpload({ video }) {
             formData.append("frameRate", frameRate);
             video.uploaded = true;
             setIsUploaded(true);
+            let url = "http://localhost:8000/upload";
+            if(video.youtube) {
+                url = url + "/youtube";
+            }
             axios({
                 method: 'post',
-                url: "http://localhost:8000/upload",
+                url: url,
                 data: formData,
                 headers: {'Content-Type': 'multipart/form-data' }
             })

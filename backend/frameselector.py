@@ -55,8 +55,6 @@ class StructuralSimilaritySelector(FrameSelector):
     FRAME_SKIP = 30
     # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
     SIMILARITY_LIMIT = 80
-    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
-    SIMILARITY_LIMIT_LIVE = 40
 
     def select_frames(self, video) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
@@ -126,10 +124,9 @@ class LiveSelector(FrameSelector):
 
     # Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
     FRAME_SKIP = 30
+   
     # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
-    SIMILARITY_LIMIT = 80
-    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
-    SIMILARITY_LIMIT_LIVE = 40
+    SIMILARITY_LIMIT_LIVE = 65
 
     def __init__(self) -> None:
         super().__init__()
@@ -155,7 +152,7 @@ class LiveSelector(FrameSelector):
             # Structural similarity test.
             score = structural_similarity(first_gray, new_gray, full=False)
             logging.info(f"Similarity Score: {score*100:.3f}%")
-            if score * 100 < self.SIMILARITY_LIMIT:
+            if score * 100 < self.SIMILARITY_LIMIT_LIVE:
                 yield {
                     "image": image,
                     # "results": analyze_frame(convert_frame_to_bin(image)),
@@ -187,7 +184,7 @@ class LiveSelector(FrameSelector):
                 # Structural similarity test.
                 score = structural_similarity(first_gray, new_gray, full=False)
                 logging.info(f"Similarity Score: {score*100:.3f}%")
-                if score * 100 < self.SIMILARITY_LIMIT:
+                if score * 100 < self.SIMILARITY_LIMIT_LIVE:
                     yield {
                         "image": newframe,
                         # "results": analyze_frame(convert_frame_to_bin(newframe)),
@@ -201,3 +198,66 @@ class LiveSelector(FrameSelector):
         logging.info(
             f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
         )
+
+class YoutubeSelector(FrameSelector):
+    "Uses OpenCV structural similarity to skip similar frames."
+
+    # Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
+    FRAME_SKIP = 30
+    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+    SIMILARITY_LIMIT = 80
+    
+
+    def select_frames(self, video) -> List[SelectedFrame]:
+        "Selects frames from a video, using structural similarity to ignore similar frames."
+        return list(self.__generate_frames(video))
+
+    def __generate_frames(self, video):
+        vidcap = cv2.VideoCapture(video.url)
+        if not vidcap.isOpened:
+            logging.error("Video broken")
+            return
+        while True:
+            success, image = vidcap.read()
+            if image is None:
+                logging.error("Image broken")
+                return
+            if success:
+                break
+
+        start_time = time.time()
+        count = 1
+        yield {
+            "frame_number": count,
+            "image": image,
+        }
+        analyze_count = 1
+        first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        while success:
+            success, image = vidcap.read()
+            newframe = image
+            logging.info(f"Read frames read: {count}")
+            if count > 1 and newframe is not None:
+                # Convert current frame to grayscale (needed for structural similarity check)
+                new_gray = cv2.cvtColor(newframe, cv2.COLOR_BGR2GRAY)
+                # Structural similarity test.
+                score = structural_similarity(first_gray, new_gray, full=False)
+                logging.info(f"Similarity Score: {score*100:.3f}%")
+                if score * 100 < self.SIMILARITY_LIMIT:
+                    yield {
+                        "frame_number": count,
+                        "image": newframe,
+                    }
+                    analyze_count += 1
+                    first_gray = new_gray
+            count += self.FRAME_SKIP
+            # Skip ahead 30 frames from current frame
+            vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
+
+        end_time = time.time()
+        run_time = end_time - start_time
+        logging.info(
+            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+        )
+        return

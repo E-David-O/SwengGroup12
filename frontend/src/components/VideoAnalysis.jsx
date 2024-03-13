@@ -1,17 +1,23 @@
 import { useContext, useMemo, useRef, useState} from "react";
 import Navbar from "./Navbar";
-import { useParams} from "react-router-dom";
+import { useLocation, useParams} from "react-router-dom";
 import axios from "axios";
 import { VideoContext } from "./VideoUtil";
 import VideoJS from "./VideoPlayer";
 import videojs from "video.js";
-
+import "videojs-youtube";
 
 function VideoAnalysis() {
-        const title = useParams();
+        //const title = window.location.pathname.split("/").slice(-1).toString();
+        const test = useLocation();
+        const title = test.pathname.split("/").slice(-1).toString() + test.search;
+        console.log(test);
         const { videos, resultList } = useContext(VideoContext);
-        const results = resultList.find((r) => r.name === title.id).results || []; // Ensure results is an array
-        const video = videos.find((video) => video.name === title.id);
+        console.log(videos);
+        console.log(resultList);
+        console.log(title)
+        const results = resultList.find((r) => r.name === title).results || []; // Ensure results is an array
+        const video = videos.find((video) => video.name === title);
         const playerRef = useRef(null);
         const [currentTime, setCurrentTime] = useState(0);
         const [percentComplete, setPercentComplete] = useState(0);
@@ -75,21 +81,37 @@ function VideoAnalysis() {
                     console.log("player will dispose");
                 });
             };
-        const videoJsOptions = {
-                controls: true,
-                preload: 'auto',
-                responsive: true,
-                fluid: true,
-                sources: [{
-                        src: URL.createObjectURL(video.file),
-                        type: 'video/mp4'
-                }]
+        let videoJsOptions;
+        if(!video.youtube) {
+                videoJsOptions = {
+                        controls: true,
+                        preload: 'auto',
+                        responsive: true,
+                        fluid: true,
+                        sources: [{
+                                src: URL.createObjectURL(video.file),
+                                type: 'video/mp4'
+                        }]
+                }
+        } else {
+                videoJsOptions = {
+                        controls: true,
+                        preload: 'auto',
+                        responsive: true,
+                        fluid: true,
+                        sources: [
+                                {
+                                  type: "video/youtube",
+                                  src: video.file
+                                }
+                              ],
+                        techOrder: ["youtube"]
+                }
         }
-
         return (
                 <>
                         <Navbar />
-                        <h3>Analysis for {title.id}</h3>
+                        <h3>Analysis for {title}</h3>
                         <VideoJS  options={videoJsOptions} onReady={handlePlayerReady} />
                         {videojs.getPlayer('my-player') ? 
                                 <div>

@@ -22,7 +22,8 @@
     "react-router-dom": "^6.19.0",
     "react-webcam": "^7.2.0",
     "socket.io-client": "^4.7.4",
-    "video.js": "^8.10.0"
+    "video.js": "^8.10.0",
+    "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",

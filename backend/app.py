@@ -8,7 +8,7 @@ import tempfile
 import time
 from io import BytesIO
 from typing import NamedTuple
-
+from pytube import YouTube
 import cv2
 import frameselector
 from flask import Flask, Response, request
@@ -41,6 +41,22 @@ def upload():
     )
     results = frameselector.StructuralSimilaritySelector().select_frames(
         uploaded_file.video
+    )
+    for entry in results:
+        entry["results"] = analyze_frame(convert_frame_to_bin(entry["image"]))
+        result = entry["results"]
+        entry["results"] = result["results"]
+        entry["image"] = result["image"]
+    return Response(json.dumps(results), mimetype="application/json")
+
+@app.route("/upload/youtube", methods=["POST"])
+def uploadYoutube():
+    "Receives an uploaded video to be analyzed."
+    url = request.form["video"]
+    yt = YouTube(url)
+    stream = yt.streams.filter(file_extension="mp4", res=480).first()
+    results = frameselector.YoutubeSelector().select_frames(
+        stream
     )
     for entry in results:
         entry["results"] = analyze_frame(convert_frame_to_bin(entry["image"]))
