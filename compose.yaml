@@ -1,4 +1,6 @@
 services:
+<<<<<<< HEAD
+=======
   beam-dev:
     image: python:3.8-slim
     volumes:
@@ -7,6 +9,9 @@ services:
     command: bash -c "pip install apache-beam[gcp] && python your_beam_script.py" # Install Apache Beam and run your script
     networks:
       - backnet
+
+# volumes:
+#   postgres_db_data:
 
   rabbitmq:
     image: 'rabbitmq:3-management'
@@ -23,7 +28,24 @@ services:
     networks:
       - backnet
       - frontnet
+>>>>>>> 17ff0a9 (removed airflow and added apache beam to compose file)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:5000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - backnet
+      - frontnet
 
+networks:
+  backnet:
+    driver: bridge
+  frontnet:
+    driver: bridgeservices:
   backend:
     build:
       context: ./backend
