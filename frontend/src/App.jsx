@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router-dom";
 import LiveVideo from './components/LiveVideo';
 import LoginPage from './components/LoginPage';
 import VideoAnalysis from './components/VideoAnalysis';
+import ObjectAccuracy from './components/ObjectAccuracy';
 function App() {
   
   return (
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path="*" element={<VideoUpload />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/objectaccuracy" element={<ObjectAccuracy objectAccuracyData={"hi"} />}/>
           <Route path="/video" element={<VideoUpload />} />
           <Route path="/live" element={<LiveVideo />} />
           <Route path="/analysis/:id" element={<VideoAnalysis />}/>
