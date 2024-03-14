@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState,  createContext } from "react";
+import { useState,  createContext, useEffect } from "react";
 import './typedef'
 
 export const VideoContext = createContext();
@@ -10,6 +10,17 @@ export const VideoProvider = ({children }) => {
     const [videos, setVideos] = useState([]);
     const [resultList, setResultList] = useState([{}])
     const [token, setToken] = useState("")
+
+    useEffect(() => {
+        localStorage.setItem("username", JSON.stringify(token));
+    }, [token]);
+
+    useEffect(() => {
+      const username = JSON.parse(localStorage.getItem("username"));
+      if (username != "") {
+        setToken(username);
+      }
+  }, [token]);
 
   return (
     <VideoContext.Provider value={{ videos, setVideos, resultList, setResultList, token, setToken }}>

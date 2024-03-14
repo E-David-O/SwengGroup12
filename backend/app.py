@@ -47,7 +47,10 @@ def upload():
         result = entry["results"]
         entry["results"] = result["results"]
         entry["image"] = result["image"]
-    return Response(json.dumps(results), mimetype="application/json")
+    toReturn = {
+        "results": results,
+    }
+    return Response(json.dumps(toReturn), mimetype="application/json")
 
 @app.route("/upload/youtube", methods=["POST"])
 def uploadYoutube():
@@ -63,7 +66,11 @@ def uploadYoutube():
         result = entry["results"]
         entry["results"] = result["results"]
         entry["image"] = result["image"]
-    return Response(json.dumps(results), mimetype="application/json")
+    toReturn = {
+        "results": results,
+        "fps" : stream.fps,
+    }
+    return Response(json.dumps(toReturn), mimetype="application/json")
 
 
 @app.route("/uploadLive", methods=["POST"])

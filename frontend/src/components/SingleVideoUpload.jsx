@@ -82,7 +82,7 @@ function SingleVideoUpload({ video }) {
                 video.analysed = true;
                 setIsAnalyzed(true);
                 console.log(response.data);
-                setResultList([...resultList, { name: video.name, results: response.data }]);
+                setResultList([...resultList, { name: video.name, results: response.data.results, fps: response.data.fps}]);
                 })
             .catch(function (error) {
                 // handle error

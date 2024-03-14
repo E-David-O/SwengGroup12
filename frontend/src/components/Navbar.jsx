@@ -4,6 +4,7 @@ import {
 import { useContext, useState } from "react";
 import { VideoContext } from "./VideoUtil";
 import { Link } from "react-router-dom";
+import axios from "axios";
 function Navbar() {
     const [open, setOpen] = useState(false);
     const { token, setToken } = useContext(VideoContext);
@@ -13,7 +14,17 @@ function Navbar() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        setToken("");
+        axios.post("http://localhost:8000/logout")
+        .then((response) => {
+            if(response.status === 200) {
+                setToken("");
+            }
+        })
+        .catch(function (error) {
+            alert("Error logging out");
+            console.log(error);
+        });
+        
     }
 
 

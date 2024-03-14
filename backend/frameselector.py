@@ -80,12 +80,12 @@ class StructuralSimilaritySelector(FrameSelector):
                     return
                 if success:
                     break
-
+            
             start_time = time.time()
             count = 1
             yield {
                 "frame_number": count,
-                "image": image,
+                "image": cv2.cvtColor(image, cv2.COLOR_BGR2RGB),
             }
             analyze_count = 1
             first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -103,7 +103,7 @@ class StructuralSimilaritySelector(FrameSelector):
                     if score * 100 < self.SIMILARITY_LIMIT:
                         yield {
                             "frame_number": count,
-                            "image": newframe,
+                            "image": cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB),
                         }
                         analyze_count += 1
                         first_gray = new_gray
@@ -229,7 +229,7 @@ class YoutubeSelector(FrameSelector):
         count = 1
         yield {
             "frame_number": count,
-            "image": image,
+            "image": cv2.cvtColor(image, cv2.COLOR_BGR2RGB),
         }
         analyze_count = 1
         first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -247,7 +247,7 @@ class YoutubeSelector(FrameSelector):
                 if score * 100 < self.SIMILARITY_LIMIT:
                     yield {
                         "frame_number": count,
-                        "image": newframe,
+                        "image": cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB),
                     }
                     analyze_count += 1
                     first_gray = new_gray
