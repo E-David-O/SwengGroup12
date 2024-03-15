@@ -1,11 +1,9 @@
 # SwengGroup12
-Optimised Live Video Analytics at Scale TCD Software Engineering Project
-=======
-# React + Vite
+Optimised Live Video Analytics at Scale (TCD Software Engineering Project)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Steps to run the application
+1. Run `docker compose up --build` from the repository root (the folder with the compose.yaml file).
+2. Go to [/frontend](/frontend) folder.
+3. Run `npm install`.
+4. Run `npm run dev`.
+5. Go to <http://localhost:3000/> to access the app.

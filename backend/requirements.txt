@@ -6,5 +6,6 @@ ultralytics
 numpy
 Pillow
 psycopg2-binary
-
-
+ffmpeg-python
+scikit-image
+opencv-python
