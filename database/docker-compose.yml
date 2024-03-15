@@ -19,6 +19,24 @@ services:
       - ./postgresql.conf:/etc/postgresql/postgresql.conf  # Mount the custom configuration file
     command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
 
+  minio:
+    image: docker.io/bitnami/minio:2022
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    networks:
+      db-network:
+        ipv4_address: 172.20.0.50 
+    volumes:
+      - 'minio_data:/data'
+    environment:
+      - MINIO_ROOT_USER=minioConnect
+      - MINIO_ROOT_PASSWORD=connectMinio
+      - MINIO_DEFAULT_BUCKETS=videos
+      - MINIO_ACCESS_KEY=minioConnect
+      - MINIO_SECRET_KEY=connectMinio
+
+
   database-setup:
     build:
       context: .
@@ -32,6 +50,8 @@ services:
 
 volumes:
   db_data:
+  minio_data:
+    driver: local
 
 networks:
   db-network:
