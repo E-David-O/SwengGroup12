@@ -15,21 +15,4 @@ networks:
   backnet:
     driver: bridge
   frontnet:
-    driver: bridgeservices:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:5000"
-    volumes:
-      - ./backend:/app
-    networks:
-      - backnet
-      - frontnet
-
-networks:
-  backnet:
-    driver: bridge
-  frontnet:
     driver: bridge
