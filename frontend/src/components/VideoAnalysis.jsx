@@ -69,9 +69,6 @@ function VideoAnalysis() {
                         setClosest(closestFrame);
                         setCurrentFrame(results.find(f => f.frame_number === closestFrame));
                         
-                        // const image = getFileFromBase64(results.find(f => f.frame_number === closestFrame).image, `thumbnail${closestFrame}.jpg`);
-                        // console.log(image);
-                        console.log(((player.duration() * fps) / results.length)/fps)
                         player.spriteThumbnails({
                                 width: 192,
                                 height: 108,

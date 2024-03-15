@@ -40,9 +40,12 @@ function VideoUpload() {
     const handleURL = async (e) =>{
         e.preventDefault();
         if (url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/)) {
-            
+            let checkURL = url;
+            if(!/^https?:\/\//i.test(checkURL)) {
+                checkURL = "https://" + url;
+            }
             let title;
-            await axios.get(`https://noembed.com/embed?dataType=json&url=${url}`)
+            await axios.get(`https://noembed.com/embed?dataType=json&url=${checkURL}`)
                 .then(res => {
                     console.log(res);
                     title = res.data.title
@@ -50,9 +53,9 @@ function VideoUpload() {
                 .catch(err => console.log(err));
             console.log(title);
             if (videos.length > 0 && videos.length < 4) {
-                setVideos([...videos, { file: url, uploaded: false, analysed: false, name: title, youtube: true }]);
+                setVideos([...videos, { file: checkURL, uploaded: false, analysed: false, name: title, youtube: true }]);
             } else if (videos.length === 0) {
-                setVideos([{ file: url, uploaded: false, analysed: false, name: title, youtube: true }]);
+                setVideos([{ file: checkURL, uploaded: false, analysed: false, name: title, youtube: true }]);
             } else {
                 alert("You can only upload 4 videos at a time");
             }
@@ -69,11 +72,7 @@ function VideoUpload() {
     
     const handleChange = (event) => {
         event.persist();
-        if (!/^https?:\/\//i.test(event.target.value)) {
-                setUrl('https://' + url);
-        } else {
-            setUrl(event.target.value);
-        }
+        setUrl(event.target.value);
     }
     
     return (
