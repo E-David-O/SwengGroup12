@@ -1,23 +1,6 @@
 services:
-  rabbitmq:
-    image: 'rabbitmq:3-management'
-    ports:
-      - '5672:5672'
-      - '15672:15672'
-    networks:
-      - backnet
-      - frontnet
-  
-  redis:
-    image: redis:latest
-    hostname: redis
-    networks:
-      - backnet
-      - frontnet
-
-
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
@@ -26,91 +9,27 @@ services:
       - ./backend:/app
     networks:
       - backnet
-      - frontnet 
-
-  db:
-    image: postgres
-    restart: unless-stopped
-    container_name: db
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=DB
-    ports:
-      - '5432:5432'
-    networks:
-      db-network:
-        ipv4_address: 172.20.0.10 
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
-      - ./database/db/pg_hba.conf:/etc/postgresql/pg_hba.conf
-      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf  # Mount the custom configuration file
-    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
-  minio:
-    image: docker.io/bitnami/minio:2022
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    networks:
-      db-network:
-        ipv4_address: 172.20.0.50 
-    volumes:
-      - 'minio_data:/data'
-    environment:
-      - MINIO_ROOT_USER=minioConnect
-      - MINIO_ROOT_PASSWORD=connectMinio
-      - MINIO_DEFAULT_BUCKETS=videos
-      - MINIO_ACCESS_KEY=minioConnect
-      - MINIO_SECRET_KEY=connectMinio
-
-  database-setup:
-    build:
-      context: ./database/
-      dockerfile: Dockerfile
-    volumes:
-      - ./database/setup.py:/app/setup.py
-    depends_on:
-      - db
-    networks:
-      - db-network
-
-  worker:
-    build:
-      context: ./backend
-      dockerfile: ./scripts/Dockerfile
-    volumes:
-      - ./backend:/app
-    links:
-      - rabbitmq
-      - redis
-    environment:
-        - CELERY_BROKER=pyamqp://rabbitmq:5672//
-    networks:
-      - backnet
-  # frontend:
-  #   build: 
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - frontnet
-
-volumes:
-  db_data:
-  minio_data:
-    driver: local 
+      - frontnet
 
 networks:
   backnet:
     driver: bridge
   frontnet:
-     driver: bridge
-  db-network:
+    driver: bridgeservices:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:5000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - backnet
+      - frontnet
+
+networks:
+  backnet:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24
-
-
+  frontnet:
+    driver: bridge
