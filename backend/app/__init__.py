@@ -20,7 +20,7 @@ from werkzeug.datastructures import FileStorage
 from . import auth, frameselector, db
 
 
-def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
+def create_app(test_config = None) -> Flask:
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     CORS(app)
@@ -67,7 +67,10 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
             }
             for analysed, frame in zip(analysis_results, frames)
         ]
-        return Response(json.dumps(response), mimetype="application/json")
+        toReturn = {
+            "results": response,
+        }
+        return Response(json.dumps(toReturn), mimetype="application/json")
 
     @app.route("/uploadLive", methods=["POST"])
     def upload_live() -> Response:
@@ -93,16 +96,22 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
         url = request.form["video"]
         yt = YouTube(url)
         stream = yt.streams.filter(file_extension="mp4", res=480).first()
-        results = frameselector.YoutubeSelector().select_frames(
+        frames = frameselector.YoutubeSelector().select_frames(
             stream
         )
-        for entry in results:
-            entry["results"] = analyze_frame(convert_frame_to_bin(entry["image"]))
-            result = entry["results"]
-            entry["results"] = result["results"]
-            entry["image"] = result["image"]
+        analysis_results = [
+            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+        ]
+        response: list[AnalysisResponse] = [
+            {
+                "frame_number": frame.frame_number,
+                "results": analysed.results,
+                "image": analysed.image,
+            }
+            for analysed, frame in zip(analysis_results, frames)
+        ]
         toReturn = {
-            "results": results,
+            "results": response,
             "fps" : stream.fps,
         }
         return Response(json.dumps(toReturn), mimetype="application/json")

@@ -8,7 +8,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from io import BytesIO
-from typing import Iterator, List, Optional
+from typing import Iterator, List
 
 import cv2
 import ffmpeg  # type: ignore
@@ -40,7 +40,7 @@ def vid_resize(vid_path: str, output_path: str, width: int):
 @dataclass
 class SelectedFrame:
     "The metadata of a selected frame."
-    frame_number: Optional[int] 
+    frame_number: int | None
     image: NDArray[np.uint8]
 
 
@@ -130,12 +130,12 @@ class LiveSelector(FrameSelector):
         super().__init__()
         self.most_recent_frame = None
 
-    def select_frames(self, video) -> List[SelectedFrame]:
+    def select_frames(self, video: list[str] | FileStorage) -> List[SelectedFrame]:
         "select_frames() but for streaming data."
         assert isinstance(video, list)
         return list(self.__generate_frames(video))
 
-    def __generate_frames(self, frame_list) -> Iterator[SelectedFrame]:
+    def __generate_frames(self, frame_list: list[str]) -> Iterator[SelectedFrame]:
         im = base64.b64decode(frame_list[0].split(",")[1])
         image = np.array(Image.open(BytesIO(im)))
         start_time = time.time()
