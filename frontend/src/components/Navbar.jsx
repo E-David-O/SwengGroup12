@@ -14,7 +14,7 @@ function Navbar() {
 
     const handleLogout = (e) => {
         e.preventDefault();
-        axios.post("http://localhost:8000/logout")
+        axios.post("http://localhost:8000/auth/logout")
         .then((response) => {
             if(response.status === 200) {
                 setToken("");

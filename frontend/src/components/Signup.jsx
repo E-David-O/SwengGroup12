@@ -4,7 +4,7 @@ import {Link } from 'react-router-dom';
 import { VideoContext } from './VideoUtil';
 import Navbar from './Navbar';
 
-export default function Login() {
+export default function Signup() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const {setToken} = useContext(VideoContext);
@@ -62,7 +62,7 @@ export default function Login() {
                              onChange={(e) => setPassword(e.target.value)}
                             ></input>
                         </div>
-                        <button onClick={(e) => handleSubmit(e)}id="submit-button" type="submit" className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
+                        <button onClick={(e) => handleSubmit(e)}id="submit-button" type="submit" className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign Up</button>
                        </form>
                     
                         <p className="text-sm font-light text-gray-500 dark:text-gray-400">
