@@ -3,11 +3,11 @@ import {
 } from "@ant-design/icons";
 import { useContext, useState } from "react";
 import { VideoContext } from "./VideoUtil";
-import { Link } from "react-router-dom";
+import { Link} from "react-router-dom";
 import axios from "axios";
 function Navbar() {
     const [open, setOpen] = useState(false);
-    const { token, setToken } = useContext(VideoContext);
+    const { token, deleteData, logout } = useContext(VideoContext);
     const handleClick = () => {
         setOpen(!open);
     };
@@ -17,7 +17,7 @@ function Navbar() {
         axios.post("http://localhost:8000/logout")
         .then((response) => {
             if(response.status === 200) {
-                setToken("");
+                logout();
             }
         })
         .catch(function (error) {
@@ -25,6 +25,12 @@ function Navbar() {
             console.log(error);
         });
         
+    }
+
+    const handleClearCache = (e) => {
+        e.preventDefault();
+        deleteData();
+       
     }
 
 
@@ -54,7 +60,7 @@ return (
             </li>
             : 
             <li>
-                <Link onClick={(e) => handleLogout(e)} to="/" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Logout</Link>
+                <Link onClick={(e) => handleLogout(e)} to="/video" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Logout</Link>
             </li>
 
             }
@@ -64,6 +70,10 @@ return (
             <li>
             <Link to="/live" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Live Video</Link>
             </li>
+            <li>
+                <Link onClick={(e) => handleClearCache(e)} to="/video" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Clear Local Data</Link>
+            </li>
+
         </ul>
         </div>
   </div>

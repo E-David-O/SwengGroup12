@@ -82,6 +82,10 @@ function SingleVideoUpload({ video }) {
                 video.analysed = true;
                 setIsAnalyzed(true);
                 console.log(response.data);
+                let newArr = [...videos];
+                let index = newArr.findIndex((v) => v.name === video.name);
+                newArr[index] = video;
+                setVideos(newArr);
                 setResultList([...resultList, { name: video.name, results: response.data.results, fps: response.data.fps}]);
                 })
             .catch(function (error) {
