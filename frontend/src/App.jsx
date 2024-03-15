@@ -4,6 +4,8 @@ import VideoUpload from './components/VideoUpload'
 import { Route, Routes } from "react-router-dom";
 import LiveVideo from './components/LiveVideo';
 import VideoAnalysis from './components/VideoAnalysis';
+import Login from './components/Login';
+import Signup from './components/Signup';
 function App() {
   
   return (
@@ -14,6 +16,8 @@ function App() {
           <Route path="/video" element={<VideoUpload />} />
           <Route path="/live" element={<LiveVideo />} />
           <Route path="/analysis/:id" element={<VideoAnalysis />}/>
+          <Route path="/login" element={<Login />}/>
+          <Route path="/register" element={<Signup />}/>
         </Routes>
       </Suspense>
     </>
