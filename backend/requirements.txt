@@ -1,7 +1,6 @@
 flask
 flask-cors
 typing
-celery[redis]
 ultralytics
 numpy
 Pillow
