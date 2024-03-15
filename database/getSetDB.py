@@ -1,15 +1,19 @@
 import psycopg2
 import time
 import json
+import os
+from minio import Minio
+from datetime import datetime
+
 
 def connect_to_database():
-
     try:
         # Change these values according to your PostgreSQL configuration
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            host="172.20.0.10",
+            # host="172.20.0.10",
+            host="localhost",
             port="5432",
             database="DB"
         )
@@ -19,334 +23,392 @@ def connect_to_database():
         print("Error while connecting to PostgreSQL", error)
         return None, None
 
-#image metadata set get
-def set_image_metadata(vid_id, frame_res):
-    try:
-        connection, cursor = connect_to_database()
-        if connection and cursor:
-            
-            # Insert image into table
-            insert_query = """INSERT INTO Image_Metadata (id_video, frame_resolution)
-                              VALUES (%s, %s);"""
-            
-            cursor.execute(insert_query, (vid_id, frame_res))
-            
-    except (Exception, psycopg2.Error) as error:
-        if connection:
-            print("Failed to insert video into PostgreSQL table Image_Metadata", error)
-    finally:
-        if connection:
-            connection.commit()
-            cursor.close()
-            connection.close()    
 
-def get_image_metadata(vid_id):
+def connect_to_minio():
     try:
-        connection, cursor = connect_to_database()
-        if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM Image_Metadata WHERE video_id=%s;"""
-            
-            cursor.execute(get_query, (vid_id))
-            
-    except (Exception, psycopg2.Error) as error:
-        if connection:
-            print("Failed to get images using video ID from PostgreSQL table Image_Metadata", error)
-    finally:
-        if connection:
-            connection.commit()
-            cursor.close()
-            connection.close()
+        minio_client = Minio(
+            # "172.20.0.50:9000",
+            "localhost:9000",
+            access_key="minioConnect",
+            secret_key="connectMinio",
+            secure=False
+        )
+        return minio_client
+    except ResponseError as error:
+        print("MinIO error: ", error)
+        return None
 
-def get_image_metadata(id):
+
+def sendVideoToBucket():
     try:
         connection, cursor = connect_to_database()
-        if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM Image_Metadata WHERE id=%s;"""
-            
-            cursor.execute(get_query, (id))
-            
-    except (Exception, psycopg2.Error) as error:
+        minio_client = connect_to_minio()
+        if connection and cursor and minio_client:
+            video_path = "/testVideo.mp4"
+            # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format timestamp
+            # new_file_name = f"video_{timestamp}{extension}" 
+            # os.rename(video_path, new_file_name)
+            video_name = os.path.basename(video_path)
+
+            bucket_name = "videos"
+            minio_client.fput_object(bucket_name, video_name, video_path)
+
+            video_url = minio_client.presigned_get_object(bucket_name, video_name)
+
+            cursor.execute("""INSERT INTO Videos
+                        (id_account, videoLink, videoPath, fileFormat, frameRate, videoLength, frame_resolution) 
+                        VALUES (1, %s, %s, 'mp4', 30, '1 hour', '1920x1080')""", (video_url, video_path))
+
+    except(Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to get images using serial ID from PostgreSQL table Image_Metadata", error)
+            print("Error: ", erorr)
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-#analyzed frames set get
-def set_analyzed_frames(id_image):
+
+def set_user(username: str, password: str, json_auth_token: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            # Insert frame into table
-            insert_query = """INSERT INTO Analyzed_Frames (id_image)
-                              VALUES (%s);"""
-            
-            cursor.execute(insert_query, (id_image))
-            
+            input_query = """INSERT INTO Users (username, _password, jsonAuthToken)
+                        VALUES (%s, %s, %s);"""
+            cursor.execute(input_query, (username, password, json_auth_token))
+
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to insert frames using image ID into PostgreSQL table Analyzed_Frames", error)
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-def get_analyzed_frams(id_image):
+
+def set_video(account_id: int, video_path: str, file_format: str, frame_rate: int, video_length: int,
+              frame_resolution: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM Analyzed_Frames WHERE id_image=%s;"""
-            
-            cursor.execute(get_query, (id_image))
-            
+            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frameResolution)
+                        VALUES (%d, %s, %s, %d, %d, %s);"""
+            cursor.execute(input_query,
+                           (account_id, video_path, file_format, frame_rate, video_length, frame_resolution))
+
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to get frame with image ID from PostgreSQL table Analyzed_Frames", error)
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-def get_analyzed_frams(id):
+
+def set_selected_frame(id: int, video_id: int, frameNumber: int):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM Analyzed_Frames WHERE id=%s;"""
-            
-            cursor.execute(get_query, (id))
-            
+            input_query = """INSERT INTO SelectedFrame (idFrame, idVideo, frameNumber) 
+                        VALUES (%d, %d, %d);"""
+            cursor.execute(input_query, (id, video_id, frameNumber))
+
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to get frame with serial ID from PostgreSQL table Analyzed_Frames", error)
+            print("Could connect, but failed to insert data: ", error)
+        else:
+            print("Failed to connect: ", error)
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-#User Table set get
-def set_User_Table(username, _password, json):
 
+def set_analyzed_frames(idFrame: int, objectDetected: str, confidence: float, framePath: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            # Insert image into table
-            insert_query = """INSERT INTO User_Table (username, _password, json_auth_token)
-                              VALUES (%s, %s, %s);"""
-            
-            cursor.execute(insert_query, (username, password, json))
-            
-    except (Exception, psycopg2.Error) as error:
-        if connection:
-            print("Failed to insert user into PostgreSQL table User_Table", error)
-    finally:
-        if connection:
-            connection.commit()
-            cursor.close()
-            connection.close()    
+            input_query = """INSERT INTO AnalyzedFrames (idFrame, objectDetected, confidence, framePath)
+                            VALUES (%d, %s, %f, %s)"""
+            cursor.execute(input_query, (idFrame, objectDetected, confidence, framePath))
 
-def get_User_Table(username):
-    try:
-        connection, cursor = connect_to_database()
-        if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM User_Table WHERE username=%s;"""
-            
-            cursor.execute(get_query, (username))
-            
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to get user with username from PostgreSQL table User_Table", error)
+            print("Could connect, but failed to insert data: ", error)
+        else:
+            print("Failed to connect: ", error)
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-def get_User_Table(id):
-
+def set_access_log(success: int, account_id: int):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM User_Table WHERE id=%s;"""
-            
-            cursor.execute(get_query, (id))
-            
+
+           
+
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to get user with serial ID from PostgreSQL table User_Table", error)
+            print("Could connect, but failed to insert data: ", error)
+        else:
+            print("Failed to connect: ", error)
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-#Access Table set get
-def set_Access_Table(_success, id_account):
+
+# Gets the user log in information
+# parameter input -> username, user_id, is_username
+# is_username specifies if we are using the username or user_id
+# output is a json object
+def get_user(username: str, user_id: int, is_username: bool):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            # Insert image into table
-            insert_query = """INSERT INTO Access_Table (_success, id_account)
-                              VALUES (%s, %s);"""
-            
-            cursor.execute(insert_query, (_success, id_account))
-            
+
+            if is_username:
+                input_query = """SELECT * FROM Users WHERE username = %s;"""
+                cursor.execute(input_query, (username,))
+                rows = cursor.fetchall()
+                rows_as_dicts = []
+                for row in rows:
+                    row_dict = dict(zip([col.name for col in cursor.description], row))
+                    for key, value in row_dict.items():
+                        if isinstance(value, datetime):
+                            row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                    rows_as_dicts.append(row_dict)
+                json_data = json.dumps(rows_as_dicts)
+                return json_data
+            else:
+                input_query = """SELECT * FROM Users WHERE id = %d;"""
+                cursor.execute(input_query, (user_id,))
+                rows = cursor.fetchall()
+                print("fetched data")
+                rows_as_dicts = []
+                for row in rows:
+                    row_dict = dict(zip([col.name for col in cursor.description], row))
+                    for key, value in row_dict.items():
+                        if isinstance(value, datetime):
+                            row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                    rows_as_dicts.append(row_dict)
+                json_data = json.dumps(rows_as_dicts)
+                return json_data
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to insert access into PostgreSQL table Access_Table", error)
-    finally:
-        if connection:
-            connection.commit()
-            cursor.close()
-            connection.close()    
-
-def get_Access_Table(id):
-
-    try:
-        connection, cursor = connect_to_database()
-        if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM Access_Table WHERE id=%s;"""
-            
-            cursor.execute(get_query, (id))
-            
-    except (Exception, psycopg2.Error) as error:
-        if connection:
-            print("Failed to get user with serial ID from PostgreSQL table Access_Table", error)
-    finally:
-        if connection:
-            connection.commit()
-            cursor.close()
-            connection.close()
-
-def get_Access_Table(id_account):
-    
-    try:
-        connection, cursor = connect_to_database()
-        if connection and cursor:
-            
-            # Get image from table
-            get_query = """SELECT * FROM Access_Table WHERE id_account=%s;"""
-            
-            cursor.execute(get_query, (id_account))
-            
-    except (Exception, psycopg2.Error) as error:
-        if connection:
-            print("Failed to get user with account ID from PostgreSQL table Access_Table", error)
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-#Enter either as -1 to leave blank
-def get_Access_Table(lb, ub):
+
+# Gets the information for the video
+# parameter input -> video_id
+# output is a json object
+def get_video(video_id: int):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            if lb!=-1 and ub != -1:
-                # Get image from table
-                get_query = """SELECT * FROM Access_Table WHERE _timestamp >= '%s' AND _timestamp <= '%s';"""
-                
-                cursor.execute(get_query, (lb, ub))
-            
-            elif lb!=-1:
-                # Get image from table
-                get_query = """SELECT * FROM Access_Table WHERE _timestamp >= '%s';"""
-                
-                cursor.execute(get_query, (lb))
 
-            elif ub != -1:
-                # Get image from table
-                get_query = """SELECT * FROM Access_Table WHERE _timestamp <= '%s';"""
-                
-                cursor.execute(get_query, (ub))
-
-            
+            input_query = """SELECT * FROM Videos WHERE id = %d;"""
+            cursor.execute(input_query, (video_id,))
+            rows = cursor.fetchall()
+            rows_as_dicts = []
+            for row in rows:
+                row_dict = dict(zip([col.name for col in cursor.description], row))
+                for key, value in row_dict.items():
+                    if isinstance(value, datetime):
+                        row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                rows_as_dicts.append(row_dict)
+            json_data = json.dumps(rows_as_dicts)
+            return json_data
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to get user(s) with timestamp from PostgreSQL table Access_Table", error)
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close() 
+
+# Gets the frames which are tied to a particular video
+# parameter input -> video_id
+# output is a json object
+def get_frames(video_id: int):
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor:
+
+            input_query = """SELECT * FROM SelectedFrame WHERE idVideo = %d;"""
+            cursor.execute(input_query, (video_id,))
+            
+            rows = cursor.fetchall()
+
+            rows_as_dicts = []
+            for row in rows:
+                row_dict = dict(zip([col.name for col in cursor.description], row))
+                for key, value in row_dict.items():
+                    if isinstance(value, datetime):
+                        row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                rows_as_dicts.append(row_dict)
+            json_data = json.dumps(rows_as_dicts)
+            return json_data
+
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
-def returnVideoData(video_id):
-    
+def get_analyzed_objects(frame_id: int):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            
-            cursor.execute("""
-                SELECT v.id, v.id_account, v.videoLink, v.videoPath, v.fileFormat, v.frameRate, v.videoLength, v.frame_resolution,
-                sf.frameNumber,
-                af.objectDetected, af.confidence
-                FROM Videos v
-                LEFT JOIN SelectedFrame sf ON v.id = sf.id_video
-                LEFT JOIN AnalyzedFrames af ON sf.id = af.id_image
-                WHERE v.id = %s;
-            """, (video_id,))
+
+           input_query = """SELECT * FROM AnalyzedFrames WHERE idFrame = %d;"""
+           cursor.execute(input_query, (frame_id,))
 
             rows = cursor.fetchall()
 
-            video_data = {}
+            rows_as_dicts = []
             for row in rows:
-                if row[0] not in video_data:
-                    video_data[row[0]] = {
-                        'id_account': row[1],
-                        'videoLink': row[2],
-                        'videoPath': row[3],
-                        'fileFormat': row[4],
-                        'frameRate': row[5],
-                        'videoLength': row[6],
-                        'frame_resolution': row[7],
-                        'frames': []
-                    }
-                frame_number = row[8]
-                if frame_number is not None:
-                    frame_data = {
-                        'frame_no': frame_number,
-                        'objects': []
-                    }
-                    if row[9] is not None:
-                        frame_data['objects'].append({
-                            'found': row[9],
-                            'confidence': row[10]
-                        })
-                    video_data[row[0]]['frames'].append(frame_data)
-                    
-            json_output = json.dumps(list(video_data.values()), indent=4)
-            return json_output
-            
+                row_dict = dict(zip([col.name for col in cursor.description], row))
+                for key, value in row_dict.items():
+                    if isinstance(value, datetime):
+                        row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                rows_as_dicts.append(row_dict)
+            json_data = json.dumps(rows_as_dicts)
+            return json_data
+
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Failed to get user with account ID from PostgreSQL table Access_Table", error)
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
     finally:
         if connection:
             connection.commit()
             cursor.close()
             connection.close()
 
+# Returns a json object of the access log to see all login attempts
+def get_access_log():
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor:
 
+           input_query = """SELECT * FROM AccessLog;"""
+           cursor.execute(input_query)
+
+           rows = cursor.fetchall()
+
+           rows_as_dicts = []
+            for row in rows:
+                row_dict = dict(zip([col.name for col in cursor.description], row))
+                for key, value in row_dict.items():
+                    if isinstance(value, datetime):
+                        row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                rows_as_dicts.append(row_dict)
+            json_data = json.dumps(rows_as_dicts)
+            return json_data
+
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+# def set_access_log(success: int, account_id: int)
+
+
+# def template(inputs):
+#     try:
+#         connection, cursor = connect_to_database()
+#         if connection and cursor:
+#
+#            
+#
+#     except (Exception, psycopg2.Error) as error:
+#         if connection:
+#             print("Could connect, but failed to insert data: ", error)
+#         else:
+#             print("Failed to connect: ", error)
+#     finally:
+#         if connection:
+#             connection.commit()
+#             cursor.close()
+#             connection.close()
+
+def return_all_video_info(video_id: int):
+    video_info = get_video(video_id)
+    frames_info = get_frames(video_id)
+    
+    if video_info is None:
+        return None
+
+    video_data = json.loads(video_info)
+    frames_data = json.loads(frames_info)
+
+    if frames_info is None:
+        video_data["Frames"] = []
+    else:
+        video_data["Frames"] = frames_data
+
+    for frame in video_data["Frames"]:
+        frame_id = frame.get("id")
+        analyzed_objects_info = get_analyzed_objects(frame_id)
+        analyzed_objects_data = json.loads(analyzed_objects_info)
+        frame["Objects"] = analyzed_objects_data
+
+    return json.dumps({"Video": video_data})
+
+
+def main():
+    set_user("Eimhin", "12345", "temp_token")
+    print("Set the user")
+    get_user("Eimhin", 1, True)
+
+
+if __name__ == "__main__":
+    main()
