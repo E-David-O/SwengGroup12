@@ -10,9 +10,4 @@ services:
     networks:
       - backnet
       - frontnet
-
-networks:
-  backnet:
-    driver: bridge
-  frontnet:
-    driver: bridge
+      

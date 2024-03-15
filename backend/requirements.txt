@@ -1,7 +1,6 @@
 flask
 flask-cors
 typing
-celery[redis]
 ultralytics
 numpy
 Pillow
@@ -9,3 +8,4 @@ psycopg2-binary
 ffmpeg-python
 scikit-image
 opencv-python
+pytube
