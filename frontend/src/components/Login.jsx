@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useContext} from 'react';
-import {Link } from 'react-router-dom';
+import {Link, useNavigate } from 'react-router-dom';
 import { VideoContext } from './VideoUtil';
 import Navbar from './Navbar';
 
@@ -11,6 +11,8 @@ export default function Login() {
     const [noUserFound, setNoUserFound] = useState(false)
     const [passwordVisible, setPasswordVisible] = useState(false);
     const {setToken} = useContext(VideoContext);
+
+    const navigate = useNavigate();
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
@@ -43,6 +45,7 @@ export default function Login() {
         .then((response) => {
             console.log("Succesful Log-in");
             setToken(response.data.username);
+            navigate("/");
         })
         .catch(function (error) {
             // handle error
