@@ -43,7 +43,7 @@ export default function Login() {
             headers: {'Content-Type': 'multipart/form-data' }
         })
         .then((response) => {
-            console.log("Succesful Log-in");
+            console.log("Successful Log-in");
             setToken(response.data.username);
             navigate("/");
         })
