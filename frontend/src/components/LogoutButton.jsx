@@ -11,7 +11,7 @@ const LogoutButton = () => {
   
     return (
       <button
-        className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-white hover:ring-red-500 hover:ring-offset-red-200 text-white transition ease-in duration-200 text-center shadow-md hover:outline-none hover:ring-2 hover:ring-offset-2 rounded w-32 h-12"
+        className="flex items-center justify-center space-x-2 bg-red-500 hover:bg-white hover:ring-red-500 hover:ring-offset-red-200 text-white transition ease-in duration-200 text-center shadow-md hover:outline-none hover:ring-2 hover:ring-offset-2 rounded-lg w-32 h-12"
         onMouseEnter={() => setHoverOver(true)}
         onMouseLeave={() => setHoverOver(false)}
       >
