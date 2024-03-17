@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import './App.css'
-import HomePage from './components/HomePage';
+import LandingPage from './components/LandingPage';
+import UserDashboard from './components/UserDashboard';
 import VideoUpload from './components/VideoUpload';
 import { Route, Routes } from "react-router-dom";
 import LiveVideo from './components/LiveVideo';
@@ -18,9 +19,9 @@ function App() {
       <Suspense fallback={null}>
         <Routes>
           { token == "" ? 
-              <Route path="*" element={<HomePage />} />
+              <Route path="*" element={<LandingPage />} />
               : 
-              <Route path="*" element={<VideoUpload />} />
+              <Route path="*" element={<UserDashboard />} />
           }
           <Route path="/video" element={<VideoUpload />} />
           <Route path="/live" element={<LiveVideo />} />
