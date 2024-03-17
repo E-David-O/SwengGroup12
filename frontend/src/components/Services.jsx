@@ -1,0 +1,20 @@
+import Navbar from "./Navbar";
+
+/**
+ * 
+ * @returns Services component
+ * @description This component will make up the page for our "Services" page. This will explain in further detail the
+ * services our website offers along with its functionality.
+ * 
+ */
+
+function Services() {
+    return (
+        <>
+            <Navbar />
+            <h1 className="text-center text-xl">Services</h1>
+        </>
+    );
+}
+
+export default Services;

@@ -10,6 +10,9 @@ import { VideoContext } from "./components/VideoUtil";
 import { useContext } from "react";
 import Login from './components/Login';
 import Signup from './components/Signup';
+import Services from './components/Services';
+import About from './components/About';
+import Contact from './components/Contact';
 
 function App() {
   const { token, deleteData, logout } = useContext(VideoContext);
@@ -18,16 +21,25 @@ function App() {
     <>
       <Suspense fallback={null}>
         <Routes>
+          
+          <Route path="/services" element={<Services />}/>
+          <Route path="/about" element={<About />}/>
+          <Route path="/contact" element={<Contact />}/>
+        
           { token == "" ? 
-              <Route path="*" element={<LandingPage />} />
+              <>
+                <Route path="*" element={<LandingPage />} />
+                <Route path="/login" element={<Login />}/>
+                <Route path="/register" element={<Signup />}/>
+              </>
               : 
-              <Route path="*" element={<UserDashboard />} />
+              <>
+                <Route path="*" element={<UserDashboard />} />
+                <Route path="/video" element={<VideoUpload />} />
+                <Route path="/live" element={<LiveVideo />} />
+                <Route path="/analysis/:id" element={<VideoAnalysis />}/>
+              </>
           }
-          <Route path="/video" element={<VideoUpload />} />
-          <Route path="/live" element={<LiveVideo />} />
-          <Route path="/analysis/:id" element={<VideoAnalysis />}/>
-          <Route path="/login" element={<Login />}/>
-          <Route path="/register" element={<Signup />}/>
         </Routes>
       </Suspense>
     </>
