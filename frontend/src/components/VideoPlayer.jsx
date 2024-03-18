@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
+
 export const VideoJS = (props) => {
     const videoReference = useRef(null);
     const playerReference = useRef(null);
@@ -17,6 +18,7 @@ export const VideoJS = (props) => {
              videojs.log('Video player is ready');
              onReady && onReady(player);
           });
+          
        }
     }, [options, videoReference]);
  

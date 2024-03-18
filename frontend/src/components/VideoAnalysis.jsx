@@ -18,7 +18,6 @@ function VideoAnalysis() {
         } else {
                 fps = 59.97;
         }
-       
         const video = videos.find((video) => video.name === title);
         const playerRef = useRef(null);
         const [currentTime, setCurrentTime] = useState(0);
