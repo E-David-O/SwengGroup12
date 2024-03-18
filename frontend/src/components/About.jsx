@@ -13,7 +13,7 @@ function About() {
     return (
         <>
             <Navbar />
-            <h1 className="text-center text-xl">About the team</h1>
+            <h1 className="text-center text-2xl font-bold py-4">SWENG Group 12</h1>
             <Footer />
         </>
     );

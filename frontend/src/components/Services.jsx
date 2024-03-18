@@ -13,7 +13,7 @@ function Services() {
     return (
         <>
             <Navbar />
-            <h1 className="text-center text-xl">Services</h1>
+            <h1 className="text-center text-2xl font-bold">Our Services</h1>
             <Footer />
         </>
     );
