@@ -4,7 +4,7 @@ import {Link, useNavigate } from 'react-router-dom';
 import { VideoContext } from './VideoUtil';
 import Navbar from './Navbar';
 
-export default function Login() {
+export default function Signup() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [inputError, setInputError] = useState({ username: false, password: false });
@@ -119,6 +119,7 @@ export default function Login() {
                             
                         </div>
                     </div>
+
                 </div>
             </div>
         </>

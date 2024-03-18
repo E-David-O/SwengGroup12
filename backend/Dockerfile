@@ -13,4 +13,5 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 EXPOSE 5000
 COPY . .
+RUN flask --app app init-db
 CMD ["flask", "--app", "app", "run"]
