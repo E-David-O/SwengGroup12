@@ -1,4 +1,5 @@
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 /**
  * 
@@ -13,6 +14,7 @@ function Services() {
         <>
             <Navbar />
             <h1 className="text-center text-xl">Services</h1>
+            <Footer />
         </>
     );
 }

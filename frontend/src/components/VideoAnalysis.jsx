@@ -1,5 +1,6 @@
 import { useContext, useMemo, useRef, useState} from "react";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 import { useLocation} from "react-router-dom";
 import { VideoContext } from "./VideoUtil";
 import VideoJS from "./VideoPlayer";
@@ -147,6 +148,7 @@ function VideoAnalysis() {
                                         
                                 </div>
                         : null }
+                        <Footer />
                 </>
         );
 }

@@ -1,4 +1,5 @@
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 import { useState, useRef, useContext} from "react";
 import SingleVideoUpload from "./SingleVideoUpload";
 import { VideoContext } from "./VideoUtil";
@@ -115,7 +116,7 @@ function VideoUpload() {
                        { videos.length > 0 ? <hr className="my-12 h-0.5 border-t-0 bg-neutral-100 opacity-100 dark:opacity-50" /> : null }
                 </form>
          
-   
+        <Footer />
     </>
 
     );

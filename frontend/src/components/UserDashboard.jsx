@@ -1,4 +1,5 @@
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 /**
  * 
@@ -15,6 +16,7 @@ function LandingPage() {
             <Navbar />
             <h1>Welcome to the user dashboard</h1>
             <h2>Here you can see all the videos you've analysed along with all of our video analysis services</h2>
+            <Footer />
         </>
     );
 }

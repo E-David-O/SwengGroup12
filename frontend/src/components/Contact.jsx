@@ -1,4 +1,5 @@
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 /**
  * 
@@ -13,6 +14,7 @@ function Contact() {
         <>
             <Navbar />
             <h1 className="text-center text-xl">Contact Us</h1>
+            <Footer />
         </>
     );
 }
