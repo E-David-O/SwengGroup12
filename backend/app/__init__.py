@@ -17,7 +17,59 @@ from PIL import Image
 from ultralytics import YOLO  # type: ignore
 from werkzeug.datastructures import FileStorage
 
+import psycopg2
+
 from . import auth, frameselector, db
+from . import getSetDB
+
+
+
+
+def connect_to_database():
+    try:
+        # Change these values according to your PostgreSQL configuration
+        connection = psycopg2.connect(
+            user="postgres",
+            password="postgres",
+            host="172.20.0.10",
+            # host="localhost",
+            port="5432",
+            database="DB"
+        )
+        cursor = connection.cursor()
+        return connection, cursor
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+        return None, None
+
+
+def set_video2(account_id: int, video_path: str, file_format: str, frame_rate: str, video_length: int,
+              frame_resolution: str):
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor:
+            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frame_resolution)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING id;"""
+            cursor.execute(input_query,
+                           (account_id, video_path, file_format, frame_rate, video_length, frame_resolution))
+            inserted_id = cursor.fetchone()[0]
+            return inserted_id
+            
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            print("Could connect, but failed to insert data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+
 
 
 def create_app(test_config = None) -> Flask:
@@ -48,28 +100,35 @@ def create_app(test_config = None) -> Flask:
     @app.route("/upload", methods=["POST"])
     def upload() -> Response:
         "Receives an uploaded video to be analyzed."
+        # video_id = getSetDB.set_video(0, "", "", request.form["frameRate"], 0, request.form["resolution"])
+        # print(video_id)
         uploaded_video = Video(
             request.files["video"],
             request.form["resolution"],
             request.form["frameRate"],
         )
-        frames = frameselector.StructuralSimilaritySelector().select_frames(
-            uploaded_video.file
-        )
-        analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
-        ]
-        response: list[AnalysisResponse] = [
-            {
-                "frame_number": frame.frame_number,
-                "results": analysed.results,
-                "image": analysed.image,
-            }
-            for analysed, frame in zip(analysis_results, frames)
-        ]
-        toReturn = {
-            "results": response,
-        }
+        # set_video(account_id: int, video_path: str, file_format: str, frame_rate: int, video_length: int, frame_resolution: str)
+        video_id = getSetDB.set_video(0, "", "", uploaded_video.frameRate, 0, uploaded_video.resolution)
+        print(video_id)
+
+        # frames = frameselector.StructuralSimilaritySelector().select_frames(
+        #     uploaded_video.file
+        # )
+        # analysis_results = [
+        #     analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+        # ]
+        # response: list[AnalysisResponse] = [
+        #     {
+        #         "frame_number": frame.frame_number,
+        #         "results": analysed.results,
+        #         "image": analysed.image,
+        #     }
+        #     for analysed, frame in zip(analysis_results, frames)
+        # ]
+
+        toReturn = {"results": "Test"}
+
+        # json = return_all_video_info(video_id)
         return Response(json.dumps(toReturn), mimetype="application/json")
 
     @app.route("/uploadLive", methods=["POST"])

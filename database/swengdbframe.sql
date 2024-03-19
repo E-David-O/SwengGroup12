@@ -11,9 +11,10 @@ CREATE TABLE IF NOT EXISTS Videos (
                 idAccount INT,
                 videoPath VARCHAR(60000),
                 fileFormat VARCHAR(60000),
-                frameRate INT,
+                frameRate VARCHAR(60000),
                 videoLength INT,
                 frameResolution VARCHAR(60000),
+                -- videoData BLOB,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -22,6 +23,8 @@ CREATE TABLE IF NOT EXISTS SelectedFrame (
                 idFrame INT,
                 idVideo INT,
                 frameNumber INT,
+                selectionMethod INT,
+                frameData BYTEA,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
 
