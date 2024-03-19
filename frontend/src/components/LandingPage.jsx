@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 
 function LandingPage() {
     return (
-        <>
+        <div className="min-h-screen">
             <Navbar />
             <div className="container text-center mx-auto px-4">
                 <h1 className="text-center text-3xl font-bold px-4 py-2 inline-block rounded-2xl mt-10 mb-5 bg-white hover:bg-slate-100 hover:shadow-lg transition ease-in duration-200">
@@ -43,7 +43,7 @@ function LandingPage() {
                 </div>
             </div>
             <Footer/>
-        </>
+        </div>
     );
 }
 

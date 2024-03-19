@@ -11,11 +11,11 @@ import Footer from "./Footer";
 
 function Services() {
     return (
-        <>
+        <div className="min-h-screen">
             <Navbar />
             <h1 className="text-center text-3xl font-bold py-4">Our Services</h1>
             <Footer />
-        </>
+        </div>
     );
 }
 

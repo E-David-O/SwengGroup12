@@ -100,7 +100,7 @@ function LiveVideo() {
   }, [camEnabled]);
 
   return (
-    <>
+    <div className="min-h-screen">
       <Navbar/>
       <div>
       {camEnabled ? (
@@ -135,7 +135,7 @@ function LiveVideo() {
       }) : <p>No Total Results</p>}
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
 

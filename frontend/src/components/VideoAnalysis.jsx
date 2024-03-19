@@ -115,7 +115,7 @@ function VideoAnalysis() {
                 }
         }
         return (
-                <>
+                <div className="min-h-screen">
                         <Navbar />
                         <div className="flex justify-evenly">
                                 <p>Analysis for {title} </p>
@@ -149,7 +149,7 @@ function VideoAnalysis() {
                                 </div>
                         : null }
                         <Footer />
-                </>
+                </div>
         );
 }
 export default VideoAnalysis;

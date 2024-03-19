@@ -77,7 +77,7 @@ function VideoUpload() {
     }
     
     return (
-       <> 
+       <div className="min-h-screen"> 
         <Navbar />
         
                 <form autoComplete="off">
@@ -118,7 +118,7 @@ function VideoUpload() {
                 </form>
          
         <Footer />
-    </>
+    </div>
 
     );
 }

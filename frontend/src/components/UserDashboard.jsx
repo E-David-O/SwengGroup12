@@ -13,7 +13,7 @@ import DashboardCard from "./Card";
 
 function LandingPage() {
     return (
-        <>
+        <div className="min-h-screen">
             <Navbar />
             <div className="text-center">
             <div className="text-center">
@@ -47,8 +47,8 @@ function LandingPage() {
             </div>
             </div>
            
-            <Footer />
-        </>
+            <Footer/>
+        </div>
     );
 }
 
