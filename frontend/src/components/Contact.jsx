@@ -13,7 +13,7 @@ function Contact() {
     return (
         <>
             <Navbar />
-            <h1 className="text-center text-xl">Contact Us</h1>
+            <h1 className="text-center text-3xl font-bold py-4">Contact Us</h1>
             <Footer />
         </>
     );
