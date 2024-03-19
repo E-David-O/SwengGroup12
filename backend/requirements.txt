@@ -9,3 +9,4 @@ ffmpeg-python
 scikit-image
 opencv-python
 pytube
+Minio

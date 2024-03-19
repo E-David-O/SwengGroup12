@@ -12,8 +12,8 @@ def connect_to_database():
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            # host="172.20.0.10",
-            host="localhost",
+            host="172.20.0.10",
+            # host="localhost",
             port="5432",
             database="DB"
         )
@@ -58,6 +58,7 @@ def sendVideoToBucket():
             cursor.execute("""INSERT INTO Videos
                         (id_account, videoLink, videoPath, fileFormat, frameRate, videoLength, frame_resolution) 
                         VALUES (1, %s, %s, 'mp4', 30, '1 hour', '1920x1080')""", (video_url, video_path))
+            
 
     except(Exception, psycopg2.Error) as error:
         if connection:
@@ -91,16 +92,19 @@ def set_user(username: str, password: str, json_auth_token: str):
             connection.close()
 
 
-def set_video(account_id: int, video_path: str, file_format: str, frame_rate: int, video_length: int,
+def set_video(account_id: int, video_path: str, file_format: str, frame_rate: str, video_length: int,
               frame_resolution: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frameResolution)
-                        VALUES (%d, %s, %s, %d, %d, %s);"""
+            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frame_resolution)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING id;"""
             cursor.execute(input_query,
                            (account_id, video_path, file_format, frame_rate, video_length, frame_resolution))
-
+            inserted_id = cursor.fetchone()[0]
+            return inserted_id
+            
     except (Exception, psycopg2.Error) as error:
         if connection:
             print("Could connect, but failed to insert data: ", error)
@@ -115,13 +119,13 @@ def set_video(account_id: int, video_path: str, file_format: str, frame_rate: in
             connection.close()
 
 
-def set_selected_frame(id: int, video_id: int, frameNumber: int):
+def set_selected_frame(id: int, video_id: int, frameNumber: int, selectionMethod: int, frameData: bytes):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            input_query = """INSERT INTO SelectedFrame (idFrame, idVideo, frameNumber) 
+            input_query = """INSERT INTO SelectedFrame (idFrame, idVideo, frameNumber, selectionMethod, frameData) 
                         VALUES (%d, %d, %d);"""
-            cursor.execute(input_query, (id, video_id, frameNumber))
+            cursor.execute(input_query, (id, video_id, frameNumber, selectionMethod, frameData))
 
     except (Exception, psycopg2.Error) as error:
         if connection:
@@ -159,7 +163,7 @@ def set_access_log(success: int, account_id: int):
         connection, cursor = connect_to_database()
         if connection and cursor:
 
-           
+           print("")
 
     except (Exception, psycopg2.Error) as error:
         if connection:
@@ -297,8 +301,8 @@ def get_analyzed_objects(frame_id: int):
         connection, cursor = connect_to_database()
         if connection and cursor:
 
-           input_query = """SELECT * FROM AnalyzedFrames WHERE idFrame = %d;"""
-           cursor.execute(input_query, (frame_id,))
+            input_query = """SELECT * FROM AnalyzedFrames WHERE idFrame = %d;"""
+            cursor.execute(input_query, (frame_id,))
 
             rows = cursor.fetchall()
 
@@ -331,12 +335,12 @@ def get_access_log():
         connection, cursor = connect_to_database()
         if connection and cursor:
 
-           input_query = """SELECT * FROM AccessLog;"""
-           cursor.execute(input_query)
+            input_query = """SELECT * FROM AccessLog;"""
+            cursor.execute(input_query)
 
-           rows = cursor.fetchall()
+            rows = cursor.fetchall()
 
-           rows_as_dicts = []
+            rows_as_dicts = []
             for row in rows:
                 row_dict = dict(zip([col.name for col in cursor.description], row))
                 for key, value in row_dict.items():
@@ -404,11 +408,13 @@ def return_all_video_info(video_id: int):
     return json.dumps({"Video": video_data})
 
 
-def main():
-    set_user("Eimhin", "12345", "temp_token")
-    print("Set the user")
-    get_user("Eimhin", 1, True)
+# def main():
+#     set_user("Eimhin", "12345", "temp_token")
+#     print("Set the user")
+#     get_user("Eimhin", 1, True)
+#     video_id = set_video(1, "", "", "frameRate", 0, "resolution")
+#     print(video_id)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
