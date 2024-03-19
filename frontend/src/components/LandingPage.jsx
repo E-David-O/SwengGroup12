@@ -15,7 +15,7 @@ function LandingPage() {
         <>
             <Navbar />
             <div className="container text-center mx-auto px-4">
-                <h1 className="text-center text-3xl font-bold px-4 py-2 inline-block rounded-2xl mt-10 mb-5 bg-slate-200 hover:bg-slate-100 hover:shadow-lg transition ease-in duration-200">
+                <h1 className="text-center text-3xl font-bold px-4 py-2 inline-block rounded-2xl mt-10 mb-5 bg-white hover:bg-slate-100 hover:shadow-lg transition ease-in duration-200">
                     Welcome to Video Analytics by SWENG Group 12!
                 </h1>
                 <img 
@@ -35,6 +35,7 @@ function LandingPage() {
                         <li>Precise confidence estimates for each detection.</li>
                         <li>Streamline content moderation and make your media safe for advertising.</li>
                         <li>User-friendly dashboard to review and manage analyses.</li>
+                        <li>Analyse videos on social media platforms by uploading a URL link</li>
                     </ul>
                     <Link to="/login" className="py-2 px-4">
                         <GetStartedButton />
