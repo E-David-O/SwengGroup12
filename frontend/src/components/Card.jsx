@@ -8,13 +8,15 @@ import {
    
 function DashboardCard(props) {
     return (
-      <Card placeholder="" className="mt-6 w-96 rounded-xl">
+      <Card placeholder="" className="mt-6 mx-2 w-96 rounded-xl">
         <CardHeader placeholder="" color="blue-gray" className="relative h-auto rounded-xl">
+          <a  href={props.buttonLink}>
           <img
             src={props.imgUrl}
             alt="dashboard-card"
-            className="rounded-xl"
+            className="mt-4 rounded-xl"
           />
+        </a>
         </CardHeader>
         <CardBody placeholder="">
           <Typography placeholder="" variant="h5" color="blue-gray" className="mb-2">

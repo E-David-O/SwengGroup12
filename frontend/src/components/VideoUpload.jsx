@@ -94,7 +94,7 @@ function VideoUpload() {
                             hidden
                             />
                         </div>
-                        <p>or</p>
+                        <p className="block mb-2 text-sm font-medium text-gray-900 dark:text-grey-900">or</p>
                         <div>
                             <label htmlFor="website" className="block mb-2 text-sm font-medium text-gray-900 dark:text-grey-900">Youtube URL</label>
                             <div className="flex justify-center">

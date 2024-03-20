@@ -20,7 +20,7 @@ function LandingPage() {
                 <h1 className="text-2xl font-bold text-center mb-8 mt-8 bg-white inline-block rounded py-2 px-4">Welcome to the user dashboard</h1>
             </div>
             <h2>Here you can see all the videos you've analysed along with all of our video analysis services...</h2>
-                <div className="flex flex-row justify-between mx-auto py-4">
+                <div className="flex flex-row justify-evenly mx-4 py-4">
                     <DashboardCard
     
                         cardTitle="Upload your own video"
