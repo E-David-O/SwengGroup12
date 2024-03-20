@@ -36,6 +36,22 @@ function Navbar() {
         
     }
 
+    const handleMode = (e) => {
+        if (localStorage.theme === "dark" || !("theme" in localStorage)) {
+            //add class=dark in html element
+            document.documentElement.classList.add("dark");
+          } else {
+            //remove class=dark in html element
+            document.documentElement.classList.remove("dark");
+          }
+      
+          if (localStorage.theme === "dark") {
+            localStorage.theme = "light";
+          } else {
+            localStorage.theme = "dark";
+          }
+        }
+    
 
 
 
@@ -85,11 +101,15 @@ return (
                         <li>
                             <Link to="/live" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><NavbarButton buttonText="Live Video" /></Link>
                         </li>
-
-                        
+                        <li>
+                            <div onClick={handleMode} className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparen">
+                                <NavbarButton buttonText={"Theme"} />
+                            </div>
+                        </li>
                         <li>
                             <Link onClick={(e) => handleLogout(e)} to="/video" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><LogoutButton /></Link>
                         </li>
+                        
                     </>
                 }
 
