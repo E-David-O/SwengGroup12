@@ -34,7 +34,7 @@ function LandingPage() {
                         cardDescription="Insert your url to a youtube video and have our machine learning algorithm analyse the video. This will work for any video on the youtube website."
                         imgUrl="https://cdn.mos.cms.futurecdn.net/8gzcr6RpGStvZFA2qRt4v6-1200-80.jpg.webp"
                         buttonText="Enter URL"
-                        buttonLink="/video"
+                        buttonLink="/url"
                     />
 
                     <DashboardCard
