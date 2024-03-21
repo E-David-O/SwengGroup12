@@ -36,6 +36,5 @@
 }
 
 .rotating-username-text {
-  animation: text-color-rotation 10s infinite linear;
+  animation: text-color-rotation 15s infinite linear;
 }
-

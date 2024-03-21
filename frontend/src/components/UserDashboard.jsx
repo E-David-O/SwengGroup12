@@ -11,24 +11,17 @@ import { useContext } from "react";
  * successful log-in or registration.
  * 
  */
-
-
 function LandingPage() {
-
-
     const { token, logout } = useContext(VideoContext);
-
 
     return (
         <div className="min-h-screen">
             <Navbar />
             <div className="text-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-center mb-8 mt-8 bg-white inline-block rounded py-2 px-4">Welcome to your dashboard <p className="inline-block rotating-username-text">{token}</p>!</h1>
-                </div>
-                <div className="flex flex-row justify-between mx-auto py-4 px-4">
+                <h1 className="text-2xl font-bold text-center mb-2 mt-8 bg-white inline-block rounded py-2 px-4">Welcome to your dashboard <p className="inline-block rotating-username-text">{token}</p>!</h1>
+                
+                <div className="flex flex-wrap justify-center gap-4 mx-auto py-4 px-4">
                     <DashboardCard
-
                         cardTitle="Upload your own video"
                         cardDescription="Upload your own video to our machine learning powered algorithm for analysis! You will receive instantaneous analytics as to what objects your video contains in addition to locating objects within frames"
                         imgUrl="https://universalcaptions.files.wordpress.com/2016/05/upload-video.png?w=1200"
@@ -51,10 +44,9 @@ function LandingPage() {
                         buttonText="Record Live video"
                         buttonLink="/live"
                     />
-                
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </div>
     );
 }

@@ -8,15 +8,15 @@ import {
    
 function DashboardCard(props) {
     return (
-      <Card placeholder="" className="mt-6 w-96 rounded-xl">
+      <Card placeholder="" className="mt-6 w-96 rounded-xl flex flex-col">
         <CardHeader placeholder="" color="blue-gray" className="relative h-auto rounded-xl">
           <img
             src={props.imgUrl}
             alt="dashboard-card"
-            className="rounded-xl"
+            className="rounded-xl w-full h-56 object-cover"
           />
         </CardHeader>
-        <CardBody placeholder="">
+        <CardBody placeholder="" className="flex-grow">
           <Typography placeholder="" variant="h5" color="blue-gray" className="mb-2">
             {props.cardTitle}
           </Typography>
