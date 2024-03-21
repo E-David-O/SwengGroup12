@@ -12,8 +12,8 @@ def connect_to_database():
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            host="172.20.0.10",
-            # host="localhost",
+            # host="172.20.0.10",
+            host="localhost",
             port="5432",
             database="DB"
         )
@@ -77,11 +77,11 @@ def set_user(username: str, password: str, json_auth_token: str):
             input_query = """INSERT INTO Users (username, _password, jsonAuthToken)
                         VALUES (%s, %s, %s);"""
             cursor.execute(input_query, (username, password, json_auth_token))
-
+            return None
     except (Exception, psycopg2.Error) as error:
         if connection:
             print("Could connect, but failed to insert data: ", error)
-            return None
+            return error
         else:
             print("Failed to connect: ", error)
             return None
@@ -181,38 +181,24 @@ def set_access_log(success: int, account_id: int):
 # parameter input -> username, user_id, is_username
 # is_username specifies if we are using the username or user_id
 # output is a json object
-def get_user(username: str, user_id: int, is_username: bool):
+def get_user(username: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
 
-            if is_username:
-                input_query = """SELECT * FROM Users WHERE username = %s;"""
-                cursor.execute(input_query, (username,))
-                rows = cursor.fetchall()
-                rows_as_dicts = []
-                for row in rows:
-                    row_dict = dict(zip([col.name for col in cursor.description], row))
-                    for key, value in row_dict.items():
-                        if isinstance(value, datetime):
-                            row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
-                    rows_as_dicts.append(row_dict)
-                json_data = json.dumps(rows_as_dicts)
-                return json_data
-            else:
-                input_query = """SELECT * FROM Users WHERE id = %d;"""
-                cursor.execute(input_query, (user_id,))
-                rows = cursor.fetchall()
-                print("fetched data")
-                rows_as_dicts = []
-                for row in rows:
-                    row_dict = dict(zip([col.name for col in cursor.description], row))
-                    for key, value in row_dict.items():
-                        if isinstance(value, datetime):
-                            row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
-                    rows_as_dicts.append(row_dict)
-                json_data = json.dumps(rows_as_dicts)
-                return json_data
+            input_query = """SELECT * FROM Users WHERE username = %s;"""
+            cursor.execute(input_query, (username,))
+            rows = cursor.fetchall()
+            rows_as_dicts = []
+            for row in rows:
+                row_dict = dict(zip([col.name for col in cursor.description], row))
+                for key, value in row_dict.items():
+                    if isinstance(value, datetime):
+                        row_dict[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                rows_as_dicts.append(row_dict)
+            json_data = json.dumps(rows_as_dicts)
+            return json_data
+
     except (Exception, psycopg2.Error) as error:
         if connection:
             print("Could connect, but failed to insert data: ", error)
@@ -408,13 +394,16 @@ def return_all_video_info(video_id: int):
     return json.dumps({"Video": video_data})
 
 
-# def main():
-#     set_user("Eimhin", "12345", "temp_token")
-#     print("Set the user")
-#     get_user("Eimhin", 1, True)
-#     video_id = set_video(1, "", "", "frameRate", 0, "resolution")
-#     print(video_id)
+def main():
+    set_user("Eimhin", "12345", "temp_token")
+    print("Set the user")
+    user = get_user("Eimhin")
+    print(user)
+    print(user["username"])
+    print(user["_password"])
+    video_id = set_video(1, "", "", "frameRate", 0, "resolution")
+    print(video_id)
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
