@@ -18,7 +18,13 @@ function About() {
                 <h2 className="text-2xl font-bold py-4">The frontend team</h2>
                 <ul>
                     <li>Louie Somers</li>
-                    <li>Finn Cummins</li>
+                    <li className="mt-8 bg-slate-100 inline-block py-4 px-4 rounded-xl">
+                        <p className="bg-slate-200 py-2 px-2 rounded-xl inline-block">Finn Cummins</p>
+                        <img 
+                            src="https://media.licdn.com/dms/image/D4E03AQFQbLBUHtEJjw/profile-displayphoto-shrink_800_800/0/1691618622623?e=1716422400&v=beta&t=VlL3o0q-8sOo5RrszHoEMpYDlUSsajybKhs3hNByKzQ"
+                            className="h-48 inline-block rounded-3xl mx-4"
+                        />
+                    </li>
                     <li>Afaf Shadani</li>
                     <li>Daire Frankling</li>
                 </ul>
@@ -30,7 +36,13 @@ function About() {
                 <h2 className="text-2xl font-bold py-4">API team</h2>
                 <ul>
                     <li>Ming Him Foun</li>
-                    <li>Nicolas Moschenross</li>
+                    <li className="mt-8 bg-slate-100 inline-block py-4 px-4 rounded-xl">
+                        <p className="bg-slate-200 py-2 px-2 rounded-xl inline-block">Nicolas Moschenross</p>
+                        <img 
+                            src="https://media.discordapp.net/attachments/1220464925537865781/1220500119183429642/IMG_1450_Original.jpg?ex=660f2a50&is=65fcb550&hm=ae0d9c07121ad51a7b4a6d1e3ae01c9445751a6311ad7727d33f87c4807f23c3&=&format=webp&width=632&height=958"
+                            className="h-48 inline-block rounded-3xl mx-4"
+                        />
+                    </li>
                     <li>Rishi Manu</li>
                 </ul>
                 <h2 className="text-2xl font-bold py-4">Frame analysis team</h2>
