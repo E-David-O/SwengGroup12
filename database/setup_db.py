@@ -53,7 +53,7 @@ def setup_tables():
 
             cursor.execute("""CREATE TABLE IF NOT EXISTS Videos (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                idAccount VARCHAR(60000),
+                idAccount INT,
                 videoPath VARCHAR(60000),
                 fileFormat VARCHAR(60000),
                 frameRate VARCHAR(60000),
@@ -74,10 +74,10 @@ def setup_tables():
 
             cursor.execute("""CREATE TABLE IF NOT EXISTS AnalyzedFrames (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                idFrame VARCHAR(60000),
+                idFrame INT,
                 objectDetected VARCHAR(60000),
                 confidence FLOAT,
-                framePath VARCHAR(60000),
+                framePath BYTEA,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 
