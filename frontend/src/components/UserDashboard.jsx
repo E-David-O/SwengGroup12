@@ -20,7 +20,7 @@ function LandingPage() {
             <div className="text-center">
                 <h1 className="text-2xl font-bold text-center mt-8 bg-white inline-block rounded py-2 px-4">Welcome to your dashboard <p className="inline-block rotating-username-text">{token}</p>!</h1>
                 
-                <div className="flex flex-wrap justify-center gap-4 mx-auto py-4 px-4">
+                <div className="flex flex-wrap justify-center gap-4 mx-auto py-4 px-2">
                     <DashboardCard
                         cardTitle="Upload your own video"
                         cardDescription="Upload your own video to our machine learning powered algorithm for analysis! You will receive instantaneous analytics as to what objects your video contains in addition to locating objects within frames"

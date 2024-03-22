@@ -26,12 +26,24 @@ function About() {
                         />
                     </li>
                     <li>Afaf Shadani</li>
-                    <li>Daire Frankling</li>
+                    <li className="mt-8 bg-slate-100 inline-block py-4 px-4 rounded-xl">
+                        <p className="bg-slate-200 py-2 px-2 rounded-xl inline-block">Daire Frankling</p>
+                        <img 
+                            src="https://media.licdn.com/dms/image/D4E03AQEDIYy3zjPMtw/profile-displayphoto-shrink_800_800/0/1705973307663?e=1716422400&v=beta&t=jJvNe9CQOOfOZUSuFbl5vR1DTF9NGygVi68UpmaLMUc"
+                            className="h-48 inline-block rounded-3xl mx-4"
+                        />
+                    </li>
                 </ul>
                 <h2 className="text-2xl font-bold py-4">The Database team</h2>
                 <ul>
                     <li>Eimhin Heenan-Roberts</li>
-                    <li>Conor Daly</li>
+                    <li className="mt-8 bg-slate-100 inline-block py-4 px-4 rounded-xl">
+                        <p className="bg-slate-200 py-2 px-2 rounded-xl inline-block">Conor Daly</p>
+                        <img 
+                            src="https://media.discordapp.net/attachments/1213128804013318214/1220682542613663784/IMG-2046.jpg?ex=660fd435&is=65fd5f35&hm=6fdfb37080f44f665f0329c331bd54a44d132dbbaaf4eb71e9a05515293c87d2&=&format=webp&width=1278&height=958"
+                            className="h-48 inline-block rounded-3xl mx-4"
+                        />
+                    </li>
                 </ul>
                 <h2 className="text-2xl font-bold py-4">API team</h2>
                 <ul>
