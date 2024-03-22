@@ -156,7 +156,7 @@ def analyze_frame(frame: str) -> AnalysisResult:
     try:
         model = analyze_frame.model
     except AttributeError:
-        analyze_frame.model = YOLO("yolov8n.pt")
+        analyze_frame.model = YOLO("yolov8x.pt")
         model = analyze_frame.model
     load = json.loads(frame)
     imdata = base64.b64decode(load["image"])
