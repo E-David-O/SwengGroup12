@@ -122,8 +122,8 @@ export default function Signup() {
                     </div>
 
                 </div>
+                <Footer />
             </div>
-            <Footer />
         </>
     )
 }
