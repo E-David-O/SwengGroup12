@@ -14,8 +14,8 @@ def connect_to_database():
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            # host="172.20.0.10",
-            host="localhost",
+            host="172.20.0.10",
+            # host="localhost",
             port="5432",
             database="DB"
         )
@@ -86,7 +86,7 @@ def set_user(username: str, password: str, json_auth_token: str):
             return error
         else:
             print("Failed to connect: ", error)
-            return None
+            return error
     finally:
         if connection:
             connection.commit()
@@ -221,6 +221,36 @@ def get_user(username: str):
             cursor.close()
             connection.close()
 
+
+def get_user_id(id: int):
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor:
+            
+            input_query = """SELECT * FROM Users WHERE id = %s;"""
+            cursor.execute(input_query, (username,))
+            rows = cursor.fetchone()
+
+            return json.dumps({
+                "id" : rows[0],
+                "username" : rows[1],
+                "password" : rows[2],
+                "jsonAuthToken" : rows[3],
+                "datetime" : rows[4].strftime('%Y-%m-%d %H:%M:%S')
+            })
+
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            print("Could connect, but failed to get data: ", error)
+            return None
+        else:
+            print("Failed to connect: ", error)
+            return None
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
 
 # Gets the information for the video
 # parameter input -> video_id
@@ -449,12 +479,12 @@ def main():
     # print(json_data)
 
 
-    # set_video(0, "Video Path", "mp4", "60", 100, "1920x1080")
+    set_video(0, "Video Path", "mp4", "60", 100, "1920x1080")
 
-    # for i in range(5):
-    #     set_selected_frame(i, 1, i * 3, 1, "Hello World")
-    #     for j in range(5):
-    #         set_analyzed_frames(i, f"Apple {j}", .95, "Path to Frame")
+    for i in range(5):
+        set_selected_frame(i, 1, i * 3, 1, "Hello World")
+        for j in range(5):
+            set_analyzed_frames(i, f"Apple {j}", .95, "Path to Frame")
     # json_data = get_analyzed_objects(1)
     # print(json_data)
     # json_data = get_selected_frames(1)
