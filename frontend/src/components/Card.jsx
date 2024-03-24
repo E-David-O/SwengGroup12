@@ -30,7 +30,7 @@ function DashboardCard(props) {
                 href={props.buttonLink}
                 className="inline-block"
             >
-                    <NavbarButton buttonText={props.buttonText} colour={props.buttonColour}/>
+                    <NavbarButton buttonText={props.buttonText}/>
             </a>
         </CardFooter>
       </Card>

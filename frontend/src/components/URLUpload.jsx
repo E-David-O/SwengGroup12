@@ -1,10 +1,11 @@
-
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useState, useRef, useContext} from "react";
 import SingleVideoUpload from "./SingleVideoUpload";
 import { VideoContext } from "./VideoUtil";
 import axios from "axios";
+import VideoCard from "./VideoCard";
+
 /**
  * 
  * @returns VideoUpload component
@@ -14,7 +15,8 @@ import axios from "axios";
 
 
 function URLUpload() {
-    const { videos, setVideos } = useContext(VideoContext);
+    let { videos, setVideos } = useContext(VideoContext);
+    let { _ , resultList} = useContext(VideoContext);
     const inputRef = useRef(null);
     const [url, setUrl] = useState("");
    
@@ -75,6 +77,10 @@ function URLUpload() {
         event.persist();
         setUrl(event.target.value);
     }
+
+    const deleteVideo = (videoName) => {
+        let newResultList = resultList.filter((result) => {result.name !== videoName});
+    }
     
     return (
        <div className="min-h-screen"> 
@@ -96,12 +102,29 @@ function URLUpload() {
                         </div>
                 </div>
                         <div className="grid grid-cols-1 gap-4 m-5">
-                        {videos.length > 0? [...videos].map((video, index) => (<SingleVideoUpload key={index} 
-// @ts-ignore
-                        video={video} />))
-                        : null}
+                        {videos.length > 0
+                        
+                            ? 
+                            <>
+                                {
+                                    [...videos].map((video, index) => {
+                                        if (video.youtube){
+                                            // @ts-ignore
+                                            return (<SingleVideoUpload key={index} video={video} />)
+                                        }
+                                    })}
+                                {// @ts-ignore
+                                    [...resultList].map((result, index) => {
+                                        if (videos[index].youtube) {
+                                            return <VideoCard key={index} result={result} deleteVideo={deleteVideo}/>
+                                        }
+                                })}
+                            </>
+                            :
+                            null
+                        }
                         </div>
-                       { videos.length > 0 ? <hr className="my-12 h-0.5 border-t-0 bg-neutral-100 opacity-100 dark:opacity-50" /> : null }
+                       { videos.length < 0 ? <hr className="my-12 h-0.5 border-t-0 bg-neutral-100 opacity-100 dark:opacity-50" /> : null }
                 </form>
          
         <Footer />

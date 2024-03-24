@@ -1,10 +1,12 @@
-
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { useState, useRef, useContext} from "react";
+import { useState, useRef, useContext, useEffect} from "react";
 import SingleVideoUpload from "./SingleVideoUpload";
+import VideoCard from "./VideoCard";
 import { VideoContext } from "./VideoUtil";
 import axios from "axios";
+import { useLocation} from "react-router-dom";
+
 /**
  * 
  * @returns VideoUpload component
@@ -14,7 +16,9 @@ import axios from "axios";
 
 
 function VideoUpload() {
-    const { videos, setVideos } = useContext(VideoContext);
+    let { videos, setVideos } = useContext(VideoContext);
+    let { _ , resultList} = useContext(VideoContext);
+
     const inputRef = useRef(null);
     const [url, setUrl] = useState("");
    
@@ -75,12 +79,16 @@ function VideoUpload() {
         event.persist();
         setUrl(event.target.value);
     }
+
+    const deleteVideo = (videoName) => {
+        let newResultList = resultList.filter((result) => {result.name !== videoName});
+        //setResultsList(newResultList);
+    }
     
     return (
-       <div className="min-h-screen"> 
-        <Navbar />
-        
-                <form autoComplete="off">
+        <div className="min-h-screen"> 
+            <Navbar />
+            <form autoComplete="off">
                 <div className="text-center">
                     <div>
                         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleUploadClick(e)}>Choose video</button>
@@ -92,33 +100,42 @@ function VideoUpload() {
                             onChange={handleFile}
                             ref={inputRef}
                             hidden
-                            />
-                        </div>
-                        <p>or</p>
-                        <div>
-                            <label htmlFor="website" className="block mb-2 text-sm font-medium text-gray-900 dark:text-grey-900">Youtube URL</label>
-                            <div className="flex justify-center">
-                            <input  
-                                onChange={handleChange}
-                                value={url || ""}
-                                type="url" 
-                                id="website"
-                                className="w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="youtube.com" required />
-                            </div>
-                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>
-                        </div>
+                        />
+                    </div>
+                    <p className="inline-block bg-slate-100 py-2 px-2 rounded-xl mt-8">Analysed videos</p>
                 </div>
-                        <div className="grid grid-cols-1 gap-4 m-5">
-                        {videos.length > 0? [...videos].map((video, index) => (<SingleVideoUpload key={index} 
-// @ts-ignore
-                        video={video} />))
-                        : null}
-                        </div>
-                       { videos.length > 0 ? <hr className="my-12 h-0.5 border-t-0 bg-neutral-100 opacity-100 dark:opacity-50" /> : null }
-                </form>
-         
-        <Footer />
-    </div>
+                <div className="grid grid-cols-1 gap-4 m-5">
+                    {
+                        videos.length > 0
+                        ? 
+                        <>
+                            {
+                                [...videos].map((video, index) => {
+                                
+                                if (!video.youtube){
+                                    // @ts-ignore
+                                    return <SingleVideoUpload key={index} video={video} />
+                                }
+                                
+                            })}
+                            {
+                                [...resultList].map((result, index) => {
+
+                                    if (!videos[index].youtube) {
+                                        // @ts-ignore
+                                        return <VideoCard key={index} result={result} deleteVideo={deleteVideo}/>
+                                    }
+                            })}
+
+                        </>
+                        : 
+                        null
+                    }
+                </div>
+                { videos.length < 0 ? <hr className="my-12 h-0.5 border-t-0 bg-neutral-100 opacity-100 dark:opacity-50" /> : null }
+            </form>
+            <Footer />
+        </div>
 
     );
 }
