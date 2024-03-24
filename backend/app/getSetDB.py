@@ -6,6 +6,7 @@ from minio import Minio
 from datetime import datetime
 from psycopg2.extensions import Binary
 import binascii
+import io
 
 
 def connect_to_database():
@@ -14,8 +15,8 @@ def connect_to_database():
         connection = psycopg2.connect(
             user="postgres",
             password="postgres",
-            host="172.20.0.10",
-            # host="localhost",
+            # host="172.20.0.10",
+            host="localhost",
             port="5432",
             database="DB"
         )
@@ -41,35 +42,35 @@ def connect_to_minio():
         return None
 
 
-def sendVideoToBucket():
+def send_encoded_video_minio(encode_video: str, video_id: int):
     try:
-        connection, cursor = connect_to_database()
         minio_client = connect_to_minio()
-        if connection and cursor and minio_client:
-            video_path = "/testVideo.mp4"
-            # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # Format timestamp
-            # new_file_name = f"video_{timestamp}{extension}" 
-            # os.rename(video_path, new_file_name)
-            video_name = os.path.basename(video_path)
-
+        if minio_client:
             bucket_name = "videos"
-            minio_client.fput_object(bucket_name, video_name, video_path)
+            # Convert the string to bytes
+            encoded_bytes = encode_video.encode('utf-8')
+            encoded_file = io.BytesIO(encoded_bytes)
+            minio_client.put_object(bucket_name, str(video_id), encoded_file, len(encoded_bytes))
+            video_url = minio_client.presigned_get_object(bucket_name, str(video_id))
+            return video_url
+    except Exception as error:
+        print("Error: ", error)
 
-            video_url = minio_client.presigned_get_object(bucket_name, video_name)
-
-            cursor.execute("""INSERT INTO Videos
-                        (id_account, videoLink, videoPath, fileFormat, frameRate, videoLength, frame_resolution) 
-                        VALUES (1, %s, %s, 'mp4', 30, '1 hour', '1920x1080')""", (video_url, video_path))
-            
-
-    except(Exception, psycopg2.Error) as error:
-        if connection:
-            print("Error: ", erorr)
-    finally:
-        if connection:
-            connection.commit()
-            cursor.close()
-            connection.close()
+def get_video_from_minio(video_id: int):
+    try:
+        minio_client = connect_to_minio()
+        if minio_client:
+            bucket_name = "videos"
+            # Download the object from MinIO bucket
+            response = minio_client.get_object(bucket_name, str(video_id))
+            # Read the content of the response (the video file)
+            encoded_bytes = response.read()
+            # Decode the bytes back into a string
+            decoded_video = encoded_bytes.decode('utf-8')
+            return decoded_video
+    except Exception as error:
+        print("Error: ", error)
+        return None
 
 
 def set_user(username: str, password: str, json_auth_token: str):
@@ -94,17 +95,26 @@ def set_user(username: str, password: str, json_auth_token: str):
             connection.close()
 
 
-def set_video(account_id: int, video_path: str, file_format: str, frame_rate: str, video_length: int,
+def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate: str, video_length: int,
               frame_resolution: str):
     try:
         connection, cursor = connect_to_database()
+
         if connection and cursor:
             input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frame_resolution)
                         VALUES (%s, %s, %s, %s, %s, %s)
                         RETURNING id;"""
             cursor.execute(input_query,
-                           (account_id, video_path, file_format, frame_rate, video_length, frame_resolution))
+                           (account_id, "temp", file_format, frame_rate, video_length, frame_resolution))
+            # connection.commit()
             inserted_id = cursor.fetchone()[0]
+            updated_query = """UPDATE Videos SET videoPath = %s WHERE id = %s"""
+
+            video_path = send_encoded_video_minio(encoded_video, inserted_id)
+
+            cursor.execute(updated_query, (video_path, inserted_id,))
+
+
             return inserted_id
             
     except (Exception, psycopg2.Error) as error:
@@ -268,13 +278,13 @@ def get_video(video_id: int):
             return json.dumps({
                 "id": row[0],
                 "idAccount": row[1],
-                "videoPath": row[2],
+                "encoded_video": get_video_from_minio(row[0]),
                 "fileFormat": row[3],
                 "frameRate": row[4],
                 "videoLength": row[5],
                 "frameResolution": row[6],
                 "timestamp": row[7].strftime('%Y-%m-%d %H:%M:%S')
-            })
+            }, indent = 4)
     except (Exception, psycopg2.Error) as error:
         if connection:
             print("get video")
@@ -470,28 +480,36 @@ def return_all_video_info(video_id: int):
 
 
 def main():
-    # set_selected_frame(id: int, video_id: int, frameNumber: int, selectionMethod: int, frameData: bytes)
-    # def set_analyzed_frames(idFrame: int, objectDetected: str, confidence: float, framePath: str)
-    # def set_video(account_id: int, video_path: str, file_format: str, frame_rate: str, video_length: int, frame_resolution: str):
+
+    #def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate: str, video_length: int, frame_resolution: str):
+
+    video_id = set_video(0, "100000000000", "mp4", "60", 120, "1920x1080")
+    json_output = get_video(video_id)
+    print(json_output)
+
+    # video_id = send_encoded_video_minio("10000000000000", 1)
+    # print(video_id)
+
+    # output = get_video_from_minio(1)
+    # print(output)
+
 
     # set_analyzed_frames(1, f"Apple {1}", .95, "Path to Frame")
     # json_data = get_analyzed_objects(1)
     # print(json_data)
+    # set_video(0, "Video Path", "mp4", "60", 100, "1920x1080")
 
-
-    set_video(0, "Video Path", "mp4", "60", 100, "1920x1080")
-
-    for i in range(5):
-        set_selected_frame(i, 1, i * 3, 1, "Hello World")
-        for j in range(5):
-            set_analyzed_frames(i, f"Apple {j}", .95, "Path to Frame")
-    # json_data = get_analyzed_objects(1)
+    # for i in range(5):
+    #     set_selected_frame(i, 1, i * 3, 1, "Hello World")
+    #     for j in range(5):
+    #         set_analyzed_frames(i, f"Apple {j}", .95, "Path to Frame")
+    # # json_data = get_analyzed_objects(1)
+    # # print(json_data)
+    # # json_data = get_selected_frames(1)
+    # # print(json_data)
+    # json_data = get_account_videos(0)
+    # # json_data = return_all_video_info(1)
     # print(json_data)
-    # json_data = get_selected_frames(1)
-    # print(json_data)
-    json_data = get_account_videos(0)
-    # json_data = return_all_video_info(1)
-    print(json_data)
 
 if __name__ == "__main__":
     main()
