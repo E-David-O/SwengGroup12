@@ -1,4 +1,4 @@
-import { useContext, useMemo, useRef, useState} from "react";
+import { useContext, useCallback} from "react";
 import { useLocation} from "react-router-dom";
 import { VideoContext } from "./VideoUtil";
 import { Link } from "react-router-dom";
@@ -8,11 +8,18 @@ function VideoCard(props) {
     const test = useLocation();
     const title = decodeURI(test.pathname.split("/").slice(-1).toString() + test.search);
     console.log(title)
-    const { videos, resultList } = useContext(VideoContext);
-    
+    const { videos, setVideos, resultList, setResultList } = useContext(VideoContext)
+
     const videoName = props.result.name;
     const base64ImageData = props.result.results[1].image;
     const imageDataUrl = `data:image/jpeg;base64,${base64ImageData}`;
+
+    const deleteVideo = useCallback(() => {
+        
+        setVideos(videos.filter(video => video.name !== videoName));
+        setResultList(resultList.filter(result => result.name !== videoName))
+        
+    }, [videos, setVideos, resultList, setResultList])
     
     return (
         <div className="max-w-xl mx-auto bg-slate-200 p-6 rounded-xl shadow-lg flex items-center space-x-4">
@@ -34,7 +41,7 @@ function VideoCard(props) {
                         Analytics
                     </Link>
                     <button 
-                        onClick={props.deleteVideo(videoName)}
+                        onClick={deleteVideo}
                         className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                     >
                         Delete

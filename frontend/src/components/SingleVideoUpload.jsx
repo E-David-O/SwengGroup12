@@ -34,7 +34,6 @@ function SingleVideoUpload({ video }) {
     // }, [])
 }
     useEffect(() => {
-    console.log(uploadProgress);
     if(video.analysed !== true && video.uploaded === true) {
         const intervalId = setInterval(() => {
         setUploadProgress((uploadProgress) => {
