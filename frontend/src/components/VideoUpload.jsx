@@ -24,6 +24,7 @@ function VideoUpload() {
     const [url, setUrl] = useState("");
 
     const [isDragging, setIsDragging] = useState(false);
+    const [uploadVideoCount, setUploadVideoCount] = useState(0);
    
 
     /**
@@ -36,17 +37,31 @@ function VideoUpload() {
         if (typeof e.preventDefault === "function") {
             e.preventDefault();
         }
-        
-        if (videos.length > 0 && videos.length < 4) {
-            setVideos([...videos, { file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name, youtube: false}]);
-        } else if (videos.length === 0) {
-            setVideos([{ file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name, youtube: false}]);
-        } else {
+
+        if (uploadVideoCount >= 4) {
             alert("You can only upload 4 videos at a time");
         }
-        console.log(videos);
-        console.log(videos.length);
+        else if (videos.length > 0) {
+            setVideos([...videos, { file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name, youtube: false}]);
+        }
+        else {
+            setVideos([{ file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name, youtube: false}]);
+        }
+
     }
+
+    useEffect(() => {
+        let uploadedVideoCount = 0
+        for (let i = 0; i < videos.length; i++){
+            if (!videos[i].youtube){
+                uploadedVideoCount++
+            }
+        }
+        console.log({uploadedVideoCount})
+        console.log(`videos.length: ${videos.length}`)
+        console.log(JSON.stringify(videos))
+        setUploadVideoCount(uploadedVideoCount)
+    }, [videos]);
     
     const handleUploadClick = (e) => {
         e.preventDefault();
@@ -116,9 +131,9 @@ function VideoUpload() {
                     </div>
 
                     <div className="text-2xl text-center bg-gray-300 py-2 px-2 mt-12">
-                        <p className="inline-block bg-slate-100 rounded-xl p-2">
-                            Analysed videos <p className={`inline-block ${videos.length == 4 ? 'text-red-600' : 'text-black'}`}>({videos.length}/4)</p>
-                        </p>
+                        <div className="inline-block bg-slate-100 rounded-xl p-2">
+                            Analysed videos <p className={`inline-block ${uploadVideoCount == 4 ? 'text-red-600' : 'text-black'}`}>({uploadVideoCount}/4)</p>
+                        </div>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 m-5 mt-2">
@@ -137,8 +152,8 @@ function VideoUpload() {
                             })}
                             {
                                 [...resultList].map((result, index) => {
-
-                                    if (!videos[index].youtube) {
+                                    console.log(`index: ${index}. videos[index]: ${JSON.stringify(videos[index])}`)
+                                    if (videos[index] && !videos[index].youtube) {
                                         // @ts-ignore
                                         return <VideoCard key={index} result={result} />
                                     }

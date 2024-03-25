@@ -7,7 +7,6 @@ import NavbarButton from "./NavbarButton";
 function VideoCard(props) {
     const test = useLocation();
     const title = decodeURI(test.pathname.split("/").slice(-1).toString() + test.search);
-    console.log(title)
     const { videos, setVideos, resultList, setResultList } = useContext(VideoContext)
 
     const videoName = props.result.name;
