@@ -5,11 +5,12 @@ import logging
 import os
 import tempfile
 import time
+import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from yt_dlp import YoutubeDL
 from io import BytesIO
 from typing import Iterator, List
-
 import cv2
 import ffmpeg  # type: ignore
 import numpy as np
@@ -215,6 +216,143 @@ class YoutubeSelector(FrameSelector):
             if success:
                 break
 
+        start_time = time.time()
+        count = 1
+        yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) 
+        analyze_count = 1
+        first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        while success:
+            success, image = vidcap.read()
+            newframe = image
+            logging.info(f"Read frames read: {count}")
+            if count > 1 and newframe is not None:
+                # Convert current frame to grayscale (needed for structural similarity check)
+                new_gray = cv2.cvtColor(newframe, cv2.COLOR_BGR2GRAY)
+                # Structural similarity test.
+                score = structural_similarity(first_gray, new_gray, full=False)
+                logging.info(f"Similarity Score: {score*100:.3f}%")
+                if score * 100 < self.SIMILARITY_LIMIT:
+                    yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB)) 
+                    analyze_count += 1
+                    first_gray = new_gray
+            count += self.FRAME_SKIP
+            # Skip ahead 30 frames from current frame
+            vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
+
+        end_time = time.time()
+        run_time = end_time - start_time
+        logging.info(
+            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+        )
+        return
+    
+
+class TiktokSelector(FrameSelector):
+    "Uses OpenCV structural similarity to skip similar frames."
+
+    # Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
+    FRAME_SKIP = 30
+    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+    SIMILARITY_LIMIT = 80
+    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+    SIMILARITY_LIMIT_LIVE = 40
+
+   
+
+    def select_frames(self, video) -> List[SelectedFrame]:
+        "Selects frames from a video, using structural similarity to ignore similar frames."
+        return list(self.__generate_frames(video))
+
+    def __generate_frames(self, video) -> Iterator[SelectedFrame]:
+        with tempfile.TemporaryDirectory() as tf:
+            ydl_opts = {
+                "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+                "merge_output_format": "mp4",
+                'outtmpl': f"{tf}/%(title).50s-%(id)s.%(ext)s",
+        
+            }
+            with YoutubeDL(ydl_opts) as ydl:
+                meta = ydl.extract_info(video, download=True)
+            
+            print(meta['requested_downloads'][0]['filepath'], file=sys.stderr)
+            # print(meta['requested_downloads'], file=sys.stderr)
+            # Loads the video in to opencvs capture
+            vidcap = cv2.VideoCapture(f"{meta['requested_downloads'][0]['filepath']}")
+            if not vidcap.isOpened():
+                logging.error("Video broken")
+                return
+            while True:
+                success, image = vidcap.read()
+                if success:
+                    break
+
+            start_time = time.time()
+            count = 1
+            yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # type: ignore
+            analyze_count = 1
+            first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+            while success:
+                success, image = vidcap.read()
+                newframe = image
+                logging.info(f"Read frames read: {count}")
+                if count > 1 and success:
+                    # Convert current frame to grayscale (needed for structural similarity check)
+                    new_gray = cv2.cvtColor(newframe, cv2.COLOR_BGR2GRAY)
+                    # Structural similarity test.
+                    score: np.float64 = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
+                    logging.info(f"Similarity Score: {score*100:.3f}%")
+                    if score * 100 < self.SIMILARITY_LIMIT:
+                        yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))   # type: ignore
+                        analyze_count += 1
+                        first_gray = new_gray
+                count += self.FRAME_SKIP
+                # Skip ahead 30 frames from current frame
+                vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
+
+        end_time = time.time()
+        run_time = end_time - start_time
+        logging.info(
+            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+        )
+        return
+    
+class VimeoSelector(FrameSelector):
+    "Uses OpenCV structural similarity to skip similar frames."
+
+    # Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
+    FRAME_SKIP = 30
+    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+    SIMILARITY_LIMIT = 80
+    
+
+    def select_frames(self, video):
+        "Selects frames from a video, using structural similarity to ignore similar frames."
+        return list(self.__generate_frames(video)), self.get_fps(video)
+    
+    def get_fps(self, video):
+        vidcap = cv2.VideoCapture(video.direct_url)
+        if not vidcap.isOpened:
+            logging.error("Video broken")
+            return
+        fps = vidcap.get(cv2.CAP_PROP_FPS)
+        vidcap.release()
+        return fps
+
+    def __generate_frames(self, video):
+        vidcap = cv2.VideoCapture(video.direct_url)
+        
+        if not vidcap.isOpened:
+            logging.error("Video broken")
+            return
+        while True:
+            success, image = vidcap.read()
+            if image is None:
+                logging.error("Image broken")
+                return
+            if success:
+                break
         start_time = time.time()
         count = 1
         yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB)) 

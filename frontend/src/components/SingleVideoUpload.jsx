@@ -69,8 +69,14 @@ function SingleVideoUpload({ video }) {
             setIsUploaded(true);
             let url = "http://localhost:8000/upload";
             if(video.youtube) {
-                url = url + "/youtube";
-            }
+                if(video.file.includes("youtube") || video.file.includes("youtu.be")) {
+                    url = url + "/youtube";
+                } else if (video.file.includes("tiktok")) {
+                    url = url + "/tiktok";
+                } else if ((video.file.includes("vimeo") )){
+                    url = url + "/vimeo";
+                }
+            } 
             axios({
                 method: 'post',
                 url: url,

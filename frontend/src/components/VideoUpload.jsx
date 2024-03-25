@@ -40,7 +40,7 @@ function VideoUpload() {
 
     const handleURL = async (e) =>{
         e.preventDefault();
-        if (url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/)) {
+        if (url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/) || url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?vimeo.com\/(\d+)($|\/)/)) {
             let checkURL = url;
             if(!/^https?:\/\//i.test(checkURL)) {
                 checkURL = "https://" + url;
@@ -62,6 +62,21 @@ function VideoUpload() {
             }
             console.log(videos);
             console.log(videos.length);
+        } else if(url.match(/^.*https:\/\/(?:m|www|vm)?\.?tiktok\.com\/((?:.*\b(?:(?:usr|v|embed|user|video)\/|\?shareId=|\&item_id=)(\d+))|\w+)/)) {
+            let checkURL = url;
+            if(!/^https?:\/\//i.test(checkURL)) {
+                checkURL = "https://" + url;
+            }
+            if (videos.length > 0 && videos.length < 4) {
+                setVideos([...videos, { file: checkURL, uploaded: false, analysed: false, name: url.split("/").slice(-1).toString(), youtube: true }]);
+            } else if (videos.length === 0) {
+                setVideos([{ file: checkURL, uploaded: false, analysed: false, name: url.split("/").slice(-1).toString(), youtube: true }]);
+            } else {
+                alert("You can only upload 4 videos at a time");
+            }
+            console.log(videos);
+            console.log(videos.length);
+
         } else {
             alert("Please enter a valid youtube URL");
         }
@@ -96,14 +111,14 @@ function VideoUpload() {
                         </div>
                         <p>or</p>
                         <div>
-                            <label htmlFor="website" className="block mb-2 text-sm font-medium text-gray-900 dark:text-grey-900">Youtube URL</label>
+                            <label htmlFor="website" className="block mb-2 text-sm font-medium text-gray-900 dark:text-grey-900">Youtube/Tiktok/Vimeo URL</label>
                             <div className="flex justify-center">
                             <input  
                                 onChange={handleChange}
                                 value={url || ""}
                                 type="url" 
                                 id="website"
-                                className="w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="youtube.com" required />
+                                className="w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="youtube.com/tiktok.com/vimeo.com" required />
                             </div>
                             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>
                         </div>
