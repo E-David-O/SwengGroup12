@@ -47,6 +47,6 @@ jobs:
     - name: Run Tests
       run: |
         cd backend
-        # Add your test command here, e.g., pytest
+        # Add your test command here
 
-    # Add deployment steps here
+    # Add deployment steps
