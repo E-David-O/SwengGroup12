@@ -5,6 +5,7 @@ import {
     CardFooter,
     Typography,
   } from "@material-tailwind/react";
+import NavbarButton from "./NavbarButton";
    
 function DashboardCard(props) {
     return (
@@ -13,7 +14,7 @@ function DashboardCard(props) {
           <img
             src={props.imgUrl}
             alt="dashboard-card"
-            className="rounded-xl w-full h-56 object-cover"
+            className="rounded-xl w-full h-60"
           />
         </CardHeader>
         <CardBody placeholder="" className="flex-grow">
@@ -27,9 +28,9 @@ function DashboardCard(props) {
         <CardFooter placeholder="">
             <a 
                 href={props.buttonLink}
-                className="inline-block bg-slate-100 py-2 px-4 rounded-xl hover:bg-slate-50"
+                className="inline-block"
             >
-                    {props.buttonText}
+                    <NavbarButton buttonText={props.buttonText}/>
             </a>
         </CardFooter>
       </Card>
