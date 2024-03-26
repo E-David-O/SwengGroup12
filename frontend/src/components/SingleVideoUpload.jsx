@@ -5,7 +5,6 @@ import {
 import axios from "axios";
 import { VideoContext} from "./VideoUtil";
 import { useContext, useState, useEffect, useCallback } from "react";
-import io from 'socket.io-client';
 import { Link } from "react-router-dom";
 import DropDown from "./DropDown";
 import './typedef'

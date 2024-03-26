@@ -5,6 +5,7 @@ import { useState, useRef, useContext} from "react";
 import SingleVideoUpload from "./SingleVideoUpload";
 import { VideoContext } from "./VideoUtil";
 import axios from "axios";
+import MultiDropDown from "./MultiDropDown";
 /**
  * 
  * @returns VideoUpload component
@@ -121,6 +122,21 @@ function VideoUpload() {
                                 className="w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="youtube.com/tiktok.com/vimeo.com" required />
                             </div>
                             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>
+                        </div>
+                        <div className="grid grid-cols-2">
+                            <MultiDropDown
+                                formFieldName={"Select the frame selection algorithm"}
+                                options={["Structural Similarity", "Homography + Structural Similarity"]}
+                                onChange={(selected) => console.log(selected)}
+                                prompt={"Select one or more frame selection algorithm"}
+                            />
+                            <MultiDropDown
+                                formFieldName={"Select the frame analysis model"}
+                                options={["Small", "Large"]}
+                                onChange={(selected) => console.log(selected)}
+                                prompt={"Select one or more frame analysis model"}
+                            />
+
                         </div>
                 </div>
                         <div className="grid grid-cols-1 gap-4 m-5">

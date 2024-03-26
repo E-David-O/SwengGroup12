@@ -64,6 +64,18 @@ function VideoAnalysis() {
      
         const handlePlayerReady = (player) => {
                 playerRef.current = player;
+
+                player.on("play", () => {
+                        player.spriteThumbnails({
+                                width: 192,
+                                height: 108,
+                                columns: 1,
+                                rows: 1,
+                                urlArray: images,
+                                interval: ((player.duration() * fps) / results.length)/fps,
+                        });
+                });
+
                
                 player.on("timeupdate", () => {
                         const time = player.currentTime();
@@ -76,14 +88,7 @@ function VideoAnalysis() {
                         setClosest(closestFrame);
                         setCurrentFrame(results.find(f => f.frame_number === closestFrame));
                         
-                        player.spriteThumbnails({
-                                width: 192,
-                                height: 108,
-                                columns: 1,
-                                rows: 1,
-                                urlArray: images,
-                                interval: ((player.duration() * fps) / results.length)/fps,
-                        });
+                        
                         
                 });
                 player.on("waiting", () => {
@@ -95,7 +100,6 @@ function VideoAnalysis() {
                 });
             };
         let videoJsOptions;
-        console.log(video);
         if(!video.youtube) {
                 videoJsOptions = {
                         controls: true,
