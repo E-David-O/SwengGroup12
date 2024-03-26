@@ -43,8 +43,7 @@ class SelectedFrame:
     "The metadata of a selected frame."
     frame_number: int | None
     image: NDArray[np.uint8]
-    frameid: int
-    frameid: int
+    frame_id: int = 0
 
 
 class FrameSelector(ABC):
@@ -90,7 +89,7 @@ class StructuralSimilaritySelector(FrameSelector):
 
             start_time = time.time()
             count = 1
-            frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, None)
+            frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, "")
             yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
             analyze_count = 1
             first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -106,7 +105,7 @@ class StructuralSimilaritySelector(FrameSelector):
                     score: np.float64 = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
                     logging.info(f"Similarity Score: {score*100:.3f}%")
                     if score * 100 < self.SIMILARITY_LIMIT:
-                        frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, None)
+                        frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, "")
                         yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
                         analyze_count += 1
                         first_gray = new_gray

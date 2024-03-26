@@ -71,7 +71,7 @@ def create_app(test_config = None) -> Flask:
             uploaded_video.file, video_id
         )
         analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+            analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id) for frame in frames
         ]
         response: list[AnalysisResponse] = [
             {
@@ -93,7 +93,7 @@ def create_app(test_config = None) -> Flask:
         uploaded_file = request.form.getlist("files")
         frames = frameselector.LiveSelector().select_frames(uploaded_file)
         analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+            analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id) for frame in frames
         ]
         response: list[AnalysisResponse] = [
             {
@@ -115,7 +115,7 @@ def create_app(test_config = None) -> Flask:
             stream
         )
         analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+            analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id) for frame in frames
         ]
         response: list[AnalysisResponse] = [
             {
@@ -166,7 +166,7 @@ class AnalysisResult:
     image: str
 
 
-def analyze_frame(frame: str) -> AnalysisResult:
+def analyze_frame(frame: str, frame_id) -> AnalysisResult:
     "Uses the YOLOv8 model to detect objects in a base-64 encoded frame."
     try:
         model = analyze_frame.model
@@ -175,6 +175,9 @@ def analyze_frame(frame: str) -> AnalysisResult:
         model = analyze_frame.model
     load = json.loads(frame)
     imdata = base64.b64decode(load["image"])
+
+    print(frame_id)
+
     im = Image.open(BytesIO(imdata))
     results = model(im, stream=False, device="mps")  # type: ignore
     list_of_results: list[ModelResult] = []
