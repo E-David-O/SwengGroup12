@@ -25,6 +25,32 @@ function VideoUpload() {
 
     const [isDragging, setIsDragging] = useState(false);
     const [uploadVideoCount, setUploadVideoCount] = useState(0);
+
+    const formatDuration = (seconds) => {
+        let hours = -1
+        let minutes = -1
+        let newSeconds = -1
+        if (seconds > 3600) {
+            hours = (seconds / 3600)
+            seconds -= (hours*3600)
+        }
+
+        if (seconds > 60) {
+            minutes = (seconds / 60)
+            seconds -= (minutes*60)
+        }
+
+        if (hours >= 0){
+            return `${hours}:${minutes}:${seconds.toFixed(2)}`
+        }
+        else if (minutes >= 0) {
+            return `${minutes}:${seconds.toFixed(2)}`
+        }
+        else {
+            return `${seconds.toFixed(0)} seconds`
+        }
+
+    }
    
 
     /**
@@ -41,11 +67,36 @@ function VideoUpload() {
         if (uploadVideoCount >= 4) {
             alert("You can only upload 4 videos at a time");
         }
-        else if (videos.length > 0) {
-            setVideos([...videos, { file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name, youtube: false}]);
-        }
-        else {
-            setVideos([{ file: e.target.files[0], uploaded: false, analysed: false, name: e.target.files[0].name, youtube: false}]);
+        else if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const videoElement = document.createElement("video");
+            videoElement.preload = 'metadata';
+            
+            videoElement.onloadedmetadata = () => {
+                window.URL.revokeObjectURL(videoElement.src);
+                const duration = videoElement.duration;
+                const newVideo = {
+                    file: file,
+                    uploaded: false,
+                    analysed: false,
+                    name: file.name,
+                    youtube: false,
+                    duration: formatDuration(duration)
+                };
+    
+                if (videos.length > 0) {
+                    setVideos([...videos, newVideo]);
+                } else {
+                    setVideos([newVideo]);
+                }
+            };
+    
+            videoElement.onerror = () => {
+                window.URL.revokeObjectURL(videoElement.src);
+                console.error("Error loading video file.");
+            };
+    
+            videoElement.src = URL.createObjectURL(file);
         }
 
     }
@@ -152,10 +203,9 @@ function VideoUpload() {
                             })}
                             {
                                 [...resultList].map((result, index) => {
-                                    console.log(`index: ${index}. videos[index]: ${JSON.stringify(videos[index])}`)
                                     if (videos[index] && !videos[index].youtube) {
                                         // @ts-ignore
-                                        return <VideoCard key={index} result={result} />
+                                        return <VideoCard key={index} result={result} video={videos[index]}/>
                                     }
                             })}
 

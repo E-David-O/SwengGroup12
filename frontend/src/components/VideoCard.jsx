@@ -10,6 +10,7 @@ function VideoCard(props) {
     const { videos, setVideos, resultList, setResultList } = useContext(VideoContext)
 
     const videoName = props.result.name;
+    const duration = props.video ? props.video.duration : "2:34";
     const base64ImageData = props.result.results[1].image;
     const imageDataUrl = `data:image/jpeg;base64,${base64ImageData}`;
 
@@ -31,7 +32,7 @@ function VideoCard(props) {
                 <p className="text-2xl font-semibold text-gray-800">
                     {videoName}
                 </p>
-                <p className="text-gray-600">Video Length: 2:34</p>
+                <p className="text-gray-600">Video Length: {duration}</p>
                 <div className="flex space-x-2">
                     <Link 
                         to={`/analysis/${videoName}`}

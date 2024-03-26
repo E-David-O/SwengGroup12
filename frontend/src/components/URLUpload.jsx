@@ -5,6 +5,7 @@ import SingleVideoUpload from "./SingleVideoUpload";
 import { VideoContext } from "./VideoUtil";
 import axios from "axios";
 import VideoCard from "./VideoCard";
+import { FaYoutube } from 'react-icons/fa';
 
 /**
  * 
@@ -20,6 +21,32 @@ function URLUpload() {
     const inputRef = useRef(null);
     const [url, setUrl] = useState("");
     const [youtubeVideoCount, setYoutubeVideoCount] = useState(0)
+
+    const formatDuration = (seconds) => {
+        let hours = -1
+        let minutes = -1
+        let newSeconds = -1
+        if (seconds > 3600) {
+            hours = (seconds / 3600)
+            seconds -= (hours*3600)
+        }
+
+        if (seconds > 60) {
+            minutes = (seconds / 60)
+            seconds -= (minutes*60)
+        }
+
+        if (hours >= 0){
+            return `${hours}:${minutes}:${seconds.toFixed(2)}`
+        }
+        else if (minutes >= 0) {
+            return `${minutes}:${seconds.toFixed(2)}`
+        }
+        else {
+            return `${seconds.toFixed(0)} seconds`
+        }
+
+    }
    
 
     const handleURL = async (e) =>{
@@ -83,22 +110,25 @@ function URLUpload() {
                 <form autoComplete="off">
                 <div className="text-center">
                         <div>
-                            <label htmlFor="website" className="block mt-4 mb-2 text-3xl font-medium text-gray-900 bg-slate-200 p-4 rounded-xl inline-block">Youtube URL</label>
+                            <label htmlFor="website" className="block my-4 text-3xl font-medium text-gray-900 bg-slate-200 p-4 rounded-xl inline-block"><FaYoutube className="text-red-600 text-6xl inline-block mx-2" />Youtube Video Analysis</label>
                             <div className="flex justify-center">
                             <input  
                                 onChange={handleChange}
                                 value={url || ""}
                                 type="url" 
                                 id="website"
-                                className="w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="youtube.com" required />
+                                className="my-4 w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                                placeholder="Insert your youtube url" 
+                                required 
+                            />
                             </div>
                             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>
                         </div>
                 </div>
                 <div className="text-2xl text-center bg-gray-300 py-2 px-2 mt-12">
-                    <p className="inline-block bg-slate-100 rounded-xl p-2">
+                    <div className="inline-block bg-slate-100 rounded-xl p-2">
                         Analysed videos <div className={`inline-block ${youtubeVideoCount == 4 ? 'text-red-600' : 'text-black'}`}>({youtubeVideoCount}/4)</div>
-                    </p>
+                    </div>
                 </div>
                         <div className="grid grid-cols-1 gap-4 m-5">
                         {videos.length > 0
