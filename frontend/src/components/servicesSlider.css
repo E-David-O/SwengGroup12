@@ -1,0 +1,40 @@
+.main {
+    text-align: center;
+    margin-top: 30px;
+  }
+  
+  .flex_row {
+    justify-content: center;
+    display: flex;
+    margin-top: 20px;
+  }
+  
+  .fruit-button {
+    position: relative; /* Make the button position relative */
+    margin: 0 10px;
+    padding: 20px; /* Adjust padding for circle size */
+    border-radius: 50%; /* Make the button circular */
+    background-color: white; /* Set button background to white */
+    border: 2px solid fill-green-500; /* Set blue border */
+    cursor: pointer;
+  }
+  
+  .fruit-button::after {
+    content: attr(data-number); /* Add the number as content */
+    position: absolute; /* Position the number inside the button */
+    top: 50%; /* Position the number vertically */
+    left: 50%; /* Position the number horizontally */
+    transform: translate(-50%, -50%); /* Center the number */
+  }
+  
+  .word-display {
+    font-size: 3rem;
+  }
+  
+  .black-circle {
+    width: 40px; /* Adjust circle size */
+    height: 40px; /* Adjust circle size */
+    background-color: rgb(46, 201, 19);
+    border-radius: 50%; /* Make the div circular */
+  }
+  

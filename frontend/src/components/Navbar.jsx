@@ -11,7 +11,7 @@ import NavbarButton from "./NavbarButton";
 
 function Navbar() {
     const [open, setOpen] = useState(false);
-    const { token, deleteData, logout } = useContext(VideoContext);
+    const { token, logout } = useContext(VideoContext);
     const handleClick = () => {
         setOpen(!open);
     };
@@ -36,11 +36,22 @@ function Navbar() {
         
     }
 
-    const handleClearCache = (e) => {
-        e.preventDefault();
-        deleteData();
-       
-    }
+    const handleMode = (e) => {
+        if (localStorage.theme === "dark" || !("theme" in localStorage)) {
+            //add class=dark in html element
+            document.documentElement.classList.add("dark");
+          } else {
+            //remove class=dark in html element
+            document.documentElement.classList.remove("dark");
+          }
+      
+          if (localStorage.theme === "dark") {
+            localStorage.theme = "light";
+          } else {
+            localStorage.theme = "dark";
+          }
+        }
+    
 
 
 
@@ -60,11 +71,9 @@ return (
         </button>
         <div className={
             "w-full md:block md:w-auto" +
-            (open ? " flex" : " hidden")
+            (open ? "flex " : " hidden")
         }>
-            <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                
-
+            <ul className={"absolute md:relative z-10 top-15 right-0 font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"}>
                 { token == "" ? 
                     <>
                         <li>
@@ -90,16 +99,21 @@ return (
                         </li>
 
                         <li>
-                            <Link to="/live" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><NavbarButton buttonText="Live Video" /></Link>
+                            <Link to="/url" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><NavbarButton buttonText="Video URL" /></Link>
                         </li>
 
                         <li>
-                            <Link onClick={(e) => handleClearCache(e)} to="/video" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><NavbarButton buttonText="Clear Local Data" /></Link>
+                            <Link to="/live" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><NavbarButton buttonText="Live Video" /></Link>
                         </li>
-
+                        <li>
+                            <div onClick={handleMode} className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparen">
+                                <NavbarButton buttonText={"Theme"} />
+                            </div>
+                        </li>
                         <li>
                             <Link onClick={(e) => handleLogout(e)} to="/video" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"><LogoutButton /></Link>
                         </li>
+                        
                     </>
                 }
 

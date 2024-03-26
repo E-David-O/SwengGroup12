@@ -5,6 +5,7 @@ import UserDashboard from './components/UserDashboard';
 import VideoUpload from './components/VideoUpload';
 import { Route, Routes } from "react-router-dom";
 import LiveVideo from './components/LiveVideo';
+import URLUpload from './components/URLUpload';
 import VideoAnalysis from './components/VideoAnalysis';
 import { VideoContext } from "./components/VideoUtil";
 import { useContext } from "react";
@@ -36,6 +37,7 @@ function App() {
               <>
                 <Route path="*" element={<UserDashboard />} />
                 <Route path="/video" element={<VideoUpload />} />
+                <Route path="/url" element={<URLUpload />} />
                 <Route path="/live" element={<LiveVideo />} />
                 <Route path="/analysis/:id" element={<VideoAnalysis />}/>
               </>

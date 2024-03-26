@@ -1,9 +1,10 @@
 import Webcam from "react-webcam";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 import { useState, useRef, useCallback, useMemo, useEffect}from "react";
 import axios from "axios";
-
-
+import { FaCamera } from 'react-icons/fa';
+import { RiLiveFill } from 'react-icons/ri'
 
 
 function LiveVideo() {
@@ -96,45 +97,92 @@ function LiveVideo() {
 
   const webcamBool = useCallback(() => {
         setCamEnabled(!camEnabled);
-  }, [camEnabled]);
+        if (camEnabled)
+          setCapturing(false)
+  }, [camEnabled, capturing]);
 
   return (
-    <>
-    <Navbar/>
-    <div>
-    {camEnabled ? (
-    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full my-2" onClick={webcamBool}>Disable Webcam</button>
-    ) : (
-    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full my-2" onClick={webcamBool}>Enable Webcam</button>
-    )}
-    {camEnabled && <Webcam audio={false} ref={webcamRef}/>}
+    <div className="min-h-screen text-center">
+      <Navbar/>
+      <div className="text-center">
+        <div className="flex flex-col items-center m-4">
+          {camEnabled 
+            ? (
+                <Webcam audio={false} ref={webcamRef}/>
+              )
+            :
+              (
+                <div className="h-96 w-1/2 border-4 border-dashed border-slate-500 flex justify-center items-center">
+                  <FaCamera className="text-slate-400 text-6xl inline-block mx-2" />
+                </div>
+              )
+          }
+          {capturing
+            ?
+              (
+                <div className="bg-white p-1.5 rounded-xl"><RiLiveFill className="text-red-600 text-2xl inline-block mx-2" />Recording in progress...</div>
+              )
+            :
+              (
+                <div></div>
+              )
+          }
+        </div>
+        {camEnabled 
+          ? (
+              <button 
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mb-2" 
+                onClick={webcamBool}>
+                  Disable Webcam
+              </button>
+            ) 
+          : 
+            (
+              <button 
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full my-2" 
+                onClick={webcamBool}>
+                  Enable Webcam
+              </button>
+            )
+        }
+        <div className="inline-block px-4 mb-6">
+          {capturing 
+            ? (
+                <button 
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" 
+                  onClick={handleStopCaptureClick}>
+                    Stop Capture
+                </button>
+              ) 
+            : 
+              (
+                <button 
+                  className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+                  onClick={handleStartCaptureClick}>
+                    Start Capture
+                </button>
+              )
+          }
+        </div>
+      </div>
+      <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Most Recent Chunk Analysis</p>
+      <div className="grid grid-cols-3 gap-1 m-1">
+        {mostRecent.length !== 0 
+          ? mostRecent?.map((f, i) => (
+              <img src={`data:image/jpeg;base64,${f.image}`} key={i}/>
+            )) 
+          : 
+            <p>No Recent Results</p>
+        }
+      </div>
+      <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis</p>
+      <div className="grid grid-cols-3 gap-1 m-1">
+        { data.length !== 0 ? data?.map((f, i) => {
+                return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}</div>
+        }) : <p>No Total Results</p>}
+      </div>
+      <Footer />
     </div>
-    <div>
-    {capturing ? (
-    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleStopCaptureClick}>Stop Capture</button>
-    ) : (
-    <button className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"onClick={handleStartCaptureClick}>Start Capture</button>
-    )}
-    </div>
-    <p>Closest Analysed Chunk</p>
-    <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Most Recent Chunk Analysis</p>
-    <div className="grid grid-cols-3 gap-1 m-1">
-    {mostRecent.length !== 0 ? mostRecent?.map((f, i) => (
-      
-      <img src={`data:image/jpeg;base64,${f.image}`} key={i}/>
-      
-    )) 
-    : <p>No Recent Results</p>}
-    
-    </div>
-    <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis</p>
-    <div className="grid grid-cols-3 gap-1 m-1">
-    { data.length !== 0 ? data?.map((f, i) => {
-            return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}</div>
-    }) : <p>No Total Results</p>}
-    </div>
-
-    </>
   );
 }
 

@@ -34,7 +34,6 @@ function SingleVideoUpload({ video }) {
     // }, [])
 }
     useEffect(() => {
-    console.log(uploadProgress);
     if(video.analysed !== true && video.uploaded === true) {
         const intervalId = setInterval(() => {
         setUploadProgress((uploadProgress) => {
@@ -106,6 +105,11 @@ function SingleVideoUpload({ video }) {
      * @description This function is used to delete the video from the list of videos 
      */
 
+    // <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+    //     <Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" to={`/analysis/${video.name}`}>Click Here to View Analysis of {video.name}</Link>
+    //     <button onClick={deleteVideo}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
+    // </div>
+
     const deleteVideo = useCallback(() => {
         console.log(videos);
         setVideos(videos.filter(videos => videos.name !== video.name));
@@ -113,12 +117,10 @@ function SingleVideoUpload({ video }) {
     return (
         <div>
         { video.uploaded ? ( (video.analysed) ? ( 
-           <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
-                <Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" to={`/analysis/${video.name}`}>Click Here to View Analysis of {video.name}</Link>
-                <button onClick={deleteVideo}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
+           <div>
             </div> ) : (
             (
-                <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+                <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-300 p-8 text-xl">
             <div className="w-full bg-gray-200 content-centre rounded-full h-2.5 dark:bg-gray-700 shadow-lg">
                 {uploadProgress ?
                 <><div
@@ -132,13 +134,13 @@ function SingleVideoUpload({ video }) {
             </div> 
             </div>)))
          : (
-        <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+        <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-300 p-4 text-xl">
             <FileOutlined style={{ fontSize: '250%'}}/>
             <h3 className="pt-3">{video.name}</h3>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}</button>
+            <button className="bg-blue-500 hover:bg-blue-200 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}</button>
             <DropDown label={"Select Resolution"} options={["Auto","1080","720","480"]} selected={resolution} setSelected={setResolution} />
             <DropDown label={"Select Frame Rate"} options={["Auto","60","30","15"]} selected={frameRate} setSelected={setFrameRate} />
-            <button onClick={deleteVideo}><DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/></button>
+            <button onClick={deleteVideo}><DeleteOutlined className="hover:bg-blue-300" style={{ fontSize: '250%'}}/></button>
         </div> )}
         </div>
     );

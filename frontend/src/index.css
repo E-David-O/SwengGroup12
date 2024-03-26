@@ -16,3 +16,25 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@keyframes text-color-rotation {
+  0%, 100% {
+    color: #f87171;
+  }
+  20% {
+    color: #60a5fa;
+  }
+  40% {
+    color: #4ade80;
+  }
+  60% {
+    color: #a78bfa;
+  }
+  80% {
+    color: #facc15;
+  }
+}
+
+.rotating-username-text {
+  animation: text-color-rotation 15s infinite linear;
+}
