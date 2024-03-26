@@ -62,20 +62,20 @@ def create_app(test_config = None) -> Flask:
         video_id = getSetDB.set_video(0, "", "", uploaded_video.frameRate, 0, uploaded_video.resolution)
         print(video_id)
 
-        # frames = frameselector.StructuralSimilaritySelector().select_frames(
-        #     uploaded_video.file
-        # )
-        # analysis_results = [
-        #     analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
-        # ]
-        # response: list[AnalysisResponse] = [
-        #     {
-        #         "frame_number": frame.frame_number,
-        #         "results": analysed.results,
-        #         "image": analysed.image,
-        #     }
-        #     for analysed, frame in zip(analysis_results, frames)
-        # ]
+        frames = frameselector.StructuralSimilaritySelector().select_frames(
+            uploaded_video.file
+        )
+        analysis_results = [
+            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+        ]
+        response: list[AnalysisResponse] = [
+            {
+                "frame_number": frame.frame_number,
+                "results": analysed.results,
+                "image": analysed.image,
+            }
+            for analysed, frame in zip(analysis_results, frames)
+        ]
 
         toReturn = {"results": "Test"}
 
