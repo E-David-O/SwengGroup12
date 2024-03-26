@@ -17,8 +17,7 @@ from numpy.typing import NDArray
 from PIL import Image
 from skimage.metrics import structural_similarity  # type: ignore
 from werkzeug.datastructures import FileStorage
-from getSetDB import set_selected_frame
-from getSetDB import set_selected_frame
+from . import getSetDB
 
 
 def vid_resize(vid_path: str, output_path: str, width: int):
@@ -91,7 +90,7 @@ class StructuralSimilaritySelector(FrameSelector):
 
             start_time = time.time()
             count = 1
-            frame_id = set_selected_frame(None, video_id, count, 0, None)
+            frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, None)
             yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
             analyze_count = 1
             first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -107,7 +106,7 @@ class StructuralSimilaritySelector(FrameSelector):
                     score: np.float64 = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
                     logging.info(f"Similarity Score: {score*100:.3f}%")
                     if score * 100 < self.SIMILARITY_LIMIT:
-                        frame_id = set_selected_frame(None, video_id, count, 0, None)
+                        frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, None)
                         yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
                         analyze_count += 1
                         first_gray = new_gray
