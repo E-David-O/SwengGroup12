@@ -140,8 +140,12 @@ def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selection
             binary_data = Binary(byte_array)
 
             input_query = """INSERT INTO SelectedFrame (idFrame, idVideo, frameNumber, selectionMethod, frameData) 
-                        VALUES (%s, %s, %s, %s, %s);"""
+                        VALUES (%s, %s, %s, %s, %s)
+                        RETURNING id; """
             cursor.execute(input_query, (frame_id, video_id, frameNumber, selectionMethod, binary_data))
+
+            inserted_id = cursor.fetchone()[0]
+            return inserted_id
 
     except (Exception, psycopg2.Error) as error:
         if connection:
@@ -156,7 +160,32 @@ def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selection
             connection.close()
 
 
-def set_analyzed_frames(idFrame: int, objectDetected: str, confidence: float, frameData: str):
+def set_selected_frame_img(frame_id: int, frameData: str):
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor:
+            
+            byte_array = frameData.encode('utf-8')
+            binary_data = Binary(byte_array)
+
+            input_query = """UPDATE SelectedFrame SET frameData = %s WHERE id = %s"""
+            cursor.execute(input_query, (binary_data, frame_id))
+
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            print("Selected Frames")
+            print("Could connect, but failed to insert data: ", error)
+        else:
+            print("Failed to connect: ", error)
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+
+
+def set_frame_objects(idFrame: int, objectDetected: str, confidence: float, frameData: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
@@ -339,7 +368,7 @@ def get_selected_frames(video_id: int):
             cursor.close()
             connection.close()
 
-def get_analyzed_objects(frame_id: int):
+def get_frame_objects(frame_id: int):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
@@ -356,7 +385,7 @@ def get_analyzed_objects(frame_id: int):
                     "idFrame": item[1],
                     "objectDetected": item[2],
                     "confidence": item[3],
-                    "boxedFrame": bytes(item[4]).decode('utf-8'),
+
                     "timestamp": item[5].strftime('%Y-%m-%d %H:%M:%S')
                 })
             return json.dumps(rows)
@@ -481,11 +510,16 @@ def return_all_video_info(video_id: int):
 
 def main():
 
+
+    frame_id = set_selected_frame(1, 1, 1, 1, "Hello World")
+    set_selected_frame_img(frame_id, "New World")
+    print(get_selected_frames(1))
+
     #def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate: str, video_length: int, frame_resolution: str):
 
-    video_id = set_video(0, "100000000000", "mp4", "60", 120, "1920x1080")
-    json_output = get_video(video_id)
-    print(json_output)
+    # video_id = set_video(0, "100000000000", "mp4", "60", 120, "1920x1080")
+    # json_output = get_video(video_id)
+    # print(json_output)
 
     # video_id = send_encoded_video_minio("10000000000000", 1)
     # print(video_id)
