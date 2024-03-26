@@ -17,6 +17,7 @@ from numpy.typing import NDArray
 from PIL import Image
 from skimage.metrics import structural_similarity  # type: ignore
 from werkzeug.datastructures import FileStorage
+from getSetDB import set_selected_frame
 
 
 def vid_resize(vid_path: str, output_path: str, width: int):
@@ -42,6 +43,7 @@ class SelectedFrame:
     "The metadata of a selected frame."
     frame_number: int | None
     image: NDArray[np.uint8]
+    frameid: int
 
 
 class FrameSelector(ABC):
@@ -62,11 +64,11 @@ class StructuralSimilaritySelector(FrameSelector):
     # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
     SIMILARITY_LIMIT_LIVE = 40
 
-    def select_frames(self, video: FileStorage) -> List[SelectedFrame]:
+    def select_frames(self, video: FileStorage, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video))
+        return list(self.__generate_frames(video, video_id))
 
-    def __generate_frames(self, video: FileStorage) -> Iterator[SelectedFrame]:
+    def __generate_frames(self, video: FileStorage, video_id) -> Iterator[SelectedFrame]:
         with tempfile.NamedTemporaryFile() as rf:
             with tempfile.NamedTemporaryFile() as tf:
                 tf.write(video.read())
@@ -86,7 +88,8 @@ class StructuralSimilaritySelector(FrameSelector):
 
             start_time = time.time()
             count = 1
-            yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # type: ignore
+            frame_id = set_selected_frame(None, video_id, count, 0, None)
+            yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
             analyze_count = 1
             first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
@@ -101,7 +104,8 @@ class StructuralSimilaritySelector(FrameSelector):
                     score: np.float64 = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
                     logging.info(f"Similarity Score: {score*100:.3f}%")
                     if score * 100 < self.SIMILARITY_LIMIT:
-                        yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))   # type: ignore
+                        frame_id = set_selected_frame(None, video_id, count, 0, None)
+                        yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
                         analyze_count += 1
                         first_gray = new_gray
                 count += self.FRAME_SKIP
@@ -245,3 +249,4 @@ class YoutubeSelector(FrameSelector):
             f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
         )
         return
+    
