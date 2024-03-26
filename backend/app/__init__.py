@@ -176,8 +176,6 @@ def analyze_frame(frame: str, frame_id) -> AnalysisResult:
     load = json.loads(frame)
     imdata = base64.b64decode(load["image"])
 
-    print(frame_id)
-
     im = Image.open(BytesIO(imdata))
     results = model(im, stream=False, device="mps")  # type: ignore
     list_of_results: list[ModelResult] = []
