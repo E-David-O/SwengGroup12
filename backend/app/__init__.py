@@ -68,7 +68,7 @@ def create_app(test_config = None) -> Flask:
         print(video_id)
 
         frames = frameselector.StructuralSimilaritySelector().select_frames(
-            uploaded_video.file
+            uploaded_video.file, video_id
         )
         analysis_results = [
             analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames

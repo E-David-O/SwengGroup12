@@ -67,12 +67,10 @@ class StructuralSimilaritySelector(FrameSelector):
     SIMILARITY_LIMIT_LIVE = 40
 
     def select_frames(self, video: FileStorage, video_id) -> List[SelectedFrame]:
-    def select_frames(self, video: FileStorage, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
         return list(self.__generate_frames(video, video_id))
         return list(self.__generate_frames(video, video_id))
 
-    def __generate_frames(self, video: FileStorage, video_id) -> Iterator[SelectedFrame]:
     def __generate_frames(self, video: FileStorage, video_id) -> Iterator[SelectedFrame]:
         with tempfile.NamedTemporaryFile() as rf:
             with tempfile.NamedTemporaryFile() as tf:
@@ -95,8 +93,6 @@ class StructuralSimilaritySelector(FrameSelector):
             count = 1
             frame_id = set_selected_frame(None, video_id, count, 0, None)
             yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
-            frame_id = set_selected_frame(None, video_id, count, 0, None)
-            yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
             analyze_count = 1
             first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
@@ -111,8 +107,6 @@ class StructuralSimilaritySelector(FrameSelector):
                     score: np.float64 = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
                     logging.info(f"Similarity Score: {score*100:.3f}%")
                     if score * 100 < self.SIMILARITY_LIMIT:
-                        frame_id = set_selected_frame(None, video_id, count, 0, None)
-                        yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
                         frame_id = set_selected_frame(None, video_id, count, 0, None)
                         yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
                         analyze_count += 1
