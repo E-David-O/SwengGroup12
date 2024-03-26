@@ -44,7 +44,8 @@ def create_app(test_config = None) -> Flask:
 
     app.register_blueprint(auth.bp)
     db.init_app(app)
-
+    small_model = YOLO("yolov8n.pt")
+    large_model = YOLO("yolov8x.pt")
     @app.route("/upload", methods=["POST"])
     def upload() -> Response:
         "Receives an uploaded video to be analyzed."
@@ -52,6 +53,8 @@ def create_app(test_config = None) -> Flask:
             request.files["video"],
             request.form["resolution"],
             request.form["frameRate"],
+            request.form["model"],
+            request.form["frameselector"],
         )
         frames = frameselector.StructuralSimilaritySelector().select_frames(
             uploaded_video.file
@@ -151,13 +154,8 @@ class AnalysisResult:
     image: str
 
 
-def analyze_frame(frame: str) -> AnalysisResult:
+def analyze_frame(frame: str, model) -> AnalysisResult:
     "Uses the YOLOv8 model to detect objects in a base-64 encoded frame."
-    try:
-        model = analyze_frame.model
-    except AttributeError:
-        analyze_frame.model = YOLO("yolov8x.pt")
-        model = analyze_frame.model
     load = json.loads(frame)
     imdata = base64.b64decode(load["image"])
     im = Image.open(BytesIO(imdata))
