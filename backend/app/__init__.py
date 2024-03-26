@@ -4,10 +4,12 @@ import base64
 import json
 import logging
 import os
+import sys
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Any, Mapping, TypedDict
 from pytube import YouTube
+from vimeo_downloader import Vimeo
 import cv2
 from flask import Flask, Response, request
 from flask_cors import CORS
@@ -18,6 +20,8 @@ from ultralytics import YOLO  # type: ignore
 from werkzeug.datastructures import FileStorage
 
 from . import auth, frameselector, db
+
+
 
 
 def create_app(test_config = None) -> Flask:
@@ -113,6 +117,59 @@ def create_app(test_config = None) -> Flask:
         toReturn = {
             "results": response,
             "fps" : stream.fps,
+        }
+        return Response(json.dumps(toReturn), mimetype="application/json")
+    
+    @app.route("/upload/vimeo", methods=["POST"])
+    def uploadVimeo():
+        "Receives an uploaded video to be analyzed."
+        url = request.form["video"]
+        v = Vimeo(url)
+        stream = v.streams[0]
+        frames, fps = frameselector.VimeoSelector().select_frames(
+            stream
+        )
+        analysis_results = [
+            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+        ]
+        response: list[AnalysisResponse] = [
+            {
+                "frame_number": frame.frame_number,
+                "results": analysed.results,
+                "image": analysed.image,
+            }
+            for analysed, frame in zip(analysis_results, frames)
+        ]
+        toReturn = {
+            "results": response,
+            "fps" : fps,
+        }
+        return Response(json.dumps(toReturn), mimetype="application/json")
+    
+
+    
+    @app.route("/upload/tiktok", methods=["POST"])
+    def uploadTiktok():
+        "Receives an uploaded video to be analyzed."
+        url = request.form["video"]
+       
+        frames = frameselector.TiktokSelector().select_frames(
+            url
+        )
+        analysis_results = [
+            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+        ]
+        response: list[AnalysisResponse] = [
+            {
+                "frame_number": frame.frame_number,
+                "results": analysed.results,
+                "image": analysed.image,
+            }
+            for analysed, frame in zip(analysis_results, frames)
+        ]
+        toReturn = {
+            "results": response,
+            "fps" : ""
         }
         return Response(json.dumps(toReturn), mimetype="application/json")
 

@@ -42,6 +42,7 @@ export const VideoProvider = ({children }) => {
 
      const logout = () => {
       localStorage.removeItem("username");
+      deleteData();
       setToken("");
      }
 

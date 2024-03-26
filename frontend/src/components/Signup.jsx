@@ -50,6 +50,7 @@ export default function Signup() {
         .catch(function (error) {
             // handle error
             console.log(error);
+            alert(error.response.data.message)
         });
     }
 

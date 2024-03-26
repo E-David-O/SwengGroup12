@@ -1,4 +1,4 @@
-flask
+flask[async]
 flask-cors
 typing
 ultralytics
@@ -9,3 +9,5 @@ ffmpeg-python
 scikit-image
 opencv-python
 pytube
+yt-dlp[default]
+vimeo_downloader
