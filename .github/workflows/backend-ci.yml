@@ -3,11 +3,11 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ Ayushmaan04-patch-1 ]
     paths:
       - 'backend/**'
   pull_request:
-    branches: [ main ]
+    branches: [ Ayushmaan04-patch-1 ]
     paths:
       - 'backend/**'
 
@@ -19,9 +19,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_DB: yourdbname
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
+          POSTGRES_DB: DB
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
         # Needed to keep the container running until tests are done
