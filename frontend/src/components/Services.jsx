@@ -45,7 +45,7 @@ function Services() {
 
       <div className="main" style={{ marginTop: "30px" } }>
         <div className="box">
-          <h2 className="box-title text-3xl font-bold">{selectedFruit.title}</h2>
+          <h2 className="box-title text-3xl font-bold mb-6">{selectedFruit.title}</h2>
           <div className="box-paragraph-container" style={{ backgroundColor: "white", padding: "10px", borderRadius: "25px", border: "1px solid black", width: "40%", margin: "0 auto" }}>
             <p className="box-paragraph" style={{ fontSize: "1.2rem" }} dangerouslySetInnerHTML={{ __html: selectedFruit.history }}></p>
           </div>

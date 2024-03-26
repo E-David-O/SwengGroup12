@@ -10,7 +10,7 @@ function VideoCard(props) {
     const { videos, setVideos, resultList, setResultList } = useContext(VideoContext)
 
     const videoName = props.result.name;
-    const duration = props.video ? props.video.duration : "2:34";
+    const duration = props.video ? props.video.duration : "23 seconds";
     const base64ImageData = props.result.results[1].image;
     const imageDataUrl = `data:image/jpeg;base64,${base64ImageData}`;
 
