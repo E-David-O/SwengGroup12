@@ -19,7 +19,10 @@ from werkzeug.datastructures import FileStorage
 
 import psycopg2
 
+import psycopg2
+
 from . import auth, frameselector, db
+from . import getSetDB
 from . import getSetDB
 
 
@@ -51,6 +54,8 @@ def create_app(test_config = None) -> Flask:
     @app.route("/upload", methods=["POST"])
     def upload() -> Response:
         "Receives an uploaded video to be analyzed."
+        # video_id = getSetDB.set_video(0, "", "", request.form["frameRate"], 0, request.form["resolution"])
+        # print(video_id)
         # video_id = getSetDB.set_video(0, "", "", request.form["frameRate"], 0, request.form["resolution"])
         # print(video_id)
         uploaded_video = Video(
