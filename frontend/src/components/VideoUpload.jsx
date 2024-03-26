@@ -6,7 +6,6 @@ import VideoCard from "./VideoCard";
 import { VideoContext } from "./VideoUtil";
 import axios from "axios";
 import MultiDropDown from "./MultiDropDown";
-import { useLocation} from "react-router-dom";
 
 /**
  * 
@@ -244,7 +243,6 @@ function VideoUpload() {
                             />
 
                         </div>
-                        />
                     </div>
 
                     <div className="text-2xl text-center bg-gray-300 py-2 px-2 mt-12">
@@ -252,7 +250,7 @@ function VideoUpload() {
                             Analysed videos <p className={`inline-block ${uploadVideoCount == 4 ? 'text-red-600' : 'text-black'}`}>({uploadVideoCount}/4)</p>
                         </div>
                     </div>
-                </div>
+                
                 <div className="grid grid-cols-1 gap-4 m-5 mt-2">
                     {
                         videos.length > 0

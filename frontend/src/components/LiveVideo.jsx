@@ -1,3 +1,4 @@
+
 import Webcam from "react-webcam";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
