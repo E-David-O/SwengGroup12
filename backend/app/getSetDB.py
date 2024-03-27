@@ -1,5 +1,6 @@
 import psycopg2
 import time
+import logging
 import json
 import os
 from minio import Minio
@@ -96,16 +97,16 @@ def set_user(username: str, password: str, json_auth_token: str):
 
 
 def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate: str, video_length: int,
-              frame_resolution: str):
+              frame_resolution: str, is_link: int):
     try:
         connection, cursor = connect_to_database()
 
         if connection and cursor:
-            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frame_resolution)
-                        VALUES (%s, %s, %s, %s, %s, %s)
+            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frame_resolution, is_link)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
                         RETURNING id;"""
             cursor.execute(input_query,
-                           (account_id, "temp", file_format, frame_rate, video_length, frame_resolution))
+                           (account_id, "temp", file_format, frame_rate, video_length, frame_resolution, is_link))
             # connection.commit()
             inserted_id = cursor.fetchone()[0]
             updated_query = """UPDATE Videos SET videoPath = %s WHERE id = %s"""
@@ -119,7 +120,7 @@ def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate:
             
     except (Exception, psycopg2.Error) as error:
         if connection:
-            print("Could connect, but failed to insert data: ", error)
+            logging.info("Could connect, but failed to insert data: ", error)
             return None
         else:
             print("Failed to connect: ", error)
@@ -312,7 +313,8 @@ def get_video(video_id: int):
                 "frameRate": row[4],
                 "videoLength": row[5],
                 "frameResolution": row[6],
-                "timestamp": row[7].strftime('%Y-%m-%d %H:%M:%S')
+                "is_link":row[7],
+                "timestamp": row[8].strftime('%Y-%m-%d %H:%M:%S')
             }, indent = 4)
     except (Exception, psycopg2.Error) as error:
         if connection:

@@ -59,6 +59,7 @@ def setup_tables():
                 frameRate VARCHAR(60000),
                 videoLength VARCHAR(60000),
                 frame_resolution VARCHAR(60000),
+                is_link INT,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
