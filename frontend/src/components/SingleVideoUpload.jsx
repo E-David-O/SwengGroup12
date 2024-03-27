@@ -64,20 +64,10 @@ function SingleVideoUpload({ video }) {
             formData.append("resolution", resolution);
             formData.append("frameRate", frameRate);
             formData.append("model", video.models);
-            formData.append("algorithm", video.algorithms);
+            formData.append("frameselector", video.algorithms);
             video.uploaded = true;
             setIsUploaded(true);
             let url = "http://localhost:8000/upload";
-            if(video.youtube) {
-                if(video.file.includes("youtube") || video.file.includes("youtu.be")) {
-                    url = url + "/youtube";
-                } else if (video.file.includes("tiktok")) {
-                    url = url + "/tiktok";
-                } else if ((video.file.includes("vimeo") )){
-                    url = url + "/vimeo";
-                }
-            } 
-            console.log(formData)
             axios({
                 method: 'post',
                 url: url,

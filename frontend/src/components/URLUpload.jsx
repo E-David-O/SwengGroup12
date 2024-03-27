@@ -93,8 +93,8 @@ function URLUpload() {
                 analysed: false,
                 name: url.split("/").slice(-1).toString(),
                 youtube: true,
-                algorithms: [...algorithm].join(" "),
-                models: [...model].join(" "),
+                algorithms: [...algorithm].join(", "),
+                models: [...model].join(", "),
             };
             if (videos.length > 0 && videos.length < 4) {
                 setVideos([...videos, newVideo]);
@@ -156,9 +156,9 @@ function URLUpload() {
                                 required 
                             />
                             </div>
-                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>
+                           
                         </div>
-                </div>
+                
                 <div className="flex justify-evenly ">
                             <MultiDropDown
                                 formFieldName={"Select the frame selection algorithm"}
@@ -180,6 +180,9 @@ function URLUpload() {
                             />
 
                 </div>
+                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>
+            </div>    
+        </form>
                 <div className="text-2xl text-center bg-gray-300 py-2 px-2 mt-12">
                     <div className="inline-block bg-slate-100 rounded-xl p-2">
                         Analysed videos <div className={`inline-block ${youtubeVideoCount == 4 ? 'text-red-600' : 'text-black'}`}>({youtubeVideoCount}/4)</div>
@@ -209,7 +212,7 @@ function URLUpload() {
                         }
                         </div>
                        { videos.length < 0 ? <hr className="my-12 h-0.5 border-t-0 bg-neutral-100 opacity-100 dark:opacity-50" /> : null }
-                </form>
+                
          
         <Footer />
     </div>

@@ -4,6 +4,7 @@ import base64
 import json
 import logging
 import os
+import re
 import sys
 from dataclasses import dataclass
 from io import BytesIO
@@ -52,14 +53,44 @@ def create_app(test_config = None) -> Flask:
     @app.route("/upload", methods=["POST"])
     def upload() -> Response:
         "Receives an uploaded video to be analyzed."
-        uploaded_video = Video(
-            request.files["video"],
-            request.form["resolution"],
-            request.form["frameRate"],
-        )
-        frames = frameselector.StructuralSimilaritySelector().select_frames(
-            uploaded_video.file
-        )
+        frames = []
+        fps = 59.97
+        if request.files is None or "video" not in request.files:
+            uploaded_video = VideoURL(
+                request.form["video"],
+                request.form["resolution"],
+                request.form["frameRate"],
+                request.form["model"],
+                request.form["frameselector"],
+            )
+            if 'youtube' in uploaded_video.file:
+                yt = YouTube(uploaded_video.file)
+                stream = yt.streams.filter(file_extension="mp4", res=480).first()
+                frames = frameselector.YoutubeSelector().select_frames(
+                    stream
+                )
+                fps = stream.fps
+            elif 'vimeo' in uploaded_video.file:
+                v = Vimeo(uploaded_video.file)
+                stream = v.streams[0]
+                frames, fps = frameselector.VimeoSelector().select_frames(
+                    stream
+                )
+            elif 'tiktok' in uploaded_video.file:
+                frames = frameselector.TiktokSelector().select_frames(
+                    uploaded_video.file
+                )
+        else:
+            uploaded_video = VideoFile(
+                request.files["video"],
+                request.form["resolution"],
+                request.form["frameRate"],
+                request.form["model"],
+                request.form["frameselector"],
+            )
+            frames = frameselector.StructuralSimilaritySelector().select_frames(
+                uploaded_video.file
+            )
         analysis_results = [
             analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
         ]
@@ -73,6 +104,7 @@ def create_app(test_config = None) -> Flask:
         ]
         toReturn = {
             "results": response,
+            "fps" : fps,
         }
         return Response(json.dumps(toReturn), mimetype="application/json")
 
@@ -94,95 +126,29 @@ def create_app(test_config = None) -> Flask:
         ]
         return Response(json.dumps(response), mimetype="application/json")
     
-    @app.route("/upload/youtube", methods=["POST"])
-    def uploadYoutube():
-        "Receives an uploaded video to be analyzed."
-        url = request.form["video"]
-        yt = YouTube(url)
-        stream = yt.streams.filter(file_extension="mp4", res=480).first()
-        frames = frameselector.YoutubeSelector().select_frames(
-            stream
-        )
-        analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
-        ]
-        response: list[AnalysisResponse] = [
-            {
-                "frame_number": frame.frame_number,
-                "results": analysed.results,
-                "image": analysed.image,
-            }
-            for analysed, frame in zip(analysis_results, frames)
-        ]
-        toReturn = {
-            "results": response,
-            "fps" : stream.fps,
-        }
-        return Response(json.dumps(toReturn), mimetype="application/json")
     
-    @app.route("/upload/vimeo", methods=["POST"])
-    def uploadVimeo():
-        "Receives an uploaded video to be analyzed."
-        url = request.form["video"]
-        v = Vimeo(url)
-        stream = v.streams[0]
-        frames, fps = frameselector.VimeoSelector().select_frames(
-            stream
-        )
-        analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
-        ]
-        response: list[AnalysisResponse] = [
-            {
-                "frame_number": frame.frame_number,
-                "results": analysed.results,
-                "image": analysed.image,
-            }
-            for analysed, frame in zip(analysis_results, frames)
-        ]
-        toReturn = {
-            "results": response,
-            "fps" : fps,
-        }
-        return Response(json.dumps(toReturn), mimetype="application/json")
-    
-
-    
-    @app.route("/upload/tiktok", methods=["POST"])
-    def uploadTiktok():
-        "Receives an uploaded video to be analyzed."
-        url = request.form["video"]
-       
-        frames = frameselector.TiktokSelector().select_frames(
-            url
-        )
-        analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
-        ]
-        response: list[AnalysisResponse] = [
-            {
-                "frame_number": frame.frame_number,
-                "results": analysed.results,
-                "image": analysed.image,
-            }
-            for analysed, frame in zip(analysis_results, frames)
-        ]
-        toReturn = {
-            "results": response,
-            "fps" : ""
-        }
-        return Response(json.dumps(toReturn), mimetype="application/json")
-
 
     return app
 
 
 @dataclass
-class Video:
+class VideoFile:
     "An uploaded video"
     file: FileStorage
     resolution: str
     frameRate: str
+    model: str
+    frameselector: str
+
+
+@dataclass
+class VideoURL:
+    "An uploaded video"
+    file: str
+    resolution: str
+    frameRate: str
+    model: str
+    frameselector: str
 
 
 class ModelResult(TypedDict):

@@ -94,8 +94,8 @@ function VideoUpload() {
                     name: file.name,
                     youtube: false,
                     duration: formatDuration(duration),
-                    algorithms: [...algorithm].join(" "),
-                    models: [...model].join(" "),
+                    algorithms: [...algorithm].join(", "),
+                    models: [...model].join(", "),
                 };
     
                 if (videos.length > 0) {
