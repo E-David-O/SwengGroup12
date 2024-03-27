@@ -3,6 +3,7 @@
 import base64
 import json
 import logging
+import sys
 import os
 from dataclasses import dataclass
 from io import BytesIO
@@ -34,6 +35,8 @@ def create_app(test_config = None) -> Flask:
         SECRET_KEY="dev",
         DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
     )
+    # logging.basicConfig(filename='app.log', level=logging.INFO)
+
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -63,10 +66,14 @@ def create_app(test_config = None) -> Flask:
             request.form["resolution"],
             request.form["frameRate"],
         )
-        # set_video(account_id: int, video_path: str, file_format: str, frame_rate: int, video_length: int, frame_resolution: str)
-        video_id = getSetDB.set_video(0, "", "", uploaded_video.frameRate, 0, uploaded_video.resolution)
-        print(video_id)
+        file = uploaded_video.file
+        file_str = base64.b64encode(file.read()).decode('utf-8')
+        uploaded_video.file.seek(0)
+        logging.info(file_str)
 
+        # set_video(account_id: int, video_path: str, file_format: str, frame_rate: int, video_length: int, frame_resolution: str)
+        video_id = getSetDB.set_video(auth.get_logged_in_user(), file_str, "", uploaded_video.frameRate, 0, uploaded_video.resolution)
+        logging.info(video_id)
         frames = frameselector.StructuralSimilaritySelector().select_frames(
             uploaded_video.file, video_id
         )
@@ -84,8 +91,8 @@ def create_app(test_config = None) -> Flask:
 
         toReturn = {"results": "Test"}
 
-        # json = return_all_video_info(video_id)
-        return Response(json.dumps(toReturn), mimetype="application/json")
+        json = getSetDB.return_all_video_info(video_id)
+        return Response(json, mimetype="application/json")
 
     @app.route("/uploadLive", methods=["POST"])
     def upload_live() -> Response:

@@ -145,7 +145,7 @@ def login():
 
 def get_logged_in_user():
     user_id = session.get("user_id")
-
+    return user_id
 
 @bp.before_app_request
 def load_logged_in_user():

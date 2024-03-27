@@ -37,7 +37,7 @@ def connect_to_minio():
             secure=False
         )
         return minio_client
-    except ResponseError as error:
+    except Exception as error:
         print("MinIO error: ", error)
         return None
 
@@ -267,7 +267,7 @@ def get_user_id(id: int):
         if connection and cursor:
             
             input_query = """SELECT * FROM Users WHERE id = %s;"""
-            cursor.execute(input_query, (username,))
+            cursor.execute(input_query, (id,))
             rows = cursor.fetchone()
 
             return json.dumps({

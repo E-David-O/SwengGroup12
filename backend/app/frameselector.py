@@ -67,7 +67,6 @@ class StructuralSimilaritySelector(FrameSelector):
     def select_frames(self, video: FileStorage, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
         return list(self.__generate_frames(video, video_id))
-        return list(self.__generate_frames(video, video_id))
 
     def __generate_frames(self, video: FileStorage, video_id) -> Iterator[SelectedFrame]:
         with tempfile.NamedTemporaryFile() as rf:
@@ -131,11 +130,11 @@ class SSIM_Homogeny_Selector(FrameSelector):
     # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
     SIMILARITY_LIMIT_LIVE = 40
 
-    def select_frames(self, video: FileStorage) -> List[SelectedFrame]:
+    def select_frames(self, video: FileStorage, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video))
+        return list(self.__generate_frames(video, video_id))
 
-    def __generate_frames(self, video):
+    def __generate_frames(self, video, video_id):
         # Flann index
         FLANN_INDEX_KDTREE = 1
         # Minimum number of good feature point matches to comnclude identical object in the two image
@@ -165,7 +164,8 @@ class SSIM_Homogeny_Selector(FrameSelector):
 
             start_time = time.time()
             count = 1
-            yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # type: ignore
+            frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, "")
+            yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
             analyze_count = 1
             first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
@@ -191,7 +191,8 @@ class SSIM_Homogeny_Selector(FrameSelector):
                             if m.distance < 0.7*n.distance:
                                 good.append(m)
                         if len(good)<MIN_MATCH_COUNT:
-                            yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))
+                            frame_id = getSetDB.set_selected_frame(None, video_id, count, 0, "")
+                            yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
                             analyze_count += 1
                             first_gray = new_gray
                         elif len(good) > OVERWRIGHT_LIMIT:
