@@ -147,9 +147,9 @@ function VideoAnalysis() {
         return (
                 <div className="min-h-screen ">
                         <Navbar />
-                        <div className="flex justify-evenly">
-                                <p>Analysis for {title} </p>
-                                <p>Total Frames Analysed: {results.length}</p>
+                        <div className="flex justify-evenly ">
+                                <p className="mr-[92px]">Analysis for {title} </p>
+                                <p className="mr-[64px]">Total Frames Analysed: {results.length}</p>
                         </div>
                         {!url.includes("tiktok") ? <VideoJS  options={videoJsOptions} onReady={handlePlayerReady} />:null}
                         {videojs.getPlayer('my-player') ? 

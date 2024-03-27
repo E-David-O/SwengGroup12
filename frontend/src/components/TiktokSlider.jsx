@@ -42,7 +42,7 @@ export default function TiktokSlider({props}) {
                 <div className="m-2">
                     <iframe  src={`https://www.tiktok.com/embed/v2/${props.video.file.split("/").slice(-1).toString().split("?")[0]}`} title="tiktok" height="700" ></iframe>
                 </div>
-                <div className="m-2">
+                <div className="m-2" >
                     <div className="rounded-full bg-gray-600 px-2 text-center text-sm text-white">
                     <span>{index + 1}</span>/<span>{images.length}</span>
                     </div>  
@@ -89,10 +89,10 @@ function Carousel({
     }
   }, [setWidth]);
     return (
-    <div className="relative w-full h-full overflow-hidden shadow-lg">
-      <div className='flex transition-transform ease-in-out duration-500' style={{ transform: `translateX(${xPosition}px)`}} ref={slideRef}>
+    <div className="relative w-full h-5/6">
+      <div className='transition-transform ease-in-out duration-500' style={{ transform: `translateX(${xPosition}px)`}} ref={slideRef}>
         {images.length !== 0 ? 
-          <img src={`data:image/jpeg;base64,${images[index]}`} />
+          <img className="h-[600px]" src={`data:image/jpeg;base64,${images[index]}`} />
         : 
         <p>No images</p>}
       </div>
