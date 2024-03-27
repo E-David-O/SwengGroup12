@@ -16,7 +16,7 @@ def connect_to_database():
             user="postgres",
             password="postgres",
             host="172.20.0.10",
-            #host="localhost",
+            # host="localhost",
             port="5432",
             database="DB"
         )
@@ -30,8 +30,8 @@ def connect_to_database():
 def connect_to_minio():
     try:
         minio_client = Minio(
-            # "172.20.0.50:9000",
-            "localhost:9000",
+            "172.20.0.50:9000",
+            # "localhost:9000",
             access_key="minioConnect",
             secret_key="connectMinio",
             secure=False
@@ -492,18 +492,22 @@ def return_all_video_info(video_id: int):
         return None
 
     video_data = json.loads(video_info)
-    frames_data = json.loads(frames_info)
+    
 
     if frames_info is None:
         video_data["Frames"] = []
     else:
+        frames_data = json.loads(frames_info)
         video_data["Frames"] = frames_data
 
     for frame in video_data["Frames"]:
         frame_id = frame.get("idFrame")
-        analyzed_objects_info = get_analyzed_objects(frame_id)
-        analyzed_objects_data = json.loads(analyzed_objects_info)
-        frame["Objects"] = analyzed_objects_data
+        analyzed_objects_info = get_frame_objects(frame_id)
+        if analyzed_objects_info is None:
+            frame["Objects"] = []
+        else:
+            analyzed_objects_data = json.loads(analyzed_objects_info)
+            frame["Objects"] = analyzed_objects_data
 
     return json.dumps(video_data)
 
