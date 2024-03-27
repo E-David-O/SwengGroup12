@@ -63,6 +63,8 @@ function SingleVideoUpload({ video }) {
             formData.append("video", video.file);
             formData.append("resolution", resolution);
             formData.append("frameRate", frameRate);
+            formData.append("model", video.models);
+            formData.append("algorithm", video.algorithms);
             video.uploaded = true;
             setIsUploaded(true);
             let url = "http://localhost:8000/upload";
@@ -75,6 +77,7 @@ function SingleVideoUpload({ video }) {
                     url = url + "/vimeo";
                 }
             } 
+            console.log(formData)
             axios({
                 method: 'post',
                 url: url,

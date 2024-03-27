@@ -21,7 +21,8 @@ function VideoUpload() {
 
     const dragRef = useRef(null);
     const inputRef = useRef(null);
-    const [url, setUrl] = useState("");
+    const [algorithm, setAlgorithm] = useState([]);
+    const [model, setModel] = useState([]);
 
     const [isDragging, setIsDragging] = useState(false);
     const [uploadVideoCount, setUploadVideoCount] = useState(0);
@@ -92,7 +93,9 @@ function VideoUpload() {
                     analysed: false,
                     name: file.name,
                     youtube: false,
-                    duration: formatDuration(duration)
+                    duration: formatDuration(duration),
+                    algorithms: [...algorithm].join(" "),
+                    models: [...model].join(" "),
                 };
     
                 if (videos.length > 0) {
@@ -113,51 +116,7 @@ function VideoUpload() {
     }
 
 
-    const handleURL = async (e) =>{
-        e.preventDefault();
-        if (url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/) || url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?vimeo.com\/(\d+)($|\/)/)) {
-            let checkURL = url;
-            if(!/^https?:\/\//i.test(checkURL)) {
-                checkURL = "https://" + url;
-            }
-            let title;
-            await axios.get(`https://noembed.com/embed?dataType=json&url=${checkURL}`)
-                .then(res => {
-                    console.log(res);
-                    title = res.data.title
-                })
-                .catch(err => console.log(err));
-            console.log(title);
-            if (videos.length > 0 && videos.length < 4) {
-                setVideos([...videos, { file: checkURL, uploaded: false, analysed: false, name: title, youtube: true }]);
-            } else if (videos.length === 0) {
-                setVideos([{ file: checkURL, uploaded: false, analysed: false, name: title, youtube: true }]);
-            } else {
-                alert("You can only upload 4 videos at a time");
-            }
-            console.log(videos);
-            console.log(videos.length);
-        } else if(url.match(/^.*https:\/\/(?:m|www|vm)?\.?tiktok\.com\/((?:.*\b(?:(?:usr|v|embed|user|video)\/|\?shareId=|\&item_id=)(\d+))|\w+)/)) {
-            let checkURL = url;
-            if(!/^https?:\/\//i.test(checkURL)) {
-                checkURL = "https://" + url;
-            }
-            if (videos.length > 0 && videos.length < 4) {
-                setVideos([...videos, { file: checkURL, uploaded: false, analysed: false, name: url.split("/").slice(-1).toString(), youtube: true }]);
-            } else if (videos.length === 0) {
-                setVideos([{ file: checkURL, uploaded: false, analysed: false, name: url.split("/").slice(-1).toString(), youtube: true }]);
-            } else {
-                alert("You can only upload 4 videos at a time");
-            }
-            console.log(videos);
-            console.log(videos.length);
-
-        } else {
-            alert("Please enter a valid youtube URL");
-        }
     
-  
-        }
       
     
     const handleUploadClick = (e) => {
@@ -165,10 +124,6 @@ function VideoUpload() {
         inputRef.current?.click();
       };
     
-    const handleChange = (event) => {
-        event.persist();
-        setUrl(event.target.value);
-    }
 
     const onDragEnter = (e) => {
         e.preventDefault();
@@ -228,18 +183,24 @@ function VideoUpload() {
                             />
                         </div>
                         
-                        <div className="grid grid-cols-2">
+                        <div className="flex justify-evenly">
                             <MultiDropDown
                                 formFieldName={"Select the frame selection algorithm"}
                                 options={["Structural Similarity", "Homography + Structural Similarity"]}
-                                onChange={(selected) => console.log(selected)}
-                                prompt={"Select one or more frame selection algorithm"}
+                                onChange={(selected) => {
+                                    console.log(selected)
+                                    setAlgorithm(selected)
+                                }}
+                                prompt={"Select frame selection algorithm(s)"}
                             />
                             <MultiDropDown
                                 formFieldName={"Select the frame analysis model"}
                                 options={["Small", "Large"]}
-                                onChange={(selected) => console.log(selected)}
-                                prompt={"Select one or more frame analysis model"}
+                                onChange={(selected) => {
+                                    console.log(selected)
+                                    setModel(selected)
+                                }}
+                                prompt={"Select frame analysis model(s)"}
                             />
 
                         </div>

@@ -6,7 +6,7 @@ import { VideoContext } from "./VideoUtil";
 import axios from "axios";
 import VideoCard from "./VideoCard";
 import { FaYoutube } from 'react-icons/fa';
-
+import MultiDropDown from "./MultiDropDown";
 /**
  * 
  * @returns VideoUpload component
@@ -21,7 +21,8 @@ function URLUpload() {
     const inputRef = useRef(null);
     const [url, setUrl] = useState("");
     const [youtubeVideoCount, setYoutubeVideoCount] = useState(0)
-
+    const [algorithm, setAlgorithm] = useState([]);
+    const [model, setModel] = useState([]);
     const formatDuration = (seconds) => {
         let hours = -1
         let minutes = -1
@@ -48,10 +49,9 @@ function URLUpload() {
 
     }
    
-
     const handleURL = async (e) =>{
         e.preventDefault();
-        if (url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/)) {
+        if (url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/) || url.match(/^(?:https?:\/\/)?(?:m\.|www\.)?vimeo.com\/(\d+)($|\/)/)) {
             let checkURL = url;
             if(!/^https?:\/\//i.test(checkURL)) {
                 checkURL = "https://" + url;
@@ -63,21 +63,55 @@ function URLUpload() {
                     title = res.data.title
                 })
                 .catch(err => console.log(err));
-            
-
-            if (youtubeVideoCount >= 4) {
+            console.log(title);
+            const newVideo = {
+                file: checkURL,
+                uploaded: false,
+                analysed: false,
+                name: title,
+                youtube: true,
+                algorithms: [...algorithm].join(" "),
+                models: [...model].join(" "),
+            };
+            if (videos.length > 0 && videos.length < 4) {
+                setVideos([...videos, newVideo]);
+            } else if (videos.length === 0) {
+                setVideos([newVideo]);
+            } else {
                 alert("You can only upload 4 videos at a time");
             }
-            else if (videos.length > 0) {
-                setVideos([...videos, { file: checkURL, uploaded: false, analysed: false, name: title, youtube: true }]);
+            console.log(videos);
+            console.log(videos.length);
+        } else if(url.match(/^.*https:\/\/(?:m|www|vm)?\.?tiktok\.com\/((?:.*\b(?:(?:usr|v|embed|user|video)\/|\?shareId=|\&item_id=)(\d+))|\w+)/)) {
+            let checkURL = url;
+            if(!/^https?:\/\//i.test(checkURL)) {
+                checkURL = "https://" + url;
             }
-            else {
-                setVideos([{ file: checkURL, uploaded: false, analysed: false, name: title, youtube: true }]);
+            const newVideo = {
+                file: checkURL,
+                uploaded: false,
+                analysed: false,
+                name: url.split("/").slice(-1).toString(),
+                youtube: true,
+                algorithms: [...algorithm].join(" "),
+                models: [...model].join(" "),
+            };
+            if (videos.length > 0 && videos.length < 4) {
+                setVideos([...videos, newVideo]);
+            } else if (videos.length === 0) {
+                setVideos([newVideo]);
+            } else {
+                alert("You can only upload 4 videos at a time");
             }
+            console.log(videos);
+            console.log(videos.length);
+
         } else {
             alert("Please enter a valid youtube URL");
         }
-    }
+    
+  
+        }
 
     useEffect(() => {
         let youtubeVideoCounts = 0
@@ -124,6 +158,27 @@ function URLUpload() {
                             </div>
                             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>
                         </div>
+                </div>
+                <div className="flex justify-evenly ">
+                            <MultiDropDown
+                                formFieldName={"Select the frame selection algorithm"}
+                                options={["Structural Similarity", "Homography + Structural Similarity"]}
+                                onChange={(selected) => {
+                                    console.log(selected)
+                                    setAlgorithm(selected)
+                                }}
+                                prompt={"Select frame selection algorithm(s)"}
+                            />
+                            <MultiDropDown
+                                formFieldName={"Select the frame analysis model"}
+                                options={["Small", "Large"]}
+                                onChange={(selected) => {
+                                    console.log(selected)
+                                    setModel(selected)
+                                }}
+                                prompt={"Select frame analysis model(s)"}
+                            />
+
                 </div>
                 <div className="text-2xl text-center bg-gray-300 py-2 px-2 mt-12">
                     <div className="inline-block bg-slate-100 rounded-xl p-2">

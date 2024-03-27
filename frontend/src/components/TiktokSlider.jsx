@@ -17,33 +17,45 @@ export default function TiktokSlider({props}) {
     }
     const images = useMemo(() => createImages(), [props.results]);
     const handleClickPrev = () => { 
-        if (index === 0) return;
+        if (index === 0) {
+            setIndex(images.length - 1);
+            return;
+        }
         setIndex(index - 1);
-        setXPosition(xPosition + width);
+        //setXPosition(xPosition + width);
         };
 
     const handleClicknext = () => {
         if (index === images.length - 1) {
             setIndex(0);
-            setXPosition(0);
+            //setXPosition(0);
         } else {
             setIndex(index + 1);
-            setXPosition(xPosition - width);
+           // setXPosition(xPosition - width);
         }
         };
     const currentFrame = props.results[index];
 
     return (
-        <div>
-            <iframe src={`https://www.tiktok.com/embed/v2/${props.video.file.split("/").slice(-1).toString().split("?")[0]}`} title="tiktok" width="500" height="500"  ></iframe>
-                        
-                <Carousel
-                    images={images}
-                    setWidth={setWidth}
-                    xPosition={xPosition}
-                    handleClickPrev={handleClickPrev}
-                    handleClicknext={handleClicknext}
-                />
+        <div className="">
+            <div className="flex justify-evenly">
+                <div className="m-2">
+                    <iframe  src={`https://www.tiktok.com/embed/v2/${props.video.file.split("/").slice(-1).toString().split("?")[0]}`} title="tiktok" height="700" ></iframe>
+                </div>
+                <div className="m-2">
+                    <div className="rounded-full bg-gray-600 px-2 text-center text-sm text-white">
+                    <span>{index + 1}</span>/<span>{images.length}</span>
+                    </div>  
+                    <Carousel
+                        images={images}
+                        setWidth={setWidth}
+                        xPosition={xPosition}
+                        handleClickPrev={handleClickPrev}
+                        handleClicknext={handleClicknext}
+                        index={index}
+                    />
+                </div>
+            </div>  
                 <p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Closest Frame Analysis: frame {currentFrame.frame_number} </p>
                 <div className="grid grid-cols-3 gap-1 m-2">
                 { currentFrame !== null ? currentFrame.results?.map((f, i) => {
@@ -66,6 +78,7 @@ function Carousel({
     xPosition,
     handleClickPrev,
     handleClicknext,
+    index,
   }) {
     const slideRef = useRef();
     useEffect(() => {
@@ -76,12 +89,11 @@ function Carousel({
     }
   }, [setWidth]);
     return (
-    <div className="relative width-1/2 overflow-hidden shadow-lg">
-      <div className='flex transition-transform ease-out duration-500' style={{ transform: `translateX(${xPosition}px)`}} ref={slideRef}>
+    <div className="relative w-full h-full overflow-hidden shadow-lg">
+      <div className='flex transition-transform ease-in-out duration-500' style={{ transform: `translateX(${xPosition}px)`}} ref={slideRef}>
         {images.length !== 0 ? 
-        images?.map((img, i) => (
-          <img src={`data:image/jpeg;base64,${img}`} key={i} />
-        )) : 
+          <img src={`data:image/jpeg;base64,${images[index]}`} />
+        : 
         <p>No images</p>}
       </div>
       <Buttons
@@ -94,7 +106,7 @@ function Carousel({
 
 function Buttons ({handleClickPrev, handleClicknext}) {
     return (
-    <div className="absolute z-10 top-1/2 left-0 cursor-pointer right-0 flex justify-between" style={{ transform: `translateY(-50}%)`}}>
+    <div className="absolute ml-4 mr-4 z-10 top-1/2 left-0 cursor-pointer right-0 flex justify-between" style={{ transform: `translateY(-50}%)`}}>
       <button onClick={handleClickPrev} ><LeftOutlined style={{ fontSize: '150%', color: 'white'}}></LeftOutlined></button>
       <button onClick={handleClicknext} ><RightOutlined style={{ fontSize: '150%', color: 'white'}}></RightOutlined></button>
     </div>
