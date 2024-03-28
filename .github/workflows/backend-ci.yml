@@ -48,6 +48,6 @@ jobs:
     - name: Run Tests
       run: |
         cd backend
-        # Add your test command here
+        pytest
 
     # Add deployment steps
