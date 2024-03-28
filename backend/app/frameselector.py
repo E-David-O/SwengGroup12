@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from yt_dlp import YoutubeDL
 from io import BytesIO
-from typing import Iterator, List
+from typing import Iterator, List, TypedDict
 import cv2
 import ffmpeg  # type: ignore
 import numpy as np
@@ -161,6 +161,10 @@ class SelectedFrame:
     frame_number: int | None
     image: NDArray[np.uint8]
 
+class FrameResponse(TypedDict):
+    selector : str
+    frames : list[SelectedFrame]
+
 
 class FrameSelector(ABC):
     "Interface for frame selectors."
@@ -174,23 +178,30 @@ class StructuralSimilaritySelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
 
 
-    def select_frames(self, video: FileStorage, selector: str) -> List[SelectedFrame]:
+    def select_frames(self, video: FileStorage, selectors: List[str]) -> List[FrameResponse]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector))
-
-    def __generate_frames(self, video: FileStorage, selector: str) -> Iterator[SelectedFrame]:
+        response = []
         with tempfile.NamedTemporaryFile() as rf:
             with tempfile.NamedTemporaryFile() as tf:
                 tf.write(video.read())
                 logging.info(tf.name)
                 vid_resize(tf.name, rf.name, 480)
                 logging.info(rf)
+                for selector in selectors:
+                    response.append(
+                        FrameResponse({
+                            "selector": selector, 
+                            "frames": list(
+                            self.__generate_frames(rf.name, selector))
+                            }))
+        return response
 
+    def __generate_frames(self, video, selector) -> Iterator[SelectedFrame]:
             # Loads the video in to opencvs capture
             if selector == 'Structural Similarity':
-                return ssim_selector(rf.name)
+                return ssim_selector(video)
             elif selector == 'Structural Similarity + Homogeny':
-                return ssim_homogeny_selector(rf.name)
+                return ssim_homogeny_selector(video)
             else:
                 raise ValueError("No frames selected.")
         
@@ -368,27 +379,35 @@ class TiktokSelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
    
 
-    def select_frames(self, video, selector) -> List[SelectedFrame]:
-        "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector))
-
-    def __generate_frames(self, video, selector) -> Iterator[SelectedFrame]:
+    def select_frames(self, video, selectors) -> List[FrameResponse]:
+        response = []
         with tempfile.TemporaryDirectory() as tf:
             ydl_opts = {
-                "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-                "merge_output_format": "mp4",
-                'outtmpl': f"{tf}/%(title).50s-%(id)s.%(ext)s",
-        
+                    "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+                    "merge_output_format": "mp4",
+                    'outtmpl': f"{tf}/%(title).50s-%(id)s.%(ext)s",
+            
             }
             with YoutubeDL(ydl_opts) as ydl:
                 meta = ydl.extract_info(video, download=True)
             
             print(meta['requested_downloads'][0]['filepath'], file=sys.stderr)
+            for selector in selectors:
+                response.append(
+                    FrameResponse({
+                        "selector" :selector, 
+                        "frames" : list(self.__generate_frames(f"{meta['requested_downloads'][0]['filepath']}", selector))
+                        }))
+        "Selects frames from a video, using structural similarity to ignore similar frames."
+        return response
+
+    def __generate_frames(self, video, selector) -> Iterator[SelectedFrame]:
+        
             # Loads the video in to opencvs capture
             if selector == 'Structural Similarity':
-                return ssim_selector(f"{meta['requested_downloads'][0]['filepath']}")
+                return ssim_selector(video)
             elif selector == 'Structural Similarity + Homogeny':
-                return ssim_homogeny_selector(f"{meta['requested_downloads'][0]['filepath']}")
+                return ssim_homogeny_selector(video)
             else:
                 raise ValueError("No frames selected.")
             # print(meta['requested_downloads'], file=sys.stderr)
@@ -411,7 +430,7 @@ class VimeoSelector(FrameSelector):
         fps = vidcap.get(cv2.CAP_PROP_FPS)
         vidcap.release()
         return fps
-    
+
     def __generate_frames(self, video, selector):
         if selector == 'Structural Similarity':
             return ssim_selector(video.direct_url)

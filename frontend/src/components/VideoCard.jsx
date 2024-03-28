@@ -36,10 +36,10 @@ function VideoCard(props) {
                 <p className="text-gray-600">Video Length: {duration}</p>
                 <div className="flex space-x-2">
                     <Link 
-                        to={`/analysis/${videoName}`}
+                        to={`/comparison/${videoName}`}
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                     >
-                        Analytics
+                        Comparison
                     </Link>
                     <button 
                         onClick={deleteVideo}

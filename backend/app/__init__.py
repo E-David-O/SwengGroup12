@@ -103,21 +103,8 @@ def create_app(test_config = None) -> Flask:
                             )
                         }))
             elif 'tiktok' in uploaded_video.file:
-                for selector in selectors:
-                    if selector == 'Structural Similarity':
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frameselector.TiktokSelector().select_frames(
-                                uploaded_video.file, selector
-                            )
-                        }))
-                    elif selector == 'Structural Similarity + Homogeny':
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frameselector.TiktokSelector().select_frames(
-                                uploaded_video.file, selector
-                            )
-                        }))
+                frameDict = frameselector.TiktokSelector().select_frames(
+                    uploaded_video.file, selectors)
         else:
             uploaded_video = VideoFile(
                 request.files["video"],
@@ -127,21 +114,9 @@ def create_app(test_config = None) -> Flask:
                 request.form["frameselector"],
             )
             selectors = uploaded_video.frameselector.split(", ")
-            for selector in selectors:
-                if selector == 'Structural Similarity':
-                    frameDict.append(FrameResponse({
-                        "selector": selector,
-                        "frames": frameselector.StructuralSimilaritySelector().select_frames(
-                            uploaded_video.file, selector
-                        )
-                        }))
-                elif selector == 'Structural Similarity + Homogeny':
-                    frameDict.append(FrameResponse({
-                        "selector": selector,
-                        "frames": frameselector.StructuralSimilaritySelector().select_frames(
-                            uploaded_video.file, selector
-                        )
-                        }))
+            frameDict = frameselector.StructuralSimilaritySelector().select_frames(
+                uploaded_video.file, selectors
+            )
         selector_result = []
         for frame in frameDict:
             frames = frame["frames"]

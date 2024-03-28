@@ -14,8 +14,9 @@ import TiktokSlider from "./TiktokSlider";
 function VideoAnalysis() {
         const test = useLocation();
         const title = decodeURI(test.pathname.split("/").slice(-1).toString() + test.search);
+        const selector = decodeURI(test.pathname.split("/").slice(-2, -1).toString());
         const { videos, resultList } = useContext(VideoContext);
-        const results = resultList.find((r) => r.name === title).results || []; // Ensure results is an array
+        const results = resultList.find((r) => r.name === title).results.find((t) => t.selector === selector).frames|| []; // Ensure results is an array
         let fps;
         if (resultList.find((r) => r.name === title).fps !== undefined) {
                 fps = Number(resultList.find((r) => r.name === title).fps);
@@ -23,6 +24,7 @@ function VideoAnalysis() {
                 fps = 59.97;
         }
         const video = videos.find((video) => video.name === title);
+        console.log(video);
         let url = ""
         if(video.youtube) {
                 url = video.file;
