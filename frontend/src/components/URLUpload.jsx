@@ -70,8 +70,8 @@ function URLUpload() {
                 analysed: false,
                 name: title,
                 youtube: true,
-                algorithms: [...algorithm].join(" "),
-                models: [...model].join(" "),
+                algorithms: [...algorithm].join(", "),
+                models: [...model].join(", "),
             };
             if (videos.length > 0 && videos.length < 4) {
                 setVideos([...videos, newVideo]);
@@ -162,7 +162,7 @@ function URLUpload() {
                 <div className="flex justify-evenly ">
                             <MultiDropDown
                                 formFieldName={"Select the frame selection algorithm"}
-                                options={["Structural Similarity", "Homography + Structural Similarity"]}
+                                options={["Structural Similarity", "Structural Similarity + Homogeny"]}
                                 onChange={(selected) => {
                                     console.log(selected)
                                     setAlgorithm(selected)
