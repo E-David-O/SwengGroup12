@@ -420,9 +420,9 @@ class VimeoSelector(FrameSelector):
 
     def select_frames(self, video, selector) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector)), self.get_fps(video)
+        return list(self.__generate_frames(video, selector))
 
-    def get_fps(self, video, selector):
+    def get_fps(self, video):
         vidcap = cv2.VideoCapture(video.direct_url)
         if not vidcap.isOpened:
             logging.error("Video broken")

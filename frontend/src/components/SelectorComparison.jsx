@@ -12,6 +12,7 @@ function SelectorComparison() {
     return (
         <div className="min-h-screen">
             <Navbar />
+            <div className="grid grid-cols-1 gap-4 m-4">
         {results.length !==0 ? 
             results?.map((result, index) => {
                 return (
@@ -41,6 +42,7 @@ function SelectorComparison() {
                     </div>
                 );
             }) : <p>No results</p>  }
+            </div>
             <Footer />
         </div>
     );

@@ -228,10 +228,11 @@ function VideoUpload() {
                             })}
                             {
                                 [...resultList].map((result, index) => {
-                                    if (videos[index] && !videos[index].youtube) {
-                                        // @ts-ignore
-                                        return <VideoCard key={index} result={result} video={videos[index]}/>
-                                    }
+                                    const video = videos.find((r) => r.name === result.name);
+                                        console.log(video)
+                                        if (video && !video.youtube){
+                                            return <VideoCard key={index} result={result} />
+                                        }
                             })}
 
                         </>

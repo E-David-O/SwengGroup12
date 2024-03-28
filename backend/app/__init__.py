@@ -87,6 +87,7 @@ def create_app(test_config = None) -> Flask:
             elif 'vimeo' in uploaded_video.file:
                 v = Vimeo(uploaded_video.file)
                 stream = v.streams[0]
+                fps = frameselector.VimeoSelector().get_fps(stream)
                 for selector in selectors:
                     if selector == 'Structural Similarity':
                         frameDict.append(FrameResponse({
