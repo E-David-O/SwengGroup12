@@ -130,7 +130,9 @@ def ssim_homogeny_selector(vid):
                     index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
                     search_params = dict(checks = 50)
                     flann = cv2.FlannBasedMatcher(index_params, search_params)
-                    matches = flann.knnMatch(des1,des2,k=2)
+                    matches = []
+                    if(des1 is not None and len(des1)>2 and des2 is not None and len(des2)>2):
+                        matches = flann.knnMatch(des1,des2,k=2)
                     good = []
                     for m,n in matches:
                         if m.distance < 0.7*n.distance:
@@ -165,6 +167,10 @@ class FrameResponse(TypedDict):
     selector : str
     frames : list[SelectedFrame]
 
+class FrameResponseFile(TypedDict):
+    selector : str
+    frames : list[SelectedFrame]
+    run_time : float
 
 class FrameSelector(ABC):
     "Interface for frame selectors."
@@ -178,7 +184,7 @@ class StructuralSimilaritySelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
 
 
-    def select_frames(self, video: FileStorage, selectors: List[str]) -> List[FrameResponse]:
+    def select_frames(self, video: FileStorage, selectors: List[str]) -> List[FrameResponseFile]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
         response = []
         with tempfile.NamedTemporaryFile() as rf:
@@ -188,11 +194,14 @@ class StructuralSimilaritySelector(FrameSelector):
                 vid_resize(tf.name, rf.name, 480)
                 logging.info(rf)
                 for selector in selectors:
+                    start = time.time()
+                    frames = list(self.__generate_frames(rf.name, selector))
+                    end = time.time()
                     response.append(
                         FrameResponse({
                             "selector": selector, 
-                            "frames": list(
-                            self.__generate_frames(rf.name, selector))
+                            "frames": frames,
+                            "run_time": end - start
                             }))
         return response
 
@@ -379,7 +388,7 @@ class TiktokSelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
    
 
-    def select_frames(self, video, selectors) -> List[FrameResponse]:
+    def select_frames(self, video, selectors) -> List[FrameResponseFile]:
         response = []
         with tempfile.TemporaryDirectory() as tf:
             ydl_opts = {
@@ -393,10 +402,14 @@ class TiktokSelector(FrameSelector):
             
             print(meta['requested_downloads'][0]['filepath'], file=sys.stderr)
             for selector in selectors:
+                start = time.time()
+                frames = list(self.__generate_frames(f"{meta['requested_downloads'][0]['filepath']}", selector))
+                end = time.time()
                 response.append(
                     FrameResponse({
                         "selector" :selector, 
-                        "frames" : list(self.__generate_frames(f"{meta['requested_downloads'][0]['filepath']}", selector))
+                        "frames" : frames,
+                        "run_time" : end - start
                         }))
         "Selects frames from a video, using structural similarity to ignore similar frames."
         return response

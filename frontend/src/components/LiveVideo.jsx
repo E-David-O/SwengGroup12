@@ -6,7 +6,7 @@ import { useState, useRef, useCallback, useMemo, useEffect}from "react";
 import axios from "axios";
 import { FaCamera } from 'react-icons/fa';
 import { RiLiveFill } from 'react-icons/ri'
-
+import MultiDropDown from "./MultiDropDown";
 
 function LiveVideo() {
   const webcamRef = useRef(null);
@@ -15,6 +15,7 @@ function LiveVideo() {
   const [recordedChunks, setRecordedChunks] = useState([]);
   const [results, setResults] = useState([]);
   const [mostRecent, setMostRecent] = useState([]);
+  const [algorithm, setAlgorithm] = useState([]);
   let data = [];
   let images = [];
   const handleStartCaptureClick = useCallback(() => {
@@ -66,6 +67,11 @@ function LiveVideo() {
                   for (let i = 0; i < recordedChunks.length; i++) {
                     formData.append("files",  recordedChunks[i]);
                   }
+                  let selector = [...algorithm].join(", ");
+                  if(selector === "") {
+                    selector = "Structural Similarity";
+                  }
+                  formData.append("frameselector", selector);
                 setRecordedChunks([]);
                 axios({
                   method: 'post',
@@ -165,6 +171,18 @@ function LiveVideo() {
               )
           }
         </div>
+        <div className="mb-2">
+          <MultiDropDown
+              formFieldName={"Select the frame selection algorithm"}
+              options={["Structural Similarity", "Structural Similarity + Homogeny"]}
+              onChange={(selected) => {
+                  console.log(selected)
+                  setAlgorithm(selected)
+              }}
+              prompt={"Select frame selection algorithm(s)"}
+          />
+        </div>
+
       </div>
       <p className="bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Most Recent Chunk Analysis</p>
       <div className="grid grid-cols-3 gap-1 m-1">

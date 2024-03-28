@@ -29,6 +29,9 @@ function SelectorComparison() {
                             <p className="text-2xl font-semibold text-gray-800">
                                 {result.frames.length} frames analysed
                             </p>
+                            <p className="text-2xl font-semibold text-gray-800">
+                                {result.run_time.toFixed(2)} seconds
+                            </p>
 
                             <div className="flex space-x-2">
                                 <Link 
