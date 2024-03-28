@@ -49,7 +49,7 @@ jobs:
       working-directory: ./backend
       run: |
         pip install ruff
-        ruff --output-format=github check
+        ruff check .
       continue-on-error: true
     - name: Test with pytest
       working-directory: ./backend
