@@ -11,8 +11,10 @@ function VideoCard(props) {
 
     const videoName = props.result.name;
     const duration = props.video ? props.video.duration : "23 seconds";
-    console.log(props.result.results);
-    const base64ImageData = props.result.results[0].frames[0].image;
+    let base64ImageData = ""
+    if (props.result.results[0].frames.length > 0) {
+        base64ImageData = props.result.results[0].frames[0].image;
+    }
     const imageDataUrl = `data:image/jpeg;base64,${base64ImageData}`;
 
     const deleteVideo = useCallback(() => {

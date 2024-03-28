@@ -6,6 +6,7 @@ import os
 import tempfile
 import time
 import sys
+import concurrent.futures
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from yt_dlp import YoutubeDL
@@ -382,6 +383,19 @@ class YoutubeSelector(FrameSelector):
                 "frames" : frames,
                 "run_time" : end - start
                 }))
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        #     start = time.time()
+        #     frame_selections = {executor.submit(self.__generate_frames, video, selector): selector for selector in selectors}
+        #     for future in concurrent.futures.as_completed(frame_selections):
+        #         try:
+        #             response.append(FrameResponseFile({
+        #                 "selector" :frame_selections[future], 
+        #                 "frames" : list(future.result()),
+        #                 "run_time" : time.time() - start
+        #             }))
+        #         except Exception as e:
+        #             logging.error(f"Error: {e} for ")
+           
         return response
 
     def __generate_frames(self, video, selector):

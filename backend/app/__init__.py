@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import sys
-import concurrent.futures
 import numpy as np
 from dataclasses import dataclass
 from io import BytesIO
@@ -56,7 +55,6 @@ def create_app(test_config = None) -> Flask:
         "Receives an uploaded video to be analyzed."
         frameDict = []
         fps = 59.97
-        pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
         if request.files is None or "video" not in request.files:
             uploaded_video = VideoURL(
                 request.form["video"],
@@ -93,11 +91,21 @@ def create_app(test_config = None) -> Flask:
             )
 
         selector_result = []
-        for frame in frameDict:
-            frames = frame["frames"]
-            analysis_results = [
-                analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
-            ]
+        for frameSelector in frameDict:
+            frames = frameSelector["frames"]
+            analysis_results = []
+            for frame in frames:
+                if selector_result == []:
+                    analysed = analyze_frame(convert_frame_to_bin(frame.image))
+                else:
+                    my_item = next((item for item in selector_result[0]['frames'] if item['frame_number'] == frame.frame_number), None)
+                    if my_item is None:
+                        analysed = analyze_frame(convert_frame_to_bin(frame.image))
+                    else:
+                        print("using previous result", file=sys.stderr)
+                        analysed = AnalysisResult(my_item['results'], my_item['image'])
+                analysis_results.append(analysed)
+
             response: list[AnalysisResponse] = [
                 {
                     "frame_number": frame.frame_number,
@@ -107,9 +115,9 @@ def create_app(test_config = None) -> Flask:
                 for analysed, frame in zip(analysis_results, frames)
             ]
             selector_result.append(SelectorAnalysisResponse({
-                "selector": frame["selector"],
+                "selector": frameSelector["selector"],
                 "frames": response,
-                "run_time" : frame["run_time"]
+                "run_time" : frameSelector["run_time"]
             }))
         toReturn = {
             "results": selector_result,
