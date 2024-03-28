@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import sys
-import time
+import concurrent.futures
 import numpy as np
 from dataclasses import dataclass
 from io import BytesIO
@@ -56,6 +56,7 @@ def create_app(test_config = None) -> Flask:
         "Receives an uploaded video to be analyzed."
         frameDict = []
         fps = 59.97
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
         if request.files is None or "video" not in request.files:
             uploaded_video = VideoURL(
                 request.form["video"],
@@ -68,55 +69,13 @@ def create_app(test_config = None) -> Flask:
             if 'youtube' in uploaded_video.file:
                 yt = YouTube(uploaded_video.file)
                 stream = yt.streams.filter(file_extension="mp4", res=480).first()
-
-                for selector in selectors:
-                    if selector == 'Structural Similarity':
-                        start = time.time()
-                        frames = frameselector.YoutubeSelector().select_frames(stream, selector)
-                        end = time.time()
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frames,
-                            "run_time": end - start
-                        }))
-                    elif selector == 'Structural Similarity + Homogeny':
-                        start = time.time()
-                        frames = frameselector.YoutubeSelector().select_frames(stream, selector)
-                        end = time.time()
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frames,
-                            "run_time": end - start
-                        }))
+                frameDict = frameselector.YoutubeSelector().select_frames(stream, selectors)
                 fps = stream.fps
             elif 'vimeo' in uploaded_video.file:
                 v = Vimeo(uploaded_video.file)
                 stream = v.streams[0]
                 fps = frameselector.VimeoSelector().get_fps(stream)
-                for selector in selectors:
-                    if selector == 'Structural Similarity':
-                        start = time.time()
-                        frames = frameselector.VimeoSelector().select_frames(
-                            stream, selector
-                        )
-                        end = time.time()
-
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frames,
-                            "runtime": end - start
-                        }))
-                    elif selector == 'Structural Similarity + Homogeny':
-                        start = time.time()
-                        frames = frameselector.VimeoSelector().select_frames(
-                            stream, selector
-                        )
-                        end = time.time()
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frames,
-                            "runtime": end - start
-                        }))
+                frameDict = frameselector.VimeoSelector().select_frames(stream, selectors)
             elif 'tiktok' in uploaded_video.file:
                 frameDict = frameselector.TiktokSelector().select_frames(
                     uploaded_video.file, selectors)

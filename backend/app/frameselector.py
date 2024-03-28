@@ -370,9 +370,19 @@ class YoutubeSelector(FrameSelector):
    
     
 
-    def select_frames(self, video, selector) -> List[SelectedFrame]:
+    def select_frames(self, video, selectors) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector))
+        response = []
+        for selector in selectors:
+            start = time.time()
+            frames = list(self.__generate_frames(video, selector))
+            end = time.time()
+            response.append(FrameResponseFile({
+                "selector" :selector, 
+                "frames" : frames,
+                "run_time" : end - start
+                }))
+        return response
 
     def __generate_frames(self, video, selector):
         # Loads the video in to opencvs capture
@@ -431,9 +441,19 @@ class VimeoSelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
 
 
-    def select_frames(self, video, selector) -> List[SelectedFrame]:
+    def select_frames(self, video, selectors) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector))
+        response = []
+        for selector in selectors:
+            start = time.time()
+            frames = list(self.__generate_frames(video, selector))
+            end = time.time()
+            response.append(FrameResponseFile({
+                "selector" :selector, 
+                "frames" : frames,
+                "run_time" : end - start
+                }))
+        return response
 
     def get_fps(self, video):
         vidcap = cv2.VideoCapture(video.direct_url)
