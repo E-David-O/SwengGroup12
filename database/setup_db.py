@@ -47,7 +47,6 @@ def setup_tables():
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
                 username VARCHAR(60000) NOT NULL,
                 _password VARCHAR(60000) NOT NULL,
-                jsonAuthToken VARCHAR(60000) NOT NULL,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -59,6 +58,7 @@ def setup_tables():
                 frameRate INT,
                 videoLength VARCHAR(60000),
                 frame_resolution VARCHAR(60000),
+                is_link INT,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -67,6 +67,8 @@ def setup_tables():
                 idFrame INT,
                 idVideo INT,
                 frameNumber INT,
+                selectionMethod INT,
+                modelMethod INT,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -75,7 +77,6 @@ def setup_tables():
                 idFrame VARCHAR(60000),
                 objectDetected VARCHAR(60000),
                 confidence FLOAT,
-                framePath VARCHAR(60000),
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 
