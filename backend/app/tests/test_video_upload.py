@@ -1,7 +1,7 @@
 import os
 import pytest
 from werkzeug.datastructures import FileStorage
-from backend.app import __init__.py
+from app import create_app
 
 @pytest.fixture
 def app():
@@ -15,7 +15,7 @@ def client(app):
 @pytest.fixture
 def test_video():
     # Path to the test video file
-    video_path = os.path.join(os.path.dirname(__file__), 'test_data', 'test_video.mp4')
+    video_path = os.path.join(os.path.dirname(__file__), 'test_data', 'TCD_short.mp4')
     return FileStorage(
         stream=open(video_path, 'rb'),
         filename="test_video.mp4",
