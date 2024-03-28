@@ -30,24 +30,29 @@ jobs:
           --health-retries 5
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
-
+        python-version: '3.11'
+        cache: 'pip'
     - name: Install dependencies
+      working-directory: ./backend
       run: |
         sudo apt update
         sudo apt install -y python3 python3-pip libsm6 libxext6 python3-opencv
         sudo apt-get install -y --no-install-recommends ffmpeg
-        cd backend
         pip install -r requirements.txt
 
-    - name: Run Tests
+    - name: Lint with Ruff
+      working-directory: ./backend
       run: |
-        cd backend
+        pip install ruff
+        ruff --output-format=github check
+      continue-on-error: true
+    - name: Test with pytest
+      working-directory: ./backend
+      run: |
         pytest
-
     # Add deployment steps
