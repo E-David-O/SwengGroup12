@@ -24,6 +24,7 @@ function About() {
                             src="https://media.licdn.com/dms/image/D4E03AQFQbLBUHtEJjw/profile-displayphoto-shrink_800_800/0/1691618622623?e=1716422400&v=beta&t=VlL3o0q-8sOo5RrszHoEMpYDlUSsajybKhs3hNByKzQ"
                             className="h-48 inline-block rounded-3xl mx-4"
                         />
+                        <p>Finn studies computer science and business</p>
                     </li>
                     <li>Afaf Shadani</li>
                     <li className="mt-8 bg-slate-100 inline-block py-4 px-4 rounded-xl">
