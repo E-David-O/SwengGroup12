@@ -45,7 +45,7 @@ def create_app(test_config = None) -> Flask:
     app.register_blueprint(auth.bp)
     db.init_app(app)
     small_model = YOLO("yolov8n.pt")
-    large_model = YOLO("yolov8x.pt")
+    # large_model = YOLO("yolov8x.pt")
     @app.route("/upload", methods=["POST"])
     def upload() -> Response:
         "Receives an uploaded video to be analyzed."
@@ -60,7 +60,7 @@ def create_app(test_config = None) -> Flask:
             uploaded_video.file
         )
         analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+            analyze_frame(convert_frame_to_bin(frame.image), small_model) for frame in frames
         ]
         response: list[AnalysisResponse] = [
             {
@@ -129,6 +129,8 @@ class Video:
     file: FileStorage
     resolution: str
     frameRate: str
+    model: str
+    frameselector: str
 
 
 class ModelResult(TypedDict):

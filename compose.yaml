@@ -11,6 +11,19 @@ services:
       - backnet
       - frontnet
 
+  test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: pytest -v
+    ports:
+      - "8000:5000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - backnet
+      - frontnet
+
 networks:
   backnet:
     driver: bridge
