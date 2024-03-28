@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import numpy as np
+import time
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Any, Mapping, TypedDict, List
@@ -130,18 +131,27 @@ def create_app(test_config = None) -> Flask:
         "Receives a live stream of video data to be analyzed."
         uploaded_file = request.form.getlist("files")
         selectors = request.form["frameselector"]
+        selectors = selectors.split(", ")
         frameDict = []
         for selector in selectors:
             if selector == 'Structural Similarity':
+                start = time.time()
+                frames = frameselector.LiveSelector().select_frames(uploaded_file)
+                end = time.time()
                 frameDict.append(FrameResponse({
                     "selector": selector,
-                    "frames": frameselector.LiveSelector().select_frames(uploaded_file, selector)
+                    "frames": frames,
+                    "run_time": end - start
                 })    
                 )
             elif selector == 'Structural Similarity + Homogeny':
+                start = time.time()
+                frames = frameselector.LiveSelector().select_frames_homogeny(uploaded_file)
+                end = time.time()
                 frameDict.append(FrameResponse({
                     "selector": selector,
-                    "frames": frameselector.LiveSelector().select_frames(uploaded_file, selector)
+                    "frames": frames,
+                    "run_time": end - start
                 })    
                 )
 
@@ -151,13 +161,12 @@ def create_app(test_config = None) -> Flask:
             analysis_results = [
                 analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
             ]
-            response: list[AnalysisResponse] = [
+            response: list[AnalysisResponseLive] = [
                 {
-                    "frame_number": frame.frame_number,
                     "results": analysed.results,
                     "image": analysed.image,
                 }
-                for analysed, frame in zip(analysis_results, frames)
+                for analysed in analysis_results
             ]
             selector_result.append(SelectorAnalysisResponse({
                 "selector": frame["selector"],
@@ -201,6 +210,9 @@ class AnalysisResponse(TypedDict):
     results: list[ModelResult]
     image: str
 
+class AnalysisResponseLive(TypedDict):
+    results: list[ModelResult]
+    image: str
 @dataclass
 class SelectedFrame:
     "The metadata of a selected frame."
