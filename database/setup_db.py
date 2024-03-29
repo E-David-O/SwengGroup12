@@ -68,7 +68,6 @@ def setup_tables():
                 idVideo INT,
                 frameNumber INT,
                 selectionMethod INT,
-                modelMethod INT,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -77,6 +76,7 @@ def setup_tables():
                 idFrame VARCHAR(60000),
                 objectDetected VARCHAR(60000),
                 confidence FLOAT,
+                modelMethod INT,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 

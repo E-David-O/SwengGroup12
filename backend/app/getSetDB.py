@@ -74,13 +74,13 @@ def get_video_from_minio(video_id: int):
         return None
 
 
-def set_user(username: str, password: str, json_auth_token: str):
+def set_user(username: str, password: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
-            input_query = """INSERT INTO Users (username, _password, jsonAuthToken)
-                        VALUES (%s, %s, %s);"""
-            cursor.execute(input_query, (username, password, json_auth_token))
+            input_query = """INSERT INTO Users (username, _password)
+                        VALUES (%s, %s);"""
+            cursor.execute(input_query, (username, password))
             return None
     except (Exception, psycopg2.Error) as error:
         if connection:
@@ -120,11 +120,11 @@ def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate:
             
     except (Exception, psycopg2.Error) as error:
         if connection:
-            logging.info("Could connect, but failed to insert data: ", error)
-            return None
+            logging.info(error)
+            return error
         else:
-            print("Failed to connect: ", error)
-            return None
+            logging.info(error)
+            return error
     finally:
         if connection:
             connection.commit()
@@ -132,7 +132,7 @@ def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate:
             connection.close()
 
 
-def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selectionMethod: int, modelMethod: int, frameData: str):
+def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selectionMethod: int, frameData: str):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
@@ -140,8 +140,8 @@ def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selection
             byte_array = frameData.encode('utf-8')
             binary_data = Binary(byte_array)
 
-            input_query = """INSERT INTO SelectedFrame (idFrame, idVideo, frameNumber, selectionMethod, modelMethod, frameData) 
-                        VALUES (%s, %s, %s, %s, %s, %s)
+            input_query = """INSERT INTO SelectedFrame (idFrame, idVideo, frameNumber, selectionMethod, frameData) 
+                        VALUES (%s, %s, %s, %s, %s)
                         RETURNING id; """
             cursor.execute(input_query, (frame_id, video_id, frameNumber, selectionMethod, binary_data))
 
@@ -186,16 +186,14 @@ def set_selected_frame_img(frame_id: int, frameData: str):
 
 
 
-def set_frame_objects(idFrame: int, objectDetected: str, confidence: float, frameData: str):
+def set_frame_objects(idFrame: int, objectDetected: str, confidence: float, modelMethod: int):
     try:
         connection, cursor = connect_to_database()
         if connection and cursor:
             
-            byte_array = frameData.encode('utf-8')
-            binary_data = Binary(byte_array)
-            input_query = """INSERT INTO AnalyzedFrames (idFrame, objectDetected, confidence, framePath)
+            input_query = """INSERT INTO AnalyzedFrames (idFrame, objectDetected, confidence, modelMethod)
                             VALUES (%s, %s, %s, %s)"""
-            cursor.execute(input_query, (idFrame, objectDetected, confidence, binary_data))
+            cursor.execute(input_query, (idFrame, objectDetected, confidence, modelMethod))
 
     except (Exception, psycopg2.Error) as error:
         if connection:
@@ -350,9 +348,8 @@ def get_selected_frames(video_id: int):
                     'idVideo': item[2],
                     'frameNumber': item[3],
                     'selectionMethod': item[4],
-                    'modelMethod': item[5],
-                    'frameData': bytes(item[6]).decode('utf-8'),  # Convert memory address to string
-                    'timestamp': item[7].strftime('%Y-%m-%d %H:%M:%S')  # Convert datetime to string
+                    'frameData': bytes(item[5]).decode('utf-8'),  # Convert memory address to string
+                    'timestamp': item[6].strftime('%Y-%m-%d %H:%M:%S')  # Convert datetime to string
                 })
             return json.dumps(rows, indent = 4)
 
@@ -387,7 +384,8 @@ def get_frame_objects(frame_id: int):
                     "idFrame": item[1],
                     "objectDetected": item[2],
                     "confidence": item[3],
-                    "timestamp": item[4].strftime('%Y-%m-%d %H:%M:%S')
+                    "modelMethod": item[4],
+                    "timestamp": item[5].strftime('%Y-%m-%d %H:%M:%S')
                 })
             return json.dumps(rows)
 
