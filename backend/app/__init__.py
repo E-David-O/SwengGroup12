@@ -73,14 +73,14 @@ def create_app(test_config = None) -> Flask:
                         frameDict.append(FrameResponse({
                             "selector": selector,
                             "frames": frameselector.YoutubeSelector().select_frames(
-                                stream, selector
+                                stream, selector, 1
                             )
                         }))
                     elif selector == 'Structural Similarity + Homogeny':
                         frameDict.append(FrameResponse({
                             "selector": selector,
                             "frames": frameselector.YoutubeSelector().select_frames(
-                                stream, selector
+                                stream, selector, 1
                             )
                         }))
                 fps = stream.fps
@@ -93,19 +93,19 @@ def create_app(test_config = None) -> Flask:
                         frameDict.append(FrameResponse({
                             "selector": selector,
                             "frames": frameselector.VimeoSelector().select_frames(
-                                stream, selector
+                                stream, selector, 1
                             )
                         }))
                     elif selector == 'Structural Similarity + Homogeny':
                         frameDict.append(FrameResponse({
                             "selector": selector,
                             "frames": frameselector.VimeoSelector().select_frames(
-                                stream, selector
+                                stream, selector, 1
                             )
                         }))
             elif 'tiktok' in uploaded_video.file:
                 frameDict = frameselector.TiktokSelector().select_frames(
-                    uploaded_video.file, selectors)
+                    uploaded_video.file, selectors, 1)
         else:
             uploaded_video = VideoFile(
                 request.files["video"],
@@ -116,13 +116,13 @@ def create_app(test_config = None) -> Flask:
             )
             selectors = uploaded_video.frameselector.split(", ")
             frameDict = frameselector.StructuralSimilaritySelector().select_frames(
-                uploaded_video.file, selectors
+                uploaded_video.file, selectors, 1
             )
         selector_result = []
         for frame in frameDict:
             frames = frame["frames"]
             analysis_results = [
-                analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+                analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id) for frame in frames
             ]
             response: list[AnalysisResponse] = [
                 {
@@ -148,7 +148,7 @@ def create_app(test_config = None) -> Flask:
         uploaded_file = request.form.getlist("files")
         frames = frameselector.LiveSelector().select_frames(uploaded_file)
         analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+            analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id) for frame in frames
         ]
         response: list[AnalysisResponse] = [
             {
@@ -221,7 +221,7 @@ class AnalysisResult:
     image: str
 
 
-def analyze_frame(frame: str) -> AnalysisResult:
+def analyze_frame(frame: str, frame_id: int) -> AnalysisResult:
     "Uses the YOLOv8 model to detect objects in a base-64 encoded frame."
     try:
         model = analyze_frame.model
