@@ -1,4 +1,4 @@
-flask[async]
+flask
 flask-cors
 typing
 ultralytics
