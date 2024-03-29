@@ -312,12 +312,12 @@ class LiveSelector(FrameSelector):
             score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
             logging.info(f"Similarity Score: {score*100:.3f}%")
             if score * 100 < self.SIMILARITY_LIMIT_LIVE:
-                yield SelectedFrame(None, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+                yield SelectedFrame(None, image)
                 first_gray = new_gray
                 analyze_count = 1
                 self.most_recent_frame = image
         else:
-            yield SelectedFrame(None, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+            yield SelectedFrame(None, image)
             analyze_count = 1
             self.most_recent_frame = image
             first_gray = new_gray
@@ -350,7 +350,7 @@ class LiveSelector(FrameSelector):
                         if m.distance < 0.7*n.distance:
                             good.append(m)
                     if len(good)<MIN_MATCH_COUNT:
-                        yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))
+                        yield SelectedFrame(count, newframe)
                         analyze_count += 1
                         first_gray = new_gray
                     elif len(good) > OVERWRIGHT_LIMIT:

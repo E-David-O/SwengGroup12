@@ -155,7 +155,7 @@ function LiveVideo() {
               )
           }
         </div>
-        <div className="mb-2">
+        <div className="mb-2 flex justify-center">
           <MultiDropDown
               formFieldName={"Select the frame selection algorithm"}
               options={["Structural Similarity", "Structural Similarity + Homogeny"]}
