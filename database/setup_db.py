@@ -33,19 +33,11 @@ def setup_tables():
         connection, cursor = connect_to_database()
         if connection and cursor:
 
-            # cursor.execute(""" 
-            # DO $$ 
-            #     BEGIN
-            #         IF NOT EXISTS(SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'public') THEN
-            #             CREATE SCHEMA public;
-            #         END IF;
-            # END $$;
-            # """)
-            
+            cursor.execute("""CREATE EXTENSION IF NOT EXISTS citext; """)
             # Setting up the Image metadata table   
             cursor.execute("""CREATE TABLE IF NOT EXISTS Users (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                username VARCHAR(60000) NOT NULL,
+                username CITEXT UNIQUE NOT NULL ,
                 _password VARCHAR(60000) NOT NULL,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")

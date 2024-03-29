@@ -18,6 +18,7 @@ from numpy.typing import NDArray
 from PIL import Image
 from skimage.metrics import structural_similarity  # type: ignore
 from werkzeug.datastructures import FileStorage
+from . import getSetDB
 
 
 def vid_resize(vid_path: str, output_path: str, width: int):
@@ -43,7 +44,7 @@ FRAME_SKIP = 30
 # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
 SIMILARITY_LIMIT = 80
 
-def ssim_selector(vid):
+def ssim_selector(vid, video_id):
     vidcap = cv2.VideoCapture(vid)
     if not vidcap.isOpened():
         logging.error("Video broken")
@@ -55,8 +56,10 @@ def ssim_selector(vid):
 
     start_time = time.time()
     count = 1
-    yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # type: ignore
     analyze_count = 1
+    frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+    yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
+    count += 1
     first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
     while success:
@@ -70,7 +73,8 @@ def ssim_selector(vid):
             score: np.float64 = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
             logging.info(f"Similarity Score: {score*100:.3f}%")
             if score * 100 < SIMILARITY_LIMIT:
-                yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))   # type: ignore
+                frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+                yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
                 analyze_count += 1
                 first_gray = new_gray
         count += FRAME_SKIP
@@ -91,7 +95,7 @@ MIN_MATCH_COUNT = 40
 #If we find more good identical feature points than this we set this frame as the new reference to help filter selection.
 OVERWRIGHT_LIMIT = 100
 
-def ssim_homogeny_selector(vid):
+def ssim_homogeny_selector(vid, video_id):
        
         sift = cv2.SIFT_create()
     
@@ -110,7 +114,8 @@ def ssim_homogeny_selector(vid):
 
         start_time = time.time()
         count = 1
-        yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # type: ignore
+        frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+        yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
         analyze_count = 1
         first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
@@ -136,7 +141,8 @@ def ssim_homogeny_selector(vid):
                         if m.distance < 0.7*n.distance:
                             good.append(m)
                     if len(good)<MIN_MATCH_COUNT:
-                        yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))
+                        frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+                        yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
                         analyze_count += 1
                         first_gray = new_gray
                     elif len(good) > OVERWRIGHT_LIMIT:
@@ -160,6 +166,7 @@ class SelectedFrame:
     "The metadata of a selected frame."
     frame_number: int | None
     image: NDArray[np.uint8]
+    frame_id: int
 
 class FrameResponse(TypedDict):
     selector : str
@@ -178,7 +185,7 @@ class StructuralSimilaritySelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
 
 
-    def select_frames(self, video: FileStorage, selectors: List[str]) -> List[FrameResponse]:
+    def select_frames(self, video: FileStorage, selectors: List[str], video_id) -> List[FrameResponse]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
         response = []
         with tempfile.NamedTemporaryFile() as rf:
@@ -192,16 +199,16 @@ class StructuralSimilaritySelector(FrameSelector):
                         FrameResponse({
                             "selector": selector, 
                             "frames": list(
-                            self.__generate_frames(rf.name, selector))
+                            self.__generate_frames(rf.name, selector, video_id))
                             }))
         return response
 
-    def __generate_frames(self, video, selector) -> Iterator[SelectedFrame]:
+    def __generate_frames(self, video, selector, video_id) -> Iterator[SelectedFrame]:
             # Loads the video in to opencvs capture
             if selector == 'Structural Similarity':
-                return ssim_selector(video)
+                return ssim_selector(video, video_id)
             elif selector == 'Structural Similarity + Homogeny':
-                return ssim_homogeny_selector(video)
+                return ssim_homogeny_selector(video, video_id)
             else:
                 raise ValueError("No frames selected.")
         
@@ -280,12 +287,12 @@ class LiveSelector(FrameSelector):
             f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
         )
 
-    def select_frames_homogeny(self, video: list[str] | FileStorage) -> List[SelectedFrame]:
+    def select_frames_homogeny(self, video: list[str] | FileStorage, video_id) -> List[SelectedFrame]:
         "select_frames() but for streaming data."
         assert isinstance(video, list)
-        return list(self.__generate_frames_homogeny(video))
+        return list(self.__generate_frames_homogeny(video, video_id))
 
-    def __generate_frames_homogeny(self, frame_list: list[str]) -> Iterator[SelectedFrame]:
+    def __generate_frames_homogeny(self, frame_list: list[str], video_id) -> Iterator[SelectedFrame]:
         im = base64.b64decode(frame_list[0].split(",")[1])
         image = np.array(Image.open(BytesIO(im)))
         start_time = time.time()
@@ -361,16 +368,16 @@ class YoutubeSelector(FrameSelector):
    
     
 
-    def select_frames(self, video, selector) -> List[SelectedFrame]:
+    def select_frames(self, video, selector, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector))
+        return list(self.__generate_frames(video, selector, video_id))
 
-    def __generate_frames(self, video, selector):
+    def __generate_frames(self, video, selector, video_id):
         # Loads the video in to opencvs capture
         if selector == 'Structural Similarity':
-            return ssim_selector(video.url)
+            return ssim_selector(video.url, video_id)
         elif selector == 'Structural Similarity + Homogeny':
-            return ssim_homogeny_selector(video.url)
+            return ssim_homogeny_selector(video.url, video_id)
         else:
             raise ValueError("No frames selected.")
     
@@ -379,7 +386,7 @@ class TiktokSelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
    
 
-    def select_frames(self, video, selectors) -> List[FrameResponse]:
+    def select_frames(self, video, selectors, video_id) -> List[FrameResponse]:
         response = []
         with tempfile.TemporaryDirectory() as tf:
             ydl_opts = {
@@ -396,18 +403,18 @@ class TiktokSelector(FrameSelector):
                 response.append(
                     FrameResponse({
                         "selector" :selector, 
-                        "frames" : list(self.__generate_frames(f"{meta['requested_downloads'][0]['filepath']}", selector))
+                        "frames" : list(self.__generate_frames(f"{meta['requested_downloads'][0]['filepath']}", selector, video_id))
                         }))
         "Selects frames from a video, using structural similarity to ignore similar frames."
         return response
 
-    def __generate_frames(self, video, selector) -> Iterator[SelectedFrame]:
+    def __generate_frames(self, video, selector, video_id) -> Iterator[SelectedFrame]:
         
             # Loads the video in to opencvs capture
             if selector == 'Structural Similarity':
-                return ssim_selector(video)
+                return ssim_selector(video, video_id)
             elif selector == 'Structural Similarity + Homogeny':
-                return ssim_homogeny_selector(video)
+                return ssim_homogeny_selector(video, video_id)
             else:
                 raise ValueError("No frames selected.")
             # print(meta['requested_downloads'], file=sys.stderr)
@@ -418,9 +425,9 @@ class VimeoSelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
 
 
-    def select_frames(self, video, selector) -> List[SelectedFrame]:
+    def select_frames(self, video, selector, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector))
+        return list(self.__generate_frames(video, selector, video_id))
 
     def get_fps(self, video):
         vidcap = cv2.VideoCapture(video.direct_url)
@@ -431,11 +438,11 @@ class VimeoSelector(FrameSelector):
         vidcap.release()
         return fps
 
-    def __generate_frames(self, video, selector):
+    def __generate_frames(self, video, selector, video_id):
         if selector == 'Structural Similarity':
-            return ssim_selector(video.direct_url)
+            return ssim_selector(video.direct_url, video_id)
         elif selector == 'Structural Similarity + Homogeny':
-            return ssim_homogeny_selector(video.direct_url)
+            return ssim_homogeny_selector(video.direct_url, video_id)
         else:
             raise ValueError("No frames selected.")
     
