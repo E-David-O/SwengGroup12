@@ -161,27 +161,7 @@ function VideoUpload() {
             <form autoComplete="off" className="mt-8">
                 <div className="text-center">
 
-                    <div 
-                        className={`border-2 inline-block ${isDragging ? "border-blue-500 bg-blue-100" : "border-dashed border-gray-500"} rounded-lg py-10 px-10 text-center my-2`}
-                        ref={dragRef}
-                        onDragEnter={onDragEnter}
-                        onDragOver={onDragOver}
-                        onDragLeave={onDragLeave}
-                        onDrop={(e) => onDrop(e)}
-                    >
-                        <p>Drag and drop your videos here, or click the button below to select files.</p>
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleUploadClick(e)}>Choose video</button>
-                        <input className="ui"
-                            type="file"
-                            name="video"
-                            accept="video/*"
-                            placeholder="Video to analyse"
-                            onChange={handleFile}
-                            ref={inputRef}
-                            hidden
-
-                            />
-                        </div>
+                    
                         
                         <div className="flex justify-evenly">
                             <MultiDropDown
@@ -203,6 +183,27 @@ function VideoUpload() {
                                 prompt={"Select frame analysis model(s)"}
                             />
 
+                        </div>
+                        <div 
+                        className={`border-2 inline-block ${isDragging ? "border-blue-500 bg-blue-100" : "border-dashed border-gray-500"} rounded-lg py-10 px-10 text-center my-2`}
+                        ref={dragRef}
+                        onDragEnter={onDragEnter}
+                        onDragOver={onDragOver}
+                        onDragLeave={onDragLeave}
+                        onDrop={(e) => onDrop(e)}
+                    >
+                        <p>Drag and drop your videos here, or click the button below to select files.</p>
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleUploadClick(e)}>Choose video</button>
+                        <input className="ui"
+                            type="file"
+                            name="video"
+                            accept="video/*"
+                            placeholder="Video to analyse"
+                            onChange={handleFile}
+                            ref={inputRef}
+                            hidden
+
+                            />
                         </div>
                     </div>
 

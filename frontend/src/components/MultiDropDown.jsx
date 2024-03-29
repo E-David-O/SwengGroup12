@@ -69,7 +69,7 @@ export default function MultiDropDown({
         )}
       </div>
 
-      <div className="bg-white border border-blue-700 transition-opacity opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto w-full max-h-60 overflow-y-scroll">
+      <div className="absolute bg-white border border-blue-700 transition-opacity opacity-0 pointer-events-none peer-checked:opacity-100 peer-checked:pointer-events-auto w-full max-h-60 overflow-y-scroll">
           <ul>
             <li>
               <button

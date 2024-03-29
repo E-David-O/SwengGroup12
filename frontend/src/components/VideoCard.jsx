@@ -11,6 +11,7 @@ function VideoCard(props) {
 
     const videoName = props.result.name;
     const duration = props.video ? props.video.duration : "23 seconds";
+ 
     let base64ImageData = ""
     if (props.result.results[0].frames.length > 0) {
         base64ImageData = props.result.results[0].frames[0].image;

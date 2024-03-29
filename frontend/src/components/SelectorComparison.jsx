@@ -12,11 +12,11 @@ function SelectorComparison() {
     return (
         <div className="min-h-screen">
             <Navbar />
-            <div className="grid grid-cols-1 gap-4 m-4">
+            <div className="flex flex-col justify-center gap-4 m-4">
         {results.length !==0 ? 
             results?.map((result, index) => {
                 return (
-                    <div key={index} className="max-w-xl mx-auto bg-slate-200 p-6 rounded-xl shadow-lg flex items-center space-x-4">
+                    <div key={index} className="w-full md:max-w-lg mx-auto bg-slate-200 p-6 rounded-xl shadow-lg flex items-center space-x-4">
                         <img 
                             src={`data:image/jpeg;base64,${result.frames[0].image}`} 
                             alt={result.selector}
