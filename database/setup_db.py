@@ -51,6 +51,8 @@ def setup_tables():
                 videoLength VARCHAR(60000),
                 frame_resolution VARCHAR(60000),
                 is_link INT,
+                structural FLOAT,
+                homogeny FLOAT,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -60,6 +62,7 @@ def setup_tables():
                 idVideo INT,
                 frameNumber INT,
                 selectionMethod INT,
+                frameData BYTEA,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 

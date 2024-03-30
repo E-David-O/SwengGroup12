@@ -97,7 +97,7 @@ def set_user(username: str, password: str):
 
 
 def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate: str, video_length: int,
-              frame_resolution: str, is_link: int):
+              frame_resolution: str, is_link: int) -> int:
     try:
         connection, cursor = connect_to_database()
 
@@ -117,6 +117,48 @@ def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate:
 
 
             return inserted_id
+            
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            logging.info(error)
+            return error
+        else:
+            logging.info(error)
+            return error
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+def set_video_structural_runtime(video_id: int, runtime: float):
+    try:
+        connection, cursor = connect_to_database()
+
+        if connection and cursor:
+           input_query = """UPDATE Videos SET structural = %s WHERE id = %s"""
+           cursor.execute(input_query, (runtime, video_id))
+            
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            logging.info(error)
+            return error
+        else:
+            logging.info(error)
+            return error
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+def set_video_homogeny_runtime(video_id: int, runtime: float):
+    try:
+        connection, cursor = connect_to_database()
+
+        if connection and cursor:
+           input_query = """UPDATE Videos SET homogeny = %s WHERE id = %s"""
+           cursor.execute(input_query, (runtime, video_id))
             
     except (Exception, psycopg2.Error) as error:
         if connection:
@@ -152,6 +194,7 @@ def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selection
         if connection:
             print("Selected Frames")
             print("Could connect, but failed to insert data: ", error)
+            logging.info(error)
         else:
             print("Failed to connect: ", error)
     finally:
@@ -242,8 +285,7 @@ def get_user(username: str):
                 "id" : rows[0],
                 "username" : rows[1],
                 "password" : rows[2],
-                "jsonAuthToken" : rows[3],
-                "datetime" : rows[4].strftime('%Y-%m-%d %H:%M:%S')
+                "datetime" : rows[3].strftime('%Y-%m-%d %H:%M:%S')
             })
 
     except (Exception, psycopg2.Error) as error:
@@ -311,7 +353,9 @@ def get_video(video_id: int):
                 "videoLength": row[5],
                 "frameResolution": row[6],
                 "is_link":row[7],
-                "timestamp": row[8].strftime('%Y-%m-%d %H:%M:%S')
+                "structural": row[8],
+                "homogeny": [9],
+                "timestamp": row[10].strftime('%Y-%m-%d %H:%M:%S')
             }, indent = 4)
     except (Exception, psycopg2.Error) as error:
         if connection:
@@ -348,7 +392,7 @@ def get_selected_frames(video_id: int):
                     'idVideo': item[2],
                     'frameNumber': item[3],
                     'selectionMethod': item[4],
-                    'frameData': bytes(item[5]).decode('utf-8'),  # Convert memory address to string
+                    # 'frameData': bytes(item[5]).decode('utf-8'),  # Convert memory address to string
                     'timestamp': item[6].strftime('%Y-%m-%d %H:%M:%S')  # Convert datetime to string
                 })
             return json.dumps(rows, indent = 4)
@@ -500,7 +544,7 @@ def return_all_video_info(video_id: int):
         video_data["Frames"] = frames_data
 
     for frame in video_data["Frames"]:
-        frame_id = frame.get("idFrame")
+        frame_id = frame.get("id")
         analyzed_objects_info = get_frame_objects(frame_id)
         if analyzed_objects_info is None:
             frame["Objects"] = []
