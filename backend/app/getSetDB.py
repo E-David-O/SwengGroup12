@@ -392,7 +392,7 @@ def get_selected_frames(video_id: int):
                     'idVideo': item[2],
                     'frameNumber': item[3],
                     'selectionMethod': item[4],
-                    # 'frameData': bytes(item[5]).decode('utf-8'),  # Convert memory address to string
+                    'frameData': bytes(item[5]).decode('utf-8'),  # Convert memory address to string
                     'timestamp': item[6].strftime('%Y-%m-%d %H:%M:%S')  # Convert datetime to string
                 })
             return json.dumps(rows, indent = 4)
