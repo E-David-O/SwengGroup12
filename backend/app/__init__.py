@@ -23,6 +23,8 @@ from werkzeug.datastructures import FileStorage
 from . import auth, frameselector, db
 from . import getSetDB
 
+from . import getSetDB
+
 
 
 
@@ -35,6 +37,8 @@ def create_app(test_config = None) -> Flask:
         SECRET_KEY="dev",
         DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
     )
+
+    logging.basicConfig(filename='app.log', level=logging.INFO)
 
     logging.basicConfig(filename='app.log', level=logging.INFO)
 
