@@ -6,3 +6,4 @@ dist/
 venv/
 .venv/
 *.mp4
+backend/app/new_file.py
