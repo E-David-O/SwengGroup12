@@ -6,6 +6,7 @@ import os
 import tempfile
 import time
 import sys
+import concurrent.futures
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from yt_dlp import YoutubeDL
@@ -137,7 +138,9 @@ def ssim_homogeny_selector(vid, video_id):
                     index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
                     search_params = dict(checks = 50)
                     flann = cv2.FlannBasedMatcher(index_params, search_params)
-                    matches = flann.knnMatch(des1,des2,k=2)
+                    matches = []
+                    if(des1 is not None and len(des1)>2 and des2 is not None and len(des2)>2):
+                        matches = flann.knnMatch(des1,des2,k=2)
                     good = []
                     for m,n in matches:
                         if m.distance < 0.7*n.distance:
@@ -175,6 +178,10 @@ class FrameResponse(TypedDict):
     selector : str
     frames : list[SelectedFrame]
 
+class FrameResponseFile(TypedDict):
+    selector : str
+    frames : list[SelectedFrame]
+    run_time : float
 
 class FrameSelector(ABC):
     "Interface for frame selectors."
@@ -188,7 +195,7 @@ class StructuralSimilaritySelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
 
 
-    def select_frames(self, video: FileStorage, selectors: List[str], video_id) -> List[FrameResponse]:
+    def select_frames(self, video: FileStorage, selectors: List[str], video_id: int) -> List[FrameResponse]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
         response = []
         with tempfile.NamedTemporaryFile() as rf:
@@ -198,6 +205,9 @@ class StructuralSimilaritySelector(FrameSelector):
                 vid_resize(tf.name, rf.name, 480)
                 logging.info(rf)
                 for selector in selectors:
+                    start = time.time()
+                    # frames = list(self.__generate_frames(rf.name, selector))
+                    end = time.time()
                     response.append(
                         FrameResponse({
                             "selector": selector, 
@@ -350,7 +360,7 @@ class LiveSelector(FrameSelector):
                         if m.distance < 0.7*n.distance:
                             good.append(m)
                     if len(good)<MIN_MATCH_COUNT:
-                        yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))
+                        yield SelectedFrame(count, newframe)
                         analyze_count += 1
                         first_gray = new_gray
                     elif len(good) > OVERWRIGHT_LIMIT:
@@ -371,9 +381,35 @@ class YoutubeSelector(FrameSelector):
    
     
 
-    def select_frames(self, video, selector, video_id) -> List[SelectedFrame]:
+    # def select_frames(self, video, selector, video_id) -> List[SelectedFrame]:
+    #     "Selects frames from a video, using structural similarity to ignore similar frames."
+    #     return list(self.__generate_frames(video, selector, video_id))
+    def select_frames(self, video, selectors, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector, video_id))
+        response = []
+        for selector in selectors:
+            start = time.time()
+            frames = list(self.__generate_frames(video, selector, video_id))
+            end = time.time()
+            response.append(FrameResponseFile({
+                "selector" :selector, 
+                "frames" : frames,
+                "run_time" : end - start
+                }))
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        #     start = time.time()
+        #     frame_selections = {executor.submit(self.__generate_frames, video, selector): selector for selector in selectors}
+        #     for future in concurrent.futures.as_completed(frame_selections):
+        #         try:
+        #             response.append(FrameResponseFile({
+        #                 "selector" :frame_selections[future], 
+        #                 "frames" : list(future.result()),
+        #                 "run_time" : time.time() - start
+        #             }))
+        #         except Exception as e:
+        #             logging.error(f"Error: {e} for ")
+           
+        return response
 
     def __generate_frames(self, video, selector, video_id):
         # Loads the video in to opencvs capture
@@ -403,10 +439,14 @@ class TiktokSelector(FrameSelector):
             
             print(meta['requested_downloads'][0]['filepath'], file=sys.stderr)
             for selector in selectors:
+                start = time.time()
+                frames = list(self.__generate_frames(f"{meta['requested_downloads'][0]['filepath']}", selector, video_id))
+                end = time.time()
                 response.append(
                     FrameResponse({
                         "selector" :selector, 
-                        "frames" : list(self.__generate_frames(f"{meta['requested_downloads'][0]['filepath']}", selector, video_id))
+                        "frames" : frames,
+                        "run_time" : end - start
                         }))
         "Selects frames from a video, using structural similarity to ignore similar frames."
         return response
@@ -428,9 +468,22 @@ class VimeoSelector(FrameSelector):
     "Uses OpenCV structural similarity to skip similar frames."
 
 
-    def select_frames(self, video, selector, video_id) -> List[SelectedFrame]:
+    # def select_frames(self, video, selector, video_id) -> List[SelectedFrame]:
+    #     "Selects frames from a video, using structural similarity to ignore similar frames."
+    #     return list(self.__generate_frames(video, selector, video_id))
+    def select_frames(self, video, selectors) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
-        return list(self.__generate_frames(video, selector, video_id))
+        response = []
+        for selector in selectors:
+            start = time.time()
+            frames = list(self.__generate_frames(video, selector, video_id))
+            end = time.time()
+            response.append(FrameResponseFile({
+                "selector" :selector, 
+                "frames" : frames,
+                "run_time" : end - start
+                }))
+        return response
 
     def get_fps(self, video):
         vidcap = cv2.VideoCapture(video.direct_url)

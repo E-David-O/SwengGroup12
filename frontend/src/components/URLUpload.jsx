@@ -203,7 +203,6 @@ function URLUpload() {
                                 {// @ts-ignore
                                     [...resultList].map((result, index) => {
                                         const video = videos.find((r) => r.name === result.name);
-                                        console.log(video)
                                         if (video && video.youtube){
                                             return <VideoCard key={index} result={result} />
                                         }

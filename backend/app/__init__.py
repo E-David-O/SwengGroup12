@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import numpy as np
+import time
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Any, Mapping, TypedDict, List
@@ -181,8 +182,9 @@ def create_app(test_config = None) -> Flask:
                 for analysed, frame in zip(analysis_results, frames)
             ]
             selector_result.append(SelectorAnalysisResponse({
-                "selector": frame["selector"],
-                "frames": response
+                "selector": frameSelector["selector"],
+                "frames": response,
+                "run_time" : frameSelector["run_time"]
             }))
         toReturn = {
             "results": selector_result,
@@ -195,19 +197,50 @@ def create_app(test_config = None) -> Flask:
     def upload_live() -> Response:
         "Receives a live stream of video data to be analyzed."
         uploaded_file = request.form.getlist("files")
-        frames = frameselector.LiveSelector().select_frames(uploaded_file)
-        analysis_results = [
-            analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id) for frame in frames
-        ]
-        response: list[AnalysisResponse] = [
-            {
-                "frame_number": frame.frame_number,
-                "results": analysed.results,
-                "image": analysed.image,
-            }
-            for analysed, frame in zip(analysis_results, frames)
-        ]
-        return Response(json.dumps(response), mimetype="application/json")
+        selectors = request.form["frameselector"]
+        selectors = selectors.split(", ")
+        frameDict = []
+        for selector in selectors:
+            if selector == 'Structural Similarity':
+                start = time.time()
+                frames = frameselector.LiveSelector().select_frames(uploaded_file)
+                end = time.time()
+                frameDict.append(FrameResponse({
+                    "selector": selector,
+                    "frames": frames,
+                    "run_time": end - start
+                })    
+                )
+            elif selector == 'Structural Similarity + Homogeny':
+                start = time.time()
+                frames = frameselector.LiveSelector().select_frames_homogeny(uploaded_file)
+                end = time.time()
+                frameDict.append(FrameResponse({
+                    "selector": selector,
+                    "frames": frames,
+                    "run_time": end - start
+                })    
+                )
+
+        selector_result = []
+        for frame in frameDict:
+            frames = frame["frames"]
+            analysis_results = [
+                analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+            ]
+            response: list[AnalysisResponseLive] = [
+                {
+                    "results": analysed.results,
+                    "image": analysed.image,
+                }
+                for analysed in analysis_results
+            ]
+            selector_result.append(SelectorAnalysisResponse({
+                "selector": frame["selector"],
+                "frames": response,
+                "run_time" : frame["run_time"]
+            }))
+        return Response(json.dumps(selector_result), mimetype="application/json")
     
     
 
@@ -244,6 +277,9 @@ class AnalysisResponse(TypedDict):
     results: list[ModelResult]
     image: str
 
+class AnalysisResponseLive(TypedDict):
+    results: list[ModelResult]
+    image: str
 @dataclass
 class SelectedFrame:
     "The metadata of a selected frame."
@@ -253,10 +289,12 @@ class SelectedFrame:
 class FrameResponse(TypedDict):
     selector : str
     frames : list[SelectedFrame]
+    run_time : float
 
 class SelectorAnalysisResponse(TypedDict):
     selector: str
     frames: list[AnalysisResponse]
+    run_time: float
 
 def convert_frame_to_bin(frame: NDArray[uint8]) -> str:
     "Returns the data of JPEG file in base-64."
