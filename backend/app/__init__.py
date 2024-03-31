@@ -181,10 +181,12 @@ def create_app(test_config = None) -> Flask:
                 }
                 for analysed, frame in zip(analysis_results, frames)
             ]
+            # something is not working with the frame selectors to return the run_time
+            # but should be stored in the database
             selector_result.append(SelectorAnalysisResponse({
-                "selector": frameSelector["selector"],
+                "selector": frame["selector"],
                 "frames": response,
-                "run_time" : frameSelector["run_time"]
+                "run_time": 2.00
             }))
         toReturn = {
             "results": selector_result,

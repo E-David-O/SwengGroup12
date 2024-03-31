@@ -12,3 +12,4 @@ pytube
 Minio
 yt-dlp[default]
 vimeo_downloader
+clip
