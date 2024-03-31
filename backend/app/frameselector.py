@@ -57,7 +57,7 @@ def ssim_selector(vid, video_id):
     start_time = time.time()
     count = 1
     analyze_count = 1
-    frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+    frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 0, base64.b64encode(image).decode('utf-8'))
     yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
     count += 1
     first_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -73,7 +73,7 @@ def ssim_selector(vid, video_id):
             score: np.float64 = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
             logging.info(f"Similarity Score: {score*100:.3f}%")
             if score * 100 < SIMILARITY_LIMIT:
-                frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+                frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 0, base64.b64encode(image).decode('utf-8'))
                 yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
                 analyze_count += 1
                 first_gray = new_gray

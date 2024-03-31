@@ -121,7 +121,7 @@ def create_app(test_config = None) -> Flask:
                         frameDict.append(FrameResponse({
                             "selector": selector,
                             "frames": frameselector.VimeoSelector().select_frames(
-                                stream, selector, 1
+                                stream, selector, video_id
                             )
                         }))
             elif 'tiktok' in uploaded_video.file:
@@ -157,16 +157,18 @@ def create_app(test_config = None) -> Flask:
         for frame in frameDict:
             frames = frame["frames"]
             analysis_results = []
-            models = uploaded_video.model
+            # models = uploaded_video.model.split(", ")
             # for model in models:
             #     if model == 'Small':
-            #         analysis_results = [
+            #         small_model_analysis = [
             #             analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id, small_model, 0) for frame in frames
             #         ]
+            #         analysis_results(small_model_analysis)
             #     if model == 'Large':
-            #         analysis_results = [
+            #         large_model_analysis = [
             #             analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id, large_model, 1) for frame in frames
             #         ]
+            #         analysis_results.append(large_model_analysis)
             analysis_results = [
                         analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id, small_model, 1) for frame in frames
                     ]
