@@ -61,7 +61,7 @@ function SingleVideoUpload({ video }) {
         if (video) {
             if (video.algorithms == "") {
                 video.algorithms = "Structural Similarity"
-            }
+            } 
             const formData = new FormData();
             formData.append("video", video.file);
             formData.append("resolution", resolution);

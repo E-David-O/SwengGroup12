@@ -85,7 +85,7 @@ def ssim_selector(vid):
     )
     return
 
- # Flann index
+# Flann index
 FLANN_INDEX_KDTREE = 1
 # Minimum number of good feature point matches to comnclude identical object in the two image
 MIN_MATCH_COUNT = 40
@@ -157,6 +157,38 @@ def ssim_homogeny_selector(vid):
         return
 
 
+def traditional_selector(vid):
+    vidcap = cv2.VideoCapture(vid)
+    if not vidcap.isOpened():
+        logging.error("Video broken")
+        return
+    while True:
+        success, image = vidcap.read()
+        if success:
+            break
+
+    start_time = time.time()
+    count = 1
+    yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))  # type: ignore
+    analyze_count = 1
+    # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+    while success:
+        success, image = vidcap.read()
+        newframe = image
+        logging.info(f"Read frames read: {count}")
+        if count > 1 and success:
+            yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB))   # type: ignore
+            analyze_count += 1
+        count += 1
+
+    end_time = time.time()
+    run_time = end_time - start_time
+    logging.info(
+        f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+    )
+    return
+
+
 
 @dataclass
 class SelectedFrame:
@@ -212,6 +244,8 @@ class StructuralSimilaritySelector(FrameSelector):
                 return ssim_selector(video)
             elif selector == 'Structural Similarity + Homogeny':
                 return ssim_homogeny_selector(video)
+            elif selector == 'Frame by Frame':
+                return traditional_selector(video)
             else:
                 raise ValueError("No frames selected.")
         
@@ -363,6 +397,38 @@ class LiveSelector(FrameSelector):
         logging.info(
             f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
         )
+    
+    def select_frames_traditional(self, video: list[str] | FileStorage) -> List[SelectedFrame]:
+        "select_frames() but for streaming data."
+        assert isinstance(video, list)
+        return list(self.__generate_frames_traditional(video))
+
+    def __generate_frames_traditional(self, frame_list: list[str]) -> Iterator[SelectedFrame]:
+        im = base64.b64decode(frame_list[0].split(",")[1])
+        image = np.array(Image.open(BytesIO(im)))
+        start_time = time.time()
+        count = 1
+        analyze_count = 0
+        yield SelectedFrame(None, image)
+        analyze_count = 1
+        self.most_recent_frame = image
+
+        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        for _ in range(1, len(frame_list)):
+            image = np.array(
+                Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1])))
+            )
+            logging.info(f"Read frames read: {count}")
+            if count > 1:
+                yield SelectedFrame(None, image)
+                analyze_count += 1
+            count += 1
+
+        end_time = time.time()
+        run_time = end_time - start_time
+        logging.info(
+            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+        )
 
 
 class YoutubeSelector(FrameSelector):
@@ -396,7 +462,7 @@ class YoutubeSelector(FrameSelector):
         #         except Exception as e:
         #             logging.error(f"Error: {e} for ")
            
-        return response
+        # return response
 
     def __generate_frames(self, video, selector):
         # Loads the video in to opencvs capture
@@ -404,6 +470,8 @@ class YoutubeSelector(FrameSelector):
             return ssim_selector(video.url)
         elif selector == 'Structural Similarity + Homogeny':
             return ssim_homogeny_selector(video.url)
+        elif selector == 'Frame by Frame':
+            return traditional_selector(video.url)
         else:
             raise ValueError("No frames selected.")
     
@@ -445,6 +513,8 @@ class TiktokSelector(FrameSelector):
                 return ssim_selector(video)
             elif selector == 'Structural Similarity + Homogeny':
                 return ssim_homogeny_selector(video)
+            elif selector == 'Frame by Frame':
+                return traditional_selector(video)
             else:
                 raise ValueError("No frames selected.")
             # print(meta['requested_downloads'], file=sys.stderr)
@@ -483,6 +553,8 @@ class VimeoSelector(FrameSelector):
             return ssim_selector(video.direct_url)
         elif selector == 'Structural Similarity + Homogeny':
             return ssim_homogeny_selector(video.direct_url)
+        elif selector == 'Frame by Frame':
+            return traditional_selector(video.direct_url)
         else:
             raise ValueError("No frames selected.")
     

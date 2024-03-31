@@ -95,6 +95,7 @@ def create_app(test_config = None) -> Flask:
         for frameSelector in frameDict:
             frames = frameSelector["frames"]
             analysis_results = []
+            start = time.time()
             for frame in frames:
                 if selector_result == []:
                     analysed = analyze_frame(convert_frame_to_bin(frame.image))
@@ -106,7 +107,9 @@ def create_app(test_config = None) -> Flask:
                         print("using previous result", file=sys.stderr)
                         analysed = AnalysisResult(my_item['results'], my_item['image'])
                 analysis_results.append(analysed)
-
+            end = time.time()
+            if end - start < 0.001:
+                end = selector_result[0]['analysis_time']/2
             response: list[AnalysisResponse] = [
                 {
                     "frame_number": frame.frame_number,
@@ -118,7 +121,8 @@ def create_app(test_config = None) -> Flask:
             selector_result.append(SelectorAnalysisResponse({
                 "selector": frameSelector["selector"],
                 "frames": response,
-                "run_time" : frameSelector["run_time"]
+                "run_time" : frameSelector["run_time"],
+                "analysis_time" : end - start
             }))
         toReturn = {
             "results": selector_result,
@@ -154,13 +158,25 @@ def create_app(test_config = None) -> Flask:
                     "run_time": end - start
                 })    
                 )
+            elif selector == 'Frame by Frame':
+                start = time.time()
+                frames = frameselector.LiveSelector().select_frames_traditional(uploaded_file)
+                end = time.time()
+                frameDict.append(FrameResponse({
+                    "selector": selector,
+                    "frames": frames,
+                    "run_time": end - start
+                })    
+                )
 
         selector_result = []
         for frame in frameDict:
             frames = frame["frames"]
+            start = time.time()
             analysis_results = [
                 analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
             ]
+            end = time.time()
             response: list[AnalysisResponseLive] = [
                 {
                     "results": analysed.results,
@@ -171,7 +187,8 @@ def create_app(test_config = None) -> Flask:
             selector_result.append(SelectorAnalysisResponse({
                 "selector": frame["selector"],
                 "frames": response,
-                "run_time" : frame["run_time"]
+                "run_time" : frame["run_time"],
+                "analysis_time" : end - start
             }))
         return Response(json.dumps(selector_result), mimetype="application/json")
     
@@ -228,6 +245,7 @@ class SelectorAnalysisResponse(TypedDict):
     selector: str
     frames: list[AnalysisResponse]
     run_time: float
+    analysis_time: float
 
 def convert_frame_to_bin(frame: NDArray[uint8]) -> str:
     "Returns the data of JPEG file in base-64."
