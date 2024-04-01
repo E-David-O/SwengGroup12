@@ -50,22 +50,83 @@ function LiveVideo() {
                 console.log("Chunks uploaded");
                 console.log(response.data);
                 let newResults = [...results]; 
-                if(newResults.length !== 0 && response.data.length === 2) {
-                  newResults.find((r) => r.selector === response.data[0].selector).frames.push(response.data[0].frames);
-                  newResults.find((r) => r.selector === response.data[1].selector).frames.push(response.data[1].frames);
-                  setResults(newResults);
-                } else if (response.data.length === 1) {
-                  newResults.find((r) => r.selector === response.data[0].selector).frames.push(response.data[0].frames);
+                if(newResults.length !== 0) {
+                  switch(response.data.length) {
+                    case 1:
+                      if(newResults.find((r) => r.selector === response.data[0].selector)) {
+                        newResults.find((r) => r.selector === response.data[0].selector).frames.push(response.data[0].frames);
+                      } else {
+                        newResults.push(response.data[0]);
+                      }
+                      break;
+                    case 2:
+                      if(newResults.find((r) => r.selector === response.data[0].selector)) {
+                        newResults.find((r) => r.selector === response.data[0].selector).frames.push(response.data[0].frames);
+                      } else {
+                        newResults.push(response.data[0]);
+                      }
+                      if(newResults.find((r) => r.selector === response.data[1].selector)) {
+                        newResults.find((r) => r.selector === response.data[1].selector).frames.push(response.data[1].frames);
+                      } else {
+                        newResults.push(response.data[1]);
+                      }
+                      break;
+                    case 3: 
+                      if(newResults.find((r) => r.selector === response.data[0].selector)) {
+                        newResults.find((r) => r.selector === response.data[0].selector).frames.push(response.data[0].frames);
+                      } else {
+                        newResults.push(response.data[0]);
+                      }
+                      if(newResults.find((r) => r.selector === response.data[1].selector)) {
+                        newResults.find((r) => r.selector === response.data[1].selector).frames.push(response.data[1].frames);
+                      } else {
+                        newResults.push(response.data[1]);
+                      }
+                      if(newResults.find((r) => r.selector === response.data[2].selector)) {
+                        newResults.find((r) => r.selector === response.data[2].selector).frames.push(response.data[2].frames);
+                      } else {
+                        newResults.push(response.data[2]);
+                      }
+                      break;
+                    default:
+                      break;
+                  }
                   setResults(newResults);
                 } else {
                   setResults(response.data);
                 }
-                if(response.data.length === 2) {
+                if(response.data.length === 2 && (mostRecent.length === 2 || mostRecent.length === 0) 
+                || response.data.length === 3  
+                || response.data.length === 1 && (mostRecent.length === 1 || mostRecent.length === 0) ) {
                   setMostRecent(response.data);
                 } else {
                   let newMostRecent = [...mostRecent];
-                  const index = newMostRecent.findIndex((r) => r.selector === response.data[0].selector);
-                  newMostRecent[index] = response.data[0];
+                  switch(response.data.length) {
+                    case 1:
+                      if(newMostRecent.find((r) => r.selector === response.data[0].selector)) {
+                        const index = newMostRecent.findIndex((r) => r.selector === response.data[0].selector);
+                        newMostRecent[index] = response.data[0];
+                      } else {
+                        newMostRecent.push(response.data[0]);
+                      }
+                      break;
+                    case 2:
+                      if(newMostRecent.find((r) => r.selector === response.data[0].selector)) {
+                       const index = newMostRecent.findIndex((r) => r.selector === response.data[0].selector);
+                        newMostRecent[index] = response.data[0];
+                      } else {
+                        newMostRecent.push(response.data[0]);
+                      }
+                      if(newMostRecent.find((r) => r.selector === response.data[1].selector)) {
+                        const index = newMostRecent.findIndex((r) => r.selector === response.data[1].selector);
+                        newMostRecent[index] = response.data[1];
+                      } else {
+                        newMostRecent.push(response.data[1]);
+                      }
+                      break;
+                    default:
+                      break;
+                  }
                   setMostRecent(newMostRecent);
                 }
               })
@@ -158,7 +219,7 @@ function LiveVideo() {
         <div className="mb-2 flex justify-center">
           <MultiDropDown
               formFieldName={"Select the frame selection algorithm"}
-              options={["Structural Similarity", "Structural Similarity + Homogeny"]}
+              options={["Structural Similarity", "Structural Similarity + Homogeny", "Frame by Frame"]}
               onChange={(selected) => {
                   console.log(selected)
                   setAlgorithm(selected)

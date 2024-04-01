@@ -71,7 +71,7 @@ def create_app(test_config = None) -> Flask:
         "Receives an uploaded video to be analyzed."
         frameDict = []
         fps = 59.97
-        if request.files is None or "video" not in request.files:
+         if request.files is None or "video" not in request.files:
             uploaded_video = VideoURL(
                 request.form["video"],
                 request.form["resolution"],
@@ -79,60 +79,26 @@ def create_app(test_config = None) -> Flask:
                 request.form["model"],
                 request.form["frameselector"],
             )
-            models = uploaded_video.model.split(", ")
             selectors = uploaded_video.frameselector.split(", ")
             if 'youtube' in uploaded_video.file:
                 yt = YouTube(uploaded_video.file)
                 stream = yt.streams.filter(file_extension="mp4", res=480).first()
-                fps = stream.fps
+                              fps = stream.fps
                 video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", fps, 0, "480", 1)
-                logging.info("The video id is " + str(video_id))
-                for selector in selectors:
-                    if selector == 'Structural Similarity':
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frameselector.YoutubeSelector().select_frames(
-                                stream, selector, video_id
-                            )
-                        }))
-                    elif selector == 'Structural Similarity + Homogeny':
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frameselector.YoutubeSelector().select_frames(
-                                stream, selector, video_id
-                            )
-                        }))
-                fps = stream.fps
+                frameDict = frameselector.YoutubeSelector().select_frames(stream, selectors, video_id)
             elif 'vimeo' in uploaded_video.file:
                 v = Vimeo(uploaded_video.file)
                 stream = v.streams[0]
                 fps = frameselector.VimeoSelector().get_fps(stream)
-
-                meta = v.metadata
+                         meta = v.metadata
                 logging.info(meta._fields)
 
                 video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", fps, meta.duration, "480", 1)
-                logging.info("The video id is " + str(video_id))
-                for selector in selectors:
-                    if selector == 'Structural Similarity':
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frameselector.VimeoSelector().select_frames(
-                                stream, selector, video_id
-                            )
-                        }))
-                    elif selector == 'Structural Similarity + Homogeny':
-                        frameDict.append(FrameResponse({
-                            "selector": selector,
-                            "frames": frameselector.VimeoSelector().select_frames(
-                                stream, selector, video_id
-                            )
-                        }))
+                frameDict = frameselector.VimeoSelector().select_frames(stream, selectors, video_id)
             elif 'tiktok' in uploaded_video.file:
                 video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", 0, fps, "480", 1)
-                logging.info("The video id is " + str(video_id))
                 frameDict = frameselector.TiktokSelector().select_frames(
-                    uploaded_video.file, selectors, video_id)
+                    uploaded_video.file, selectors)
         else:
             uploaded_video = VideoFile(
                 request.files["video"],
@@ -141,26 +107,38 @@ def create_app(test_config = None) -> Flask:
                 request.form["model"],
                 request.form["frameselector"],
             )
-
+            selectors = uploaded_video.frameselector.split(", ")
             file = uploaded_video.file
             file_str = base64.b64encode(file.read()).decode('utf-8')
             uploaded_video.file.seek(0)
-            if len(uploaded_video.frameRate) == 0:
-                fps = 0
-            else:
-                fps = int(uploaded_video.frameRate)
             logging.info("Frame Rate: " + str(fps))
             video_id = getSetDB.set_video(auth.get_logged_in_user(), file_str, "mp4", fps, 0, "480", 0)
             logging.info("The video id is " + str(video_id))
-            selectors = uploaded_video.frameselector.split(", ")
             frameDict = frameselector.StructuralSimilaritySelector().select_frames(
                 uploaded_video.file, selectors, video_id
             )
+      
             
         selector_result = []
         for frame in frameDict:
             frames = frame["frames"]
             analysis_results = []
+            start = time.time()
+            for frame in frames:
+                if selector_result == []:
+                    analysed = analyze_frame(convert_frame_to_bin(frame.image))
+                else:
+                    my_item = next((item for item in selector_result[0]['frames'] if item['frame_number'] == frame.frame_number), None)
+                    if my_item is None:
+                        analysed = analyze_frame(convert_frame_to_bin(frame.image))
+                    else:
+                        print("using previous result", file=sys.stderr)
+                        analysed = AnalysisResult(my_item['results'], my_item['image'])
+                analysis_results.append(analysed)
+            end = time.time()
+            if end - start < 0.001:
+                end = start + selector_result[0]['analysis_time']/(len(selector_result[0]['frames'])/len(frames))
+
             # models = uploaded_video.model.split(", ")
             # for model in models:
             #     if model == 'Small':
@@ -173,9 +151,6 @@ def create_app(test_config = None) -> Flask:
             #             analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id, large_model, 1) for frame in frames
             #         ]
             #         analysis_results.append(large_model_analysis)
-            analysis_results = [
-                        analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id, small_model, 1) for frame in frames
-                    ]
             response: list[AnalysisResponse] = [
                 {
                     "frame_number": frame.frame_number,
@@ -189,7 +164,9 @@ def create_app(test_config = None) -> Flask:
             selector_result.append(SelectorAnalysisResponse({
                 "selector": frame["selector"],
                 "frames": response,
-                "run_time": 2.00
+                "run_time" : frameSelector["run_time"],
+                "analysis_time" : end - start
+
             }))
         toReturn = {
             "results": selector_result,
@@ -226,13 +203,25 @@ def create_app(test_config = None) -> Flask:
                     "run_time": end - start
                 })    
                 )
+            elif selector == 'Frame by Frame':
+                start = time.time()
+                frames = frameselector.LiveSelector().select_frames_traditional(uploaded_file)
+                end = time.time()
+                frameDict.append(FrameResponse({
+                    "selector": selector,
+                    "frames": frames,
+                    "run_time": end - start
+                })    
+                )
 
         selector_result = []
         for frame in frameDict:
             frames = frame["frames"]
+            start = time.time()
             analysis_results = [
                 analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
             ]
+            end = time.time()
             response: list[AnalysisResponseLive] = [
                 {
                     "results": analysed.results,
@@ -243,7 +232,8 @@ def create_app(test_config = None) -> Flask:
             selector_result.append(SelectorAnalysisResponse({
                 "selector": frame["selector"],
                 "frames": response,
-                "run_time" : frame["run_time"]
+                "run_time" : frame["run_time"],
+                "analysis_time" : end - start
             }))
         return Response(json.dumps(selector_result), mimetype="application/json")
     
@@ -300,6 +290,7 @@ class SelectorAnalysisResponse(TypedDict):
     selector: str
     frames: list[AnalysisResponse]
     run_time: float
+    analysis_time: float
 
 def convert_frame_to_bin(frame: NDArray[uint8]) -> str:
     "Returns the data of JPEG file in base-64."

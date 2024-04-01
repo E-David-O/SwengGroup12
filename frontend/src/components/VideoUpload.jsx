@@ -166,7 +166,7 @@ function VideoUpload() {
                         <div className="flex justify-evenly">
                             <MultiDropDown
                                 formFieldName={"Select the frame selection algorithm"}
-                                options={["Structural Similarity", "Structural Similarity + Homogeny"]}
+                                options={["Structural Similarity", "Structural Similarity + Homogeny", "Frame by Frame"]}
                                 onChange={(selected) => {
                                     console.log(selected)
                                     setAlgorithm(selected)
