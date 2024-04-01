@@ -71,7 +71,7 @@ def create_app(test_config = None) -> Flask:
         "Receives an uploaded video to be analyzed."
         frameDict = []
         fps = 59.97
-         if request.files is None or "video" not in request.files:
+        if request.files is None or "video" not in request.files:
             uploaded_video = VideoURL(
                 request.form["video"],
                 request.form["resolution"],
@@ -83,14 +83,14 @@ def create_app(test_config = None) -> Flask:
             if 'youtube' in uploaded_video.file:
                 yt = YouTube(uploaded_video.file)
                 stream = yt.streams.filter(file_extension="mp4", res=480).first()
-                              fps = stream.fps
+                fps = stream.fps
                 video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", fps, 0, "480", 1)
                 frameDict = frameselector.YoutubeSelector().select_frames(stream, selectors, video_id)
             elif 'vimeo' in uploaded_video.file:
                 v = Vimeo(uploaded_video.file)
                 stream = v.streams[0]
                 fps = frameselector.VimeoSelector().get_fps(stream)
-                         meta = v.metadata
+                meta = v.metadata
                 logging.info(meta._fields)
 
                 video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", fps, meta.duration, "480", 1)
@@ -98,7 +98,7 @@ def create_app(test_config = None) -> Flask:
             elif 'tiktok' in uploaded_video.file:
                 video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", 0, fps, "480", 1)
                 frameDict = frameselector.TiktokSelector().select_frames(
-                    uploaded_video.file, selectors)
+                uploaded_video.file, selectors)
         else:
             uploaded_video = VideoFile(
                 request.files["video"],
@@ -120,8 +120,8 @@ def create_app(test_config = None) -> Flask:
       
             
         selector_result = []
-        for frame in frameDict:
-            frames = frame["frames"]
+        for frameSelector in frameDict:
+            frames = frameSelector["frames"]
             analysis_results = []
             start = time.time()
             for frame in frames:
@@ -162,7 +162,7 @@ def create_app(test_config = None) -> Flask:
             # something is not working with the frame selectors to return the run_time
             # but should be stored in the database
             selector_result.append(SelectorAnalysisResponse({
-                "selector": frame["selector"],
+                "selector": frameSelector["selector"],
                 "frames": response,
                 "run_time" : frameSelector["run_time"],
                 "analysis_time" : end - start
