@@ -1,0 +1,53 @@
+# implementing CI/CD pipeline for backend
+name: Backend CI/CD
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+  pull_request:
+    paths:
+      - 'backend/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: DB
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        # Needed to keep the container running until tests are done
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3 python3-pip libsm6 libxext6 python3-opencv
+        sudo apt-get install -y --no-install-recommends ffmpeg
+        cd backend
+        pip install -r requirements.txt
+
+    - name: Run Tests
+      run: |
+        cd backend
+        # Add your test command here
+
+    # Add deployment steps
