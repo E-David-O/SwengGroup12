@@ -60,17 +60,19 @@ def create_app(test_config = None) -> Flask:
     db.init_app(app)
 
     small_model = YOLO("yolov8n.pt")
-    large_model = YOLO("yolov8x.pt")
 
     @app.route("/account_videos", methods=["POST"])
     def get_account_videos() -> Response:
-        return Response(getSetDB.get_account_videos(auth.get_logged_in_user()), mimetype="application/json")
+        user = getSetDB.get_user(request.get.args.get('username'))
+        return Response(getSetDB.get_account_videos(user["id"]), mimetype="application/json")
 
     @app.route("/upload", methods=["POST"])
     def upload() -> Response:
         "Receives an uploaded video to be analyzed."
         frameDict = []
         fps = 59.97
+        user = getSetDB.get_user(request.form["username"])
+        print(user, file=sys.stderr)
         if request.files is None or "video" not in request.files:
             uploaded_video = VideoURL(
                 request.form["video"],
@@ -84,7 +86,7 @@ def create_app(test_config = None) -> Flask:
                 yt = YouTube(uploaded_video.file)
                 stream = yt.streams.filter(file_extension="mp4", res=480).first()
                 fps = stream.fps
-                video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", fps, 0, "480", 1)
+                video_id = getSetDB.set_video(user["id"], uploaded_video.file, "mp4", fps, 0, "480", 1)
                 frameDict = frameselector.YoutubeSelector().select_frames(stream, selectors, video_id)
             elif 'vimeo' in uploaded_video.file:
                 v = Vimeo(uploaded_video.file)
@@ -93,10 +95,10 @@ def create_app(test_config = None) -> Flask:
                 meta = v.metadata
                 logging.info(meta._fields)
 
-                video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", fps, meta.duration, "480", 1)
+                video_id = getSetDB.set_video(user["id"], uploaded_video.file, "mp4", fps, meta.duration, "480", 1)
                 frameDict = frameselector.VimeoSelector().select_frames(stream, selectors, video_id)
             elif 'tiktok' in uploaded_video.file:
-                video_id = getSetDB.set_video(auth.get_logged_in_user(), uploaded_video.file, "mp4", 0, fps, "480", 1)
+                video_id = getSetDB.set_video(user["id"], uploaded_video.file, "mp4", 0, fps, "480", 1)
                 frameDict = frameselector.TiktokSelector().select_frames(
                 uploaded_video.file, selectors)
         else:
@@ -112,7 +114,7 @@ def create_app(test_config = None) -> Flask:
             file_str = base64.b64encode(file.read()).decode('utf-8')
             uploaded_video.file.seek(0)
             logging.info("Frame Rate: " + str(fps))
-            video_id = getSetDB.set_video(auth.get_logged_in_user(), file_str, "mp4", fps, 0, "480", 0)
+            video_id = getSetDB.set_video(user["id"], file_str, "mp4", fps, 0, "480", 0)
             logging.info("The video id is " + str(video_id))
             frameDict = frameselector.StructuralSimilaritySelector().select_frames(
                 uploaded_video.file, selectors, video_id

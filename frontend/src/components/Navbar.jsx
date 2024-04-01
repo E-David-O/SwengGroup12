@@ -77,7 +77,7 @@ return (
                 { token == "" ? 
                     <>
                         <li>
-                            <Link to="/services" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 hover:bg-transparent border-0 hover:text-blue-700 p-0 dark:text-white dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:bg-transparent"><NavbarButton buttonText="Services" /></Link>
+                            <Link to="/services" className="block py-2 px-10 text-gray-900 rounded hover:bg-gray-100 hover:bg-transparent border-0 hover:text-blue-700 p-0 dark:text-white dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:bg-transparent"><NavbarButton buttonText="Services" /></Link>
                         </li>
 
                         <li>
@@ -104,6 +104,9 @@ return (
 
                         <li>
                             <Link to="/live" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 hover:bg-transparent border-0 hover:text-blue-700 p-0 dark:text-white dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:bg-transparent"><NavbarButton buttonText="Live Video" /></Link>
+                        </li>
+                        <li>
+                            <Link to="/your-videos" className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 hover:bg-transparent border-0 hover:text-blue-700 p-0 dark:text-white dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:bg-transparent"><NavbarButton buttonText="Previously Analysed" /></Link>
                         </li>
                         <li>
                             <div onClick={handleMode} className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 hover:bg-transparent border-0 hover:text-blue-700 p-0 dark:text-white dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white dark:hover:bg-transparen">

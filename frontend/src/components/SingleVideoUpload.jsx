@@ -68,6 +68,7 @@ function SingleVideoUpload({ video }) {
             formData.append("frameRate", frameRate);
             formData.append("model", video.models);
             formData.append("frameselector", video.algorithms);
+            formData.append("username", JSON.parse(localStorage.getItem("username")));
             video.uploaded = true;
             setIsUploaded(true);
             let url = "http://localhost:8000/upload";
