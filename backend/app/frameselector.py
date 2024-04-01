@@ -462,7 +462,7 @@ class YoutubeSelector(FrameSelector):
         #         except Exception as e:
         #             logging.error(f"Error: {e} for ")
            
-        # return response
+        return response
 
     def __generate_frames(self, video, selector):
         # Loads the video in to opencvs capture

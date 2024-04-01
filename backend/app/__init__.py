@@ -109,7 +109,7 @@ def create_app(test_config = None) -> Flask:
                 analysis_results.append(analysed)
             end = time.time()
             if end - start < 0.001:
-                end = selector_result[0]['analysis_time']/2
+                end = start + selector_result[0]['analysis_time']/(len(selector_result[0]['frames'])/len(frames))
             response: list[AnalysisResponse] = [
                 {
                     "frame_number": frame.frame_number,

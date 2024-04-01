@@ -13,50 +13,49 @@ function SelectorComparison() {
         <div className="min-h-screen">
             <Navbar />
             <div className="flex flex-col justify-center gap-4 m-4">
-        {results.length !==0 ? 
-            results?.map((result, index) => {
-                return (
-                    <div>
-                        <div key={index} className="w-full md:max-w-lg mx-auto bg-slate-200 p-6 rounded-xl shadow-lg flex items-center space-x-4">
-                            <img 
-                                src={`data:image/jpeg;base64,${result.frames[0].image}`} 
-                                alt={result.selector}
-                                className="object-cover w-48 h-48 rounded-lg shadow-sm"
-                            />
-                            <div className="flex flex-col justify-between space-y-2">
-                                <p className="text-2xl font-semibold text-blue-500">
-                                    {result.selector} 
-                                </p>
-                                <p className="text-2xl font-semibold text-gray-800">
-                                    {result.frames.length} frames analysed
-                                </p>
-                                <p className="text-2xl font-semibold text-gray-800">
-                                    Frame Selection: {result.run_time.toFixed(2)} seconds
-                                </p>
-                                <p className="text-2xl font-semibold text-gray-800">
-                                    Frame Analysis: {result.analysis_time.toFixed(2)} seconds
-                                </p>
-                                <p className="text-2xl font-bold text-gray-800">
-                                    Total: {(result.run_time + result.analysis_time).toFixed(2)} seconds
-                                </p>
+                <div>
+                    {results.length !== 0 ? (
+                        <>
+                            {results.map((result, index) => (
+                                <div key={index} className="w-full md:max-w-lg mx-auto bg-slate-200 p-6 mb-2 rounded-xl shadow-lg flex items-center space-x-4">
+                                    <img 
+                                        src={`data:image/jpeg;base64,${result.frames[0].image}`} 
+                                        alt={result.selector}
+                                        className="object-cover w-48 h-48 rounded-lg shadow-sm"
+                                    />
+                                    <div className="flex flex-col justify-between space-y-2">
+                                        <p className="text-2xl font-semibold text-blue-500">
+                                            {result.selector} 
+                                        </p>
+                                        <p className="text-2xl font-semibold text-gray-800">
+                                            {result.frames.length} frames analysed
+                                        </p>
+                                        <p className="text-2xl font-semibold text-gray-800">
+                                            Frame Selection: <br></br>{result.run_time.toFixed(2)} seconds
+                                        </p>
+                                        <p className="text-2xl font-semibold text-gray-800">
+                                            Frame Analysis: <br></br>{result.analysis_time.toFixed(2)} seconds
+                                        </p>
+                                        <p className="text-2xl font-bold text-gray-800">
+                                            Total: <br></br>{(result.run_time + result.analysis_time).toFixed(2)} seconds
+                                        </p>
 
-                                <div className="flex space-x-2">
-                                    <Link 
-                                        to={`/analysis/${result.selector}/${totalResults.name}`}
-                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                                    >
-                                        Analytics
-                                    </Link>
+                                        <div className="flex space-x-2">
+                                            <Link 
+                                                to={`/analysis/${result.selector}/${totalResults.name}`}
+                                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                                            >
+                                                Analytics
+                                            </Link>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div className="grid ">
-
-
-                        </div>
-                    </div>
-                );
-            }) : <p>No results</p>  }
+                            ))}
+                        </>
+                    ) : (
+                        <p>No results</p>
+                    )}
+                </div>
             </div>
             <Footer />
         </div>
