@@ -62,6 +62,9 @@ def create_app(test_config = None) -> Flask:
     small_model = YOLO("yolov8n.pt")
     large_model = YOLO("yolov8x.pt")
 
+    @app.route("/account_videos", methods=["POST"])
+    def get_account_videos() -> Response:
+        return Response(getSetDB.get_account_videos(auth.get_logged_in_user()), mimetype="application/json")
 
     @app.route("/upload", methods=["POST"])
     def upload() -> Response:
