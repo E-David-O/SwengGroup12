@@ -39,9 +39,9 @@ def create_app(test_config = None) -> Flask:
         DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
     )
 
-    logging.basicConfig(filename='app.log', level=logging.INFO)
+    # logging.basicConfig(filename='app.log', level=logging.INFO)
 
-    logging.basicConfig(filename='app.log', level=logging.INFO)
+    # logging.basicConfig(filename='app.log', level=logging.INFO)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -61,9 +61,10 @@ def create_app(test_config = None) -> Flask:
 
     small_model = YOLO("yolov8n.pt")
 
-    @app.route("/account_videos", methods=["POST"])
+    @app.route("/account_videos", methods=["GET"])
     def get_account_videos() -> Response:
-        user = getSetDB.get_user(request.get.args.get('username'))
+        user = json.loads(getSetDB.get_user(request.args.get('username')))
+        print(user, file=sys.stderr)
         return Response(getSetDB.get_account_videos(user["id"]), mimetype="application/json")
 
     @app.route("/upload", methods=["POST"])
@@ -71,7 +72,7 @@ def create_app(test_config = None) -> Flask:
         "Receives an uploaded video to be analyzed."
         frameDict = []
         fps = 59.97
-        user = getSetDB.get_user(request.form["username"])
+        user = json.loads(getSetDB.get_user(request.form["username"]))
         print(user, file=sys.stderr)
         if request.files is None or "video" not in request.files:
             uploaded_video = VideoURL(
@@ -128,11 +129,11 @@ def create_app(test_config = None) -> Flask:
             start = time.time()
             for frame in frames:
                 if selector_result == []:
-                    analysed = analyze_frame(convert_frame_to_bin(frame.image))
+                    analysed = analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id, small_model, 1)
                 else:
                     my_item = next((item for item in selector_result[0]['frames'] if item['frame_number'] == frame.frame_number), None)
                     if my_item is None:
-                        analysed = analyze_frame(convert_frame_to_bin(frame.image))
+                        analysed = analyze_frame(convert_frame_to_bin(frame.image), frame.frame_id, small_model, 1)
                     else:
                         print("using previous result", file=sys.stderr)
                         analysed = AnalysisResult(my_item['results'], my_item['image'])
@@ -221,7 +222,7 @@ def create_app(test_config = None) -> Flask:
             frames = frame["frames"]
             start = time.time()
             analysis_results = [
-                analyze_frame(convert_frame_to_bin(frame.image)) for frame in frames
+                analyze_frame_live(convert_frame_to_bin(frame)) for frame in frames
             ]
             end = time.time()
             response: list[AnalysisResponseLive] = [
@@ -268,6 +269,10 @@ class ModelResult(TypedDict):
     class_id: str
     conf: float
 
+@dataclass
+class AnalysisResult:
+    results: list[ModelResult]
+    image: str
 
 class AnalysisResponse(TypedDict):
     frame_number: int | None
@@ -300,10 +305,7 @@ def convert_frame_to_bin(frame: NDArray[uint8]) -> str:
     return json.dumps({"image": base64.b64encode(imdata).decode("ascii")})  # type: ignore
 
 
-@dataclass
-class AnalysisResult:
-    results: list[ModelResult]
-    image: str
+
 
 
 # def analyze_frame(frame: str, frame_id: int, model, model_selection: int) -> AnalysisResult:
@@ -361,6 +363,38 @@ def analyze_frame(frame: str, frame_id: int, model, model_selection) -> Analysis
                 logging.info(result.names[box.cls[0].item()])  # type: ignore
                 logging.info(box.conf[0].item())  # type: ignore
                 getSetDB.set_frame_objects(frame_id, result.names[box.cls[0].item()], box.conf[0].item(), model_selection)
+                data: ModelResult = {
+                    "class_id": result.names[box.cls[0].item()],  # type: ignore
+                    "conf": round(box.conf[0].item(), 2),  # type: ignore
+                }
+                list_of_results.append(data)
+    logging.info(list_of_results)
+    if isinstance(boxed_image, bytes):
+        boxed_image = ""
+    return AnalysisResult(list_of_results, boxed_image)
+
+def analyze_frame_live(frame: str) -> AnalysisResult:
+    "Uses the YOLOv8 model to detect objects in a base-64 encoded frame."
+    try:
+        model = analyze_frame.model
+    except AttributeError:
+        analyze_frame.model = YOLO("yolov8n.pt")
+        model = analyze_frame.model
+    load = json.loads(frame)
+    imdata = base64.b64decode(load["image"])
+    im = Image.open(BytesIO(imdata))
+    results = model(im, stream=False, device="mps")  # type: ignore
+    list_of_results: list[ModelResult] = []
+    boxed_image = imdata
+    if results:
+        pil_img = Image.fromarray(results[0].plot())  # type: ignore
+        buff = BytesIO()
+        pil_img.save(buff, format="JPEG")
+        boxed_image = base64.b64encode(buff.getvalue()).decode("utf-8")
+        for result in results:  # type: ignore
+            for box in result.boxes:  # type: ignore
+                logging.info(result.names[box.cls[0].item()])  # type: ignore
+                logging.info(box.conf[0].item())  # type: ignore
                 data: ModelResult = {
                     "class_id": result.names[box.cls[0].item()],  # type: ignore
                     "conf": round(box.conf[0].item(), 2),  # type: ignore

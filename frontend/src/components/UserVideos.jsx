@@ -8,8 +8,9 @@ function UserVideos() {
     const username = JSON.parse(localStorage.getItem("username"));
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/acount_videos${(username) ? `?username=${username}` : ''}`)
+      .get(`http://localhost:8000/account_videos${(username) ? `?username=${username}` : ''}`)
       .then((response) => {
+        console.log(response.data);
         setVideos(response.data);
       })
       .catch((error) => {
@@ -22,8 +23,8 @@ function UserVideos() {
 
     <div className="min-h-screen">
         <Navbar />
-      {videos.map((video) => (
-        <VideoCard key={video._id} video={video} />
+      {videos.map((video, i) => (
+        <p>{video.name}</p>
       ))}
       <Footer />
     </div>

@@ -209,6 +209,8 @@ class SelectedFrame:
     image: NDArray[np.uint8]
     frame_id: int
 
+
+
 class FrameResponse(TypedDict):
     selector : str
     frames : list[SelectedFrame]
@@ -247,7 +249,8 @@ class StructuralSimilaritySelector(FrameSelector):
                         FrameResponse({
                             "selector": selector, 
                             "frames": list(
-                            self.__generate_frames(rf.name, selector, video_id))
+                            self.__generate_frames(rf.name, selector, video_id)),
+                            "run_time": end - start
                             }))
         return response
 
@@ -262,186 +265,6 @@ class StructuralSimilaritySelector(FrameSelector):
             else:
                 raise ValueError("No frames selected.")
         
-
-
-class LiveSelector(FrameSelector):
-    "Like StructuralSimilaritySelector, but for streaming data."
-
-    # Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
-    FRAME_SKIP = 30
-    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
-    SIMILARITY_LIMIT = 80
-    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
-    SIMILARITY_LIMIT_LIVE = 65
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.most_recent_frame = None
-
-    def select_frames(self, video: list[str] | FileStorage) -> List[SelectedFrame]:
-        "select_frames() but for streaming data."
-        assert isinstance(video, list)
-        return list(self.__generate_frames(video))
-
-    def __generate_frames(self, frame_list: list[str]) -> Iterator[SelectedFrame]:
-        im = base64.b64decode(frame_list[0].split(",")[1])
-        image = np.array(Image.open(BytesIO(im)))
-        start_time = time.time()
-        count = 1
-        analyze_count = 0
-        new_gray = cv2.cvtColor(cv2.resize(image, (300, 300)), cv2.COLOR_BGR2GRAY)
-
-        # If there is a previous frame, test it to the current frame
-        if self.most_recent_frame is not None:
-            first_gray = cv2.cvtColor(
-                cv2.resize(self.most_recent_frame, (300, 300)), cv2.COLOR_BGR2GRAY
-            )
-            # Structural similarity test.
-            score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
-            logging.info(f"Similarity Score: {score*100:.3f}%")
-            if score * 100 < self.SIMILARITY_LIMIT_LIVE:
-                yield SelectedFrame(None, image)
-                first_gray = new_gray
-                analyze_count = 1
-                self.most_recent_frame = image
-        else:
-            yield SelectedFrame(None, image)
-            analyze_count = 1
-            self.most_recent_frame = image
-            first_gray = new_gray
-
-        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
-        for _ in range(1, len(frame_list)):
-            image = np.array(
-                Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1])))
-            )
-            newframe = image
-            logging.info(f"Read frames read: {count}")
-            if count > 1:
-                # Convert current frame to grayscale (needed for structural similarity check)
-                new_gray = cv2.cvtColor(
-                    cv2.resize(newframe, (300, 300)), cv2.COLOR_BGR2GRAY
-                )
-                # Structural similarity test.
-                score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
-                logging.info(f"Similarity Score: {score*100:.3f}%")
-                if score * 100 < self.SIMILARITY_LIMIT_LIVE:
-                    yield SelectedFrame(None, image)
-                    analyze_count += 1
-                    first_gray = new_gray
-            count += 1
-
-        end_time = time.time()
-        run_time = end_time - start_time
-        logging.info(
-            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
-        )
-
-    def select_frames_homogeny(self, video: list[str] | FileStorage, video_id) -> List[SelectedFrame]:
-        "select_frames() but for streaming data."
-        assert isinstance(video, list)
-        return list(self.__generate_frames_homogeny(video, video_id))
-
-    def __generate_frames_homogeny(self, frame_list: list[str], video_id) -> Iterator[SelectedFrame]:
-        im = base64.b64decode(frame_list[0].split(",")[1])
-        image = np.array(Image.open(BytesIO(im)))
-        start_time = time.time()
-        count = 1
-        analyze_count = 0
-        new_gray = cv2.cvtColor(cv2.resize(image, (300, 300)), cv2.COLOR_BGR2GRAY)
-        sift = cv2.SIFT_create()
-        # If there is a previous frame, test it to the current frame
-        if self.most_recent_frame is not None:
-            first_gray = cv2.cvtColor(
-                cv2.resize(self.most_recent_frame, (300, 300)), cv2.COLOR_BGR2GRAY
-            )
-            # Structural similarity test.
-            score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
-            logging.info(f"Similarity Score: {score*100:.3f}%")
-            if score * 100 < self.SIMILARITY_LIMIT_LIVE:
-                yield SelectedFrame(None, image)
-                first_gray = new_gray
-                analyze_count = 1
-                self.most_recent_frame = image
-        else:
-            yield SelectedFrame(None, image)
-            analyze_count = 1
-            self.most_recent_frame = image
-            first_gray = new_gray
-
-        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
-        for _ in range(1, len(frame_list)):
-            image = np.array(
-                Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1])))
-            )
-            newframe = image
-            logging.info(f"Read frames read: {count}")
-            
-            if count > 1:
-                # Convert current frame to grayscale (needed for structural similarity check)
-                new_gray = cv2.cvtColor(
-                    cv2.resize(newframe, (300, 300)), cv2.COLOR_BGR2GRAY
-                )
-                # Structural similarity test.
-                score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
-                logging.info(f"Similarity Score: {score*100:.3f}%")
-                if score * 100 < self.SIMILARITY_LIMIT_LIVE:
-                    kp1, des1 = sift.detectAndCompute(first_gray,None)
-                    kp2, des2 = sift.detectAndCompute(new_gray,None)
-                    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-                    search_params = dict(checks = 50)
-                    flann = cv2.FlannBasedMatcher(index_params, search_params)
-                    matches = flann.knnMatch(des1,des2,k=2)
-                    good = []
-                    for m,n in matches:
-                        if m.distance < 0.7*n.distance:
-                            good.append(m)
-                    if len(good)<MIN_MATCH_COUNT:
-                        yield SelectedFrame(count, newframe)
-                        analyze_count += 1
-                        first_gray = new_gray
-                    elif len(good) > OVERWRIGHT_LIMIT:
-                        first_gray = new_gray
-                    good = []
-            count += 1
-
-        end_time = time.time()
-        run_time = end_time - start_time
-        logging.info(
-            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
-        )
-    
-    def select_frames_traditional(self, video: list[str] | FileStorage) -> List[SelectedFrame]:
-        "select_frames() but for streaming data."
-        assert isinstance(video, list)
-        return list(self.__generate_frames_traditional(video))
-
-    def __generate_frames_traditional(self, frame_list: list[str]) -> Iterator[SelectedFrame]:
-        im = base64.b64decode(frame_list[0].split(",")[1])
-        image = np.array(Image.open(BytesIO(im)))
-        start_time = time.time()
-        count = 1
-        analyze_count = 0
-        yield SelectedFrame(None, image)
-        analyze_count = 1
-        self.most_recent_frame = image
-
-        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
-        for _ in range(1, len(frame_list)):
-            image = np.array(
-                Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1])))
-            )
-            logging.info(f"Read frames read: {count}")
-            if count > 1:
-                yield SelectedFrame(None, image)
-                analyze_count += 1
-            count += 1
-
-        end_time = time.time()
-        run_time = end_time - start_time
-        logging.info(
-            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
-        )
 
 
 class YoutubeSelector(FrameSelector):
@@ -576,4 +399,181 @@ class VimeoSelector(FrameSelector):
             return traditional_selector(video.direct_url, video_id)
         else:
             raise ValueError("No frames selected.")
+        
+
+
+class LiveSelector:
+    "Like StructuralSimilaritySelector, but for streaming data."
+
+    # Check every 30th frame in this case since the video is at 60 fps we sample every 0.5 seconds
+    FRAME_SKIP = 30
+    # The treshold of similarity if two images are less than this% in similarity the new frame i sent to be analyzed
+    SIMILARITY_LIMIT_LIVE = 65
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.most_recent_frame = None
+
+    def select_frames(self, video: list[str] | FileStorage):
+        "select_frames() but for streaming data."
+        assert isinstance(video, list)
+        return list(self.__generate_frames(video))
+
+    def __generate_frames(self, frame_list: list[str]):
+        im = base64.b64decode(frame_list[0].split(",")[1])
+        image = np.array(Image.open(BytesIO(im)))
+        start_time = time.time()
+        count = 1
+        analyze_count = 0
+        new_gray = cv2.cvtColor(cv2.resize(image, (300, 300)), cv2.COLOR_BGR2GRAY)
+
+        # If there is a previous frame, test it to the current frame
+        if self.most_recent_frame is not None:
+            first_gray = cv2.cvtColor(
+                cv2.resize(self.most_recent_frame, (300, 300)), cv2.COLOR_BGR2GRAY
+            )
+            # Structural similarity test.
+            score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
+            logging.info(f"Similarity Score: {score*100:.3f}%")
+            if score * 100 < self.SIMILARITY_LIMIT_LIVE:
+                yield image
+                first_gray = new_gray
+                analyze_count = 1
+                self.most_recent_frame = image
+        else:
+            yield image
+            analyze_count = 1
+            self.most_recent_frame = image
+            first_gray = new_gray
+
+        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        for _ in range(1, len(frame_list)):
+            image = np.array(
+                Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1])))
+            )
+            newframe = image
+            logging.info(f"Read frames read: {count}")
+            if count > 1:
+                # Convert current frame to grayscale (needed for structural similarity check)
+                new_gray = cv2.cvtColor(
+                    cv2.resize(newframe, (300, 300)), cv2.COLOR_BGR2GRAY
+                )
+                # Structural similarity test.
+                score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
+                logging.info(f"Similarity Score: {score*100:.3f}%")
+                if score * 100 < self.SIMILARITY_LIMIT_LIVE:
+                    yield image
+                    analyze_count += 1
+                    first_gray = new_gray
+            count += 1
+
+        end_time = time.time()
+        run_time = end_time - start_time
+        logging.info(
+            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+        )
+
+    def select_frames_homogeny(self, video: list[str] | FileStorage):
+        assert isinstance(video, list)
+        return list(self.__generate_frames_homogeny(video))
+
+    def __generate_frames_homogeny(self, frame_list: list[str]):
+        im = base64.b64decode(frame_list[0].split(",")[1])
+        image = np.array(Image.open(BytesIO(im)))
+        start_time = time.time()
+        count = 1
+        analyze_count = 0
+        new_gray = cv2.cvtColor(cv2.resize(image, (300, 300)), cv2.COLOR_BGR2GRAY)
+        sift = cv2.SIFT_create()
+        # If there is a previous frame, test it to the current frame
+        if self.most_recent_frame is not None:
+            first_gray = cv2.cvtColor(
+                cv2.resize(self.most_recent_frame, (300, 300)), cv2.COLOR_BGR2GRAY
+            )
+            # Structural similarity test.
+            score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
+            logging.info(f"Similarity Score: {score*100:.3f}%")
+            if score * 100 < self.SIMILARITY_LIMIT_LIVE:
+                yield image
+                first_gray = new_gray
+                analyze_count = 1
+                self.most_recent_frame = image
+        else:
+            yield image
+            analyze_count = 1
+            self.most_recent_frame = image
+            first_gray = new_gray
+
+        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        for _ in range(1, len(frame_list)):
+            image = np.array(
+                Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1])))
+            )
+            newframe = image
+            logging.info(f"Read frames read: {count}")
+            
+            if count > 1:
+                # Convert current frame to grayscale (needed for structural similarity check)
+                new_gray = cv2.cvtColor(
+                    cv2.resize(newframe, (300, 300)), cv2.COLOR_BGR2GRAY
+                )
+                # Structural similarity test.
+                score = structural_similarity(first_gray, new_gray, full=False)  # type: ignore
+                logging.info(f"Similarity Score: {score*100:.3f}%")
+                if score * 100 < self.SIMILARITY_LIMIT_LIVE:
+                    kp1, des1 = sift.detectAndCompute(first_gray,None)
+                    kp2, des2 = sift.detectAndCompute(new_gray,None)
+                    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+                    search_params = dict(checks = 50)
+                    flann = cv2.FlannBasedMatcher(index_params, search_params)
+                    matches = flann.knnMatch(des1,des2,k=2)
+                    good = []
+                    for m,n in matches:
+                        if m.distance < 0.7*n.distance:
+                            good.append(m)
+                    if len(good)<MIN_MATCH_COUNT:
+                        yield image
+                        analyze_count += 1
+                        first_gray = new_gray
+                    elif len(good) > OVERWRIGHT_LIMIT:
+                        first_gray = new_gray
+                    good = []
+            count += 1
+
+        end_time = time.time()
+        run_time = end_time - start_time
+        logging.info(
+            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+        )
     
+    def select_frames_traditional(self, video: list[str] | FileStorage) :
+        "select_frames() but for streaming data."
+        assert isinstance(video, list)
+        return list(self.__generate_frames_traditional(video))
+
+    def __generate_frames_traditional(self, frame_list: list[str]) :
+        im = base64.b64decode(frame_list[0].split(",")[1])
+        image = np.array(Image.open(BytesIO(im)))
+        start_time = time.time()
+        count = 1
+        analyze_count = 0
+        yield image
+        analyze_count = 1
+        self.most_recent_frame = image
+
+        # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
+        for _ in range(1, len(frame_list)):
+            image = np.array(
+                Image.open(BytesIO(base64.b64decode(frame_list[count].split(",")[1])))
+            )
+            logging.info(f"Read frames read: {count}")
+            if count > 1:
+                yield image
+                analyze_count += 1
+            count += 1
+
+        end_time = time.time()
+        run_time = end_time - start_time
+        logging.info(
+            f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
+        )
