@@ -1,9 +1,9 @@
-// @ts-nocheck
-import VideoCard from "./VideoCard";
+
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+
 function UserVideos() {
     const [videos, setVideos] = useState([]);
     const username = JSON.parse(localStorage.getItem("username"));
@@ -22,24 +22,23 @@ function UserVideos() {
                 })
                 .catch(err => console.log(err));
                 console.log(title);
-                newVideos.push({title: title, url: res.encoded_video});
+                newVideos.push({title: title, url: res.encoded_video, frames: res.frames, fps: res.fps});
             } else if (res.encoded_video.includes("tiktok")) {
-                newVideos.push({title: res.encoded_video.split("/").slice(-1).toString(), url: res.encoded_video});
+                newVideos.push({title: res.encoded_video.split("/").slice(-1).toString(), url: res.encoded_video, frames: res.frames, fps: res.fps});
             } else {
                 var blob = new Blob([atob(res.encoded_video)], { type: "video/mp4" });
-                newVideos.push({title: res.encoded_video, url: URL.createObjectURL(blob)});
+                newVideos.push({title: res.encoded_video, url: URL.createObjectURL(blob), frames: res.frames, fps: res.fps});
             }
         }
-        return newVideos;
+        console.log(newVideos);
+        setVideos(newVideos);
     }
   useEffect(() => {
     axios
       .get(`http://localhost:8000/account_videos${(username) ? `?username=${username}` : ''}`)
       .then((response) => {
         console.log(response.data);
-        const newVideo = parseVideos(response.data);
-        console.log(newVideo);
-        setVideos([...newVideo]);
+        parseVideos(response.data);
 
       })
       .catch((error) => {
@@ -53,7 +52,8 @@ function UserVideos() {
     <div className="min-h-screen">
         <Navbar />
       {videos.length !== 0 ? videos?.map((video, i) => (
-        <p>{video.encoded_video}</p>
+
+        <p key={i}>{video.title}</p>
       ))
         : <p>No videos uploaded</p>}
       <Footer />
