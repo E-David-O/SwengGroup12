@@ -9,5 +9,7 @@ ffmpeg-python
 scikit-image
 opencv-python
 pytube
+Minio
 yt-dlp[default]
 vimeo_downloader
+clip
