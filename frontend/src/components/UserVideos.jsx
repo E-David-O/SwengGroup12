@@ -35,7 +35,7 @@ function UserVideos() {
             if(res.homogeny !== null) {
                 let result = {
                     selector: "Structural Similarity + Homogeny",
-                    frames: res.Frames.filter((f) => f.selectionMethod === 0),
+                    frames: res.Frames.filter((f) => f.selectionMethod === 1),
                     run_time: res.homogeny,
                     analysis_time: res.homogeny_analysis
                 }
@@ -46,7 +46,7 @@ function UserVideos() {
             if(res.structural !== null) {
                 let result = {
                     selector: "Structural Similarity",
-                    frames: res.Frames.filter((f) => f.selectionMethod === 1),
+                    frames: res.Frames.filter((f) => f.selectionMethod === 0),
                     run_time: res.structural,
                     analysis_time: res.structural_analysis
                 }
