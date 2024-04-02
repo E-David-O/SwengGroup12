@@ -173,6 +173,26 @@ def set_video_homogeny_runtime(video_id: int, runtime: float):
             cursor.close()
             connection.close()
 
+def set_video_traditional_runtime(video_id: int, runtime: float):
+    try:
+        connection, cursor = connect_to_database()
+
+        if connection and cursor:
+           input_query = """UPDATE Videos SET traditional = %s WHERE id = %s"""
+           cursor.execute(input_query, (runtime, video_id))
+            
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            logging.info(error)
+            return error
+        else:
+            logging.info(error)
+            return error
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
 
 def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selectionMethod: int, frameData: str):
     try:

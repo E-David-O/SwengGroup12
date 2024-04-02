@@ -179,7 +179,7 @@ def traditional_selector(vid, video_id):
     start_time = time.time()
     count = 1
     analyze_count = 1
-    frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+    frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 2, base64.b64encode(image).decode('utf-8'))
     yield SelectedFrame(count, cv2.cvtColor(image, cv2.COLOR_BGR2RGB), frame_id)  # type: ignore
     
     # If the re is a  next frame (30 frames after the last one) test it to the previously analyzed frame
@@ -189,12 +189,13 @@ def traditional_selector(vid, video_id):
         logging.info(f"Read frames read: {count}")
         if count > 1 and success:
             analyze_count += 1
-            frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 1, base64.b64encode(image).decode('utf-8'))
+            frame_id = getSetDB.set_selected_frame(analyze_count, video_id, count, 2, base64.b64encode(image).decode('utf-8'))
             yield SelectedFrame(count, cv2.cvtColor(newframe, cv2.COLOR_BGR2RGB), frame_id)   # type: ignore
         count += 1
 
     end_time = time.time()
     run_time = end_time - start_time
+    getSetDB.set_video_traditional_runtime(video_id, run_time)
     logging.info(
         f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
     )

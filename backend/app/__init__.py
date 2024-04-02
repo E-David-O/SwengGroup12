@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import sys
+from http import HTTPStatus
 import numpy as np
 import time
 from dataclasses import dataclass
@@ -63,7 +64,14 @@ def create_app(test_config = None) -> Flask:
 
     @app.route("/account_videos", methods=["GET"])
     def get_account_videos() -> Response:
-        user = json.loads(getSetDB.get_user(request.args.get('username')))
+        user = getSetDB.get_user(request.args.get('username'))
+        if user is None:
+            return Response(
+            json.dumps({"message": "User not found"}),
+            HTTPStatus.UNAUTHORIZED,
+            mimetype="application/json",
+             )
+        user = json.loads(user)
         print(user, file=sys.stderr)
         return Response(getSetDB.get_account_videos(user["id"]), mimetype="application/json")
 
@@ -72,7 +80,14 @@ def create_app(test_config = None) -> Flask:
         "Receives an uploaded video to be analyzed."
         frameDict = []
         fps = 59.97
-        user = json.loads(getSetDB.get_user(request.form["username"]))
+        user = getSetDB.get_user(request.form["username"])
+        if user is None:
+            return Response(
+            json.dumps({"message": "User not found"}),
+            HTTPStatus.UNAUTHORIZED,
+            mimetype="application/json",
+             )
+        user = json.loads(user)
         print(user, file=sys.stderr)
         if request.files is None or "video" not in request.files:
             uploaded_video = VideoURL(
