@@ -1,12 +1,57 @@
+// @ts-nocheck
 
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-
+import './typedef'
 function UserVideos() {
+    /**
+     * @type {UserVideo[]}}
+     */
+
     const [videos, setVideos] = useState([]);
     const username = JSON.parse(localStorage.getItem("username"));
+
+    /**
+     * 
+     * @param {*} res 
+     * @returns {Result[]}
+     */
+
+    const parseFrames = (res) => {
+        let results = [];
+        if(res.homogeny !== undefined) {
+            let result = {
+                selector: "Structural Similarity + Homogeny",
+                frames: res.frames.filter((f) => f.selectionMethod === 0),
+                run_time: res.homogeny
+            }
+            results.push(result);
+        } 
+        if(res.structural !== undefined) {
+            let result = {
+                selector: "Structural Similarity",
+                frames: res.frames.filter((f) => f.selectionMethod === 1),
+                run_time: res.structural
+            }
+            results.push(result);
+        } 
+        if(res.tradtional !== undefined) {
+            let result = {
+                selector: "Frame by Frame",
+                frames: res.frames.filter((f) => f.selectionMethod === 2),
+                run_time: res.tradtional
+            }
+            results.push(result);
+        }
+        return results;
+    }
+
+    /**
+     * 
+     * 
+     */
 
 
     const parseVideos = async (videos) => {
@@ -22,12 +67,15 @@ function UserVideos() {
                 })
                 .catch(err => console.log(err));
                 console.log(title);
-                newVideos.push({title: title, url: res.encoded_video, frames: res.frames, fps: res.fps});
+                let results = parseFrames(res);
+                newVideos.push({name: title, url: res.encoded_video, resuts: results, fps: res.fps});
             } else if (res.encoded_video.includes("tiktok")) {
-                newVideos.push({title: res.encoded_video.split("/").slice(-1).toString(), url: res.encoded_video, frames: res.frames, fps: res.fps});
+                let results = parseFrames(res);
+                newVideos.push({name: res.encoded_video.split("/").slice(-1).toString(), url: res.encoded_video, results: results, fps: res.fps});
             } else {
                 var blob = new Blob([atob(res.encoded_video)], { type: "video/mp4" });
-                newVideos.push({title: res.encoded_video, url: URL.createObjectURL(blob), frames: res.frames, fps: res.fps});
+                let results = parseFrames(res);
+                newVideos.push({name: res.encoded_video, url: URL.createObjectURL(blob), results: results, fps: res.fps});
             }
         }
         console.log(newVideos);

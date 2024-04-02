@@ -96,6 +96,7 @@ def create_app(test_config = None) -> Flask:
                 request.form["frameRate"],
                 request.form["model"],
                 request.form["frameselector"],
+                request.form["videoname"],
             )
             selectors = uploaded_video.frameselector.split(", ")
             if 'youtube' in uploaded_video.file:
@@ -116,7 +117,7 @@ def create_app(test_config = None) -> Flask:
             elif 'tiktok' in uploaded_video.file:
                 video_id = getSetDB.set_video(user["id"], uploaded_video.file, "mp4", 0, fps, "480", 1)
                 frameDict = frameselector.TiktokSelector().select_frames(
-                uploaded_video.file, selectors)
+                uploaded_video.file, selectors, video_id)
         else:
             uploaded_video = VideoFile(
                 request.files["video"],
@@ -124,6 +125,7 @@ def create_app(test_config = None) -> Flask:
                 request.form["frameRate"],
                 request.form["model"],
                 request.form["frameselector"],
+                request.form["videoname"],
             )
             selectors = uploaded_video.frameselector.split(", ")
             file = uploaded_video.file
@@ -268,6 +270,7 @@ class VideoFile:
     frameRate: str
     model: str
     frameselector: str
+    name: str
 
 
 @dataclass
@@ -278,6 +281,7 @@ class VideoURL:
     frameRate: str
     model: str
     frameselector: str
+    name: str
 
 
 class ModelResult(TypedDict):
