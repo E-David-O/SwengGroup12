@@ -42,7 +42,7 @@ def create_app(test_config = None) -> Flask:
 
     # logging.basicConfig(filename='app.log', level=logging.INFO)
 
-    logging.basicConfig(filename='app.log', level=logging.INFO)
+    # logging.basicConfig(filename='app.log', level=logging.INFO)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -156,6 +156,10 @@ def create_app(test_config = None) -> Flask:
                     else:
                         print("using previous result", file=sys.stderr)
                         analysed = AnalysisResult(my_item['results'], my_item['image'])
+                        getSetDB.set_selected_frame_img(frame.frame_id, analysed.image)
+                        for result in analysed.results:
+                            getSetDB.set_frame_objects(frame.frame_id, result['class_id'], result['conf'], 1)
+
                 analysis_results.append(analysed)
             end = time.time()
             runtime = end - start

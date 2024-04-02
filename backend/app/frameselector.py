@@ -368,7 +368,7 @@ class VimeoSelector(FrameSelector):
     # def select_frames(self, video, selector, video_id) -> List[SelectedFrame]:
     #     "Selects frames from a video, using structural similarity to ignore similar frames."
     #     return list(self.__generate_frames(video, selector, video_id))
-    def select_frames(self, video, selectors) -> List[SelectedFrame]:
+    def select_frames(self, video, selectors, video_id) -> List[SelectedFrame]:
         "Selects frames from a video, using structural similarity to ignore similar frames."
         response = []
         for selector in selectors:

@@ -88,7 +88,7 @@ def register():
         )
     else:
         return Response (
-            json.dump({"message": "Account could not be created"}),
+            json.dumps({"message": "Account could not be created"}),
             HTTPStatus.CONFLICT,
             mimetype="application/json",
         )
@@ -120,9 +120,10 @@ def login():
     username = request.form["username"]
     password = request.form["password"]
     error = None
-
-    user = json.loads(getSetDB.get_user(username))
-
+    user = getSetDB.get_user(username)
+    if user is not None:
+        user = json.loads(getSetDB.get_user(username))
+ 
     if user is None:
         error = "Incorrect username."
     elif not check_password_hash(user["password"], password):
