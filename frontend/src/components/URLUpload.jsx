@@ -169,7 +169,7 @@ function URLUpload() {
                                 }}
                                 prompt={"Select frame selection algorithm(s)"}
                             />
-                            <MultiDropDown
+                            {/* <MultiDropDown
                                 formFieldName={"Select the frame analysis model"}
                                 options={["Small", "Large"]}
                                 onChange={(selected) => {
@@ -177,7 +177,7 @@ function URLUpload() {
                                     setModel(selected)
                                 }}
                                 prompt={"Select frame analysis model(s)"}
-                            />
+                            /> */}
 
                 </div>
                 <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full m-2" onClick={(e) => handleURL(e)}>Upload from URL</button>

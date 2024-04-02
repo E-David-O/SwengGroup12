@@ -173,7 +173,7 @@ function VideoUpload() {
                                 }}
                                 prompt={"Select frame selection algorithm(s)"}
                             />
-                            <MultiDropDown
+                            {/* <MultiDropDown
                                 formFieldName={"Select the frame analysis model"}
                                 options={["Small", "Large"]}
                                 onChange={(selected) => {
@@ -181,7 +181,7 @@ function VideoUpload() {
                                     setModel(selected)
                                 }}
                                 prompt={"Select frame analysis model(s)"}
-                            />
+                            /> */}
 
                         </div>
                         <div 

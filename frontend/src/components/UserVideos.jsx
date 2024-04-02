@@ -32,31 +32,37 @@ function UserVideos() {
         let results = [];
         console.log(res);
         if(res.homogeny !== undefined) {
-            let result = {
-                selector: "Structural Similarity + Homogeny",
-                frames: res.Frames.filter((f) => f.selectionMethod === 0),
-                run_time: res.homogeny,
-                analysis_time: res.homogeny_analysis
+            if(res.homogeny !== null) {
+                let result = {
+                    selector: "Structural Similarity + Homogeny",
+                    frames: res.Frames.filter((f) => f.selectionMethod === 0),
+                    run_time: res.homogeny,
+                    analysis_time: res.homogeny_analysis
+                }
+                results.push(result);
             }
-            results.push(result);
         } 
         if(res.structural !== undefined) {
-            let result = {
-                selector: "Structural Similarity",
-                frames: res.Frames.filter((f) => f.selectionMethod === 1),
-                run_time: res.structural,
-                analysis_time: res.structural_analysis
+            if(res.structural !== null) {
+                let result = {
+                    selector: "Structural Similarity",
+                    frames: res.Frames.filter((f) => f.selectionMethod === 1),
+                    run_time: res.structural,
+                    analysis_time: res.structural_analysis
+                }
+                results.push(result);
             }
-            results.push(result);
         } 
-        if(res.frame_selection !== undefined) {
-            let result = {
-                selector: "Frame by Frame",
-                frames: res.Frames.filter((f) => f.selectionMethod === 2),
-                run_time: res.frame_selection,
-                analysis_time: res.frame_selection_analysis
+        if(res.frame_selection !== undefined ) {
+            if(res.frame_selection !== null) {
+                let result = {
+                    selector: "Frame by Frame",
+                    frames: res.Frames.filter((f) => f.selectionMethod === 2),
+                    run_time: res.frame_selection,
+                    analysis_time: res.frame_selection_analysis
+                }
+                results.push(result);
             }
-            results.push(result);
         }
         return results;
     }
@@ -83,7 +89,7 @@ function UserVideos() {
                 }
             } else {
                 if(res.Frames.length !== 0) {
-                    var blob = new Blob([atob(res.encoded_video)], { type: "video/mp4" });
+                    let blob = b64toBlob(res.encoded_video, "video/mp4", res.video_name.split(".")[0] + ".mp4");
                     let results = parseFrames(res);
                     newVideos.push({name: res.video_name, url: URL.createObjectURL(blob), results: results, fps: res.frameRate});
                 }
@@ -173,7 +179,7 @@ function Comparison({results, setComparison, setAnalysis}) {
                 <div>
                 <button
                 onClick={() => setComparison(null)}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                className="bg-blue-500 m-2 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                 >
                     Back to your videos
                 </button>
@@ -305,7 +311,7 @@ function Comparison({results, setComparison, setAnalysis}) {
                    });
                };
            let videoJsOptions;
-           if(!video.url.includes("http")) {
+           if(!video.url.includes("youtube") && !video.url.includes("vimeo") && !video.url.includes("tiktok") && !video.url.includes("youtu.be")) {
                    videoJsOptions = {
                            controls: true,
                            preload: 'auto',
@@ -348,12 +354,12 @@ function Comparison({results, setComparison, setAnalysis}) {
                    }
                                            
            }
-   
+           console.log(videoJsOptions)
            return (
                    <div>
                            <button
                             onClick={() => setAnalysis(null)}
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                            className="bg-blue-500 m-2 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                             >
                                 Back to comparison
                             </button> 
@@ -524,5 +530,28 @@ function TiktokSlider({props}) {
            const type = 'image/jpeg';
            const blob = new Blob([buffer], { type });
            return new File([blob], fileName, { lastModified: new Date().getTime(), type });
-         }
-         
+}
+function b64toBlob(b64Data, contentType, filename) {
+contentType = contentType || '';
+const sliceSize = 512;
+
+var byteCharacters = atob(b64Data);
+var byteArrays = [];
+
+for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+    var byteNumbers = new Array(slice.length);
+    for (var i = 0; i < slice.length; i++) {
+    byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    var byteArray = new Uint8Array(byteNumbers);
+
+    byteArrays.push(byteArray);
+}
+
+var blob = new Blob(byteArrays, {type: contentType});
+
+return new File([blob], filename, {type: contentType});
+}
