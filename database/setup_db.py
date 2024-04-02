@@ -53,6 +53,11 @@ def setup_tables():
                 is_link INT,
                 structural FLOAT,
                 homogeny FLOAT,
+                frame_selection FLOAT,
+                structural_analysis FLOAT,
+                homogeny_analysis FLOAT,
+                frame_selection_analysis FLOAT,
+                video_name VARCHAR(60000),
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 

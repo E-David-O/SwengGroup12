@@ -97,16 +97,16 @@ def set_user(username: str, password: str):
 
 
 def set_video(account_id: int, encoded_video: str, file_format: str, frame_rate: str, video_length: int,
-              frame_resolution: str, is_link: int) -> int:
+              frame_resolution: str, is_link: int, video_name: str) -> int:
     try:
         connection, cursor = connect_to_database()
 
         if connection and cursor:
-            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frame_resolution, is_link)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+            input_query = """INSERT INTO Videos (idAccount, videoPath, fileFormat, frameRate, videoLength, frame_resolution, is_link, video_name)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id;"""
             cursor.execute(input_query,
-                           (account_id, "temp", file_format, frame_rate, video_length, frame_resolution, is_link))
+                           (account_id, "temp", file_format, frame_rate, video_length, frame_resolution, is_link, video_name))
             # connection.commit()
             inserted_id = cursor.fetchone()[0]
             updated_query = """UPDATE Videos SET videoPath = %s WHERE id = %s"""
@@ -152,6 +152,27 @@ def set_video_structural_runtime(video_id: int, runtime: float):
             cursor.close()
             connection.close()
 
+def set_video_structural_analysis_runtime(video_id: int, runtime: float):
+    try:
+        connection, cursor = connect_to_database()
+
+        if connection and cursor:
+           input_query = """UPDATE Videos SET structural_analysis = %s WHERE id = %s"""
+           cursor.execute(input_query, (runtime, video_id))
+            
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            logging.info(error)
+            return error
+        else:
+            logging.info(error)
+            return error
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
 def set_video_homogeny_runtime(video_id: int, runtime: float):
     try:
         connection, cursor = connect_to_database()
@@ -173,12 +194,33 @@ def set_video_homogeny_runtime(video_id: int, runtime: float):
             cursor.close()
             connection.close()
 
-def set_video_traditional_runtime(video_id: int, runtime: float):
+def set_video_homogeny_analysis_runtime(video_id: int, runtime: float):
     try:
         connection, cursor = connect_to_database()
 
         if connection and cursor:
-           input_query = """UPDATE Videos SET traditional = %s WHERE id = %s"""
+            input_query = """UPDATE Videos SET homogeny_analysis = %s WHERE id = %s"""
+            cursor.execute(input_query, (runtime, video_id))
+                    
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            logging.info(error)
+            return error
+        else:
+            logging.info(error)
+            return error
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+def set_video_frame_runtime(video_id: int, runtime: float):
+    try:
+        connection, cursor = connect_to_database()
+
+        if connection and cursor:
+           input_query = """UPDATE Videos SET frame_selection = %s WHERE id = %s"""
            cursor.execute(input_query, (runtime, video_id))
             
     except (Exception, psycopg2.Error) as error:
@@ -193,6 +235,48 @@ def set_video_traditional_runtime(video_id: int, runtime: float):
             connection.commit()
             cursor.close()
             connection.close()
+
+def set_video_frame_analysis_runtime(video_id: int, runtime: float):
+    try:
+        connection, cursor = connect_to_database()
+
+        if connection and cursor:
+            input_query = """UPDATE Videos SET frame_selection_analysis = %s WHERE id = %s"""
+            cursor.execute(input_query, (runtime, video_id))
+                    
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            logging.info(error)
+            return error
+        else:
+            logging.info(error)
+            return error
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+# def set_video_traditional_runtime(video_id: int, runtime: float):
+#     try:
+#         connection, cursor = connect_to_database()
+
+#         if connection and cursor:
+#            input_query = """UPDATE Videos SET traditional = %s WHERE id = %s"""
+#            cursor.execute(input_query, (runtime, video_id))
+            
+#     except (Exception, psycopg2.Error) as error:
+#         if connection:
+#             logging.info(error)
+#             return error
+#         else:
+#             logging.info(error)
+#             return error
+#     finally:
+#         if connection:
+#             connection.commit()
+#             cursor.close()
+#             connection.close()
 
 def set_selected_frame(frame_id: int, video_id: int, frameNumber: int, selectionMethod: int, frameData: str):
     try:
@@ -375,7 +459,12 @@ def get_video(video_id: int):
                 "is_link":row[7],
                 "structural": row[8],
                 "homogeny": row[9],
-                "timestamp": row[10].strftime('%Y-%m-%d %H:%M:%S')
+                "frame_selection": row[10],
+                "structural_analysis": row[11],
+                "homogeny_analysis": row[12],
+                "frame_selection_analysis": row[13],
+                "video_name": row[14],
+                "timestamp": row[15].strftime('%Y-%m-%d %H:%M:%S')
             }, indent = 4)
     except (Exception, psycopg2.Error) as error:
         if connection:

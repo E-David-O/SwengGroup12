@@ -195,7 +195,7 @@ def traditional_selector(vid, video_id):
 
     end_time = time.time()
     run_time = end_time - start_time
-    getSetDB.set_video_traditional_runtime(video_id, run_time)
+    getSetDB.set_video_frame_runtime(video_id, run_time)
     logging.info(
         f"Out of the {count} images, {analyze_count} were sent for further analysis.\nTotal time: {run_time}s"
     )

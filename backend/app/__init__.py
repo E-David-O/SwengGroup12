@@ -42,7 +42,7 @@ def create_app(test_config = None) -> Flask:
 
     # logging.basicConfig(filename='app.log', level=logging.INFO)
 
-    # logging.basicConfig(filename='app.log', level=logging.INFO)
+    logging.basicConfig(filename='app.log', level=logging.INFO)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -99,11 +99,12 @@ def create_app(test_config = None) -> Flask:
                 request.form["videoname"],
             )
             selectors = uploaded_video.frameselector.split(", ")
+            fileType = uploaded_video.name.split(".")[-1]
             if 'youtube' in uploaded_video.file:
                 yt = YouTube(uploaded_video.file)
                 stream = yt.streams.filter(file_extension="mp4", res=480).first()
                 fps = stream.fps
-                video_id = getSetDB.set_video(user["id"], uploaded_video.file, "mp4", fps, 0, "480", 1)
+                video_id = getSetDB.set_video(user["id"], uploaded_video.file, fileType, fps, 0, "480", 1, uploaded_video.name)
                 frameDict = frameselector.YoutubeSelector().select_frames(stream, selectors, video_id)
             elif 'vimeo' in uploaded_video.file:
                 v = Vimeo(uploaded_video.file)
@@ -112,10 +113,10 @@ def create_app(test_config = None) -> Flask:
                 meta = v.metadata
                 logging.info(meta._fields)
 
-                video_id = getSetDB.set_video(user["id"], uploaded_video.file, "mp4", fps, meta.duration, "480", 1)
+                video_id = getSetDB.set_video(user["id"], uploaded_video.file, fileType, fps, 0, "480", 1, uploaded_video.name)
                 frameDict = frameselector.VimeoSelector().select_frames(stream, selectors, video_id)
             elif 'tiktok' in uploaded_video.file:
-                video_id = getSetDB.set_video(user["id"], uploaded_video.file, "mp4", 0, fps, "480", 1)
+                video_id = getSetDB.set_video(user["id"], uploaded_video.file, fileType, fps, 0, "480", 1, uploaded_video.name)
                 frameDict = frameselector.TiktokSelector().select_frames(
                 uploaded_video.file, selectors, video_id)
         else:
@@ -130,9 +131,10 @@ def create_app(test_config = None) -> Flask:
             selectors = uploaded_video.frameselector.split(", ")
             file = uploaded_video.file
             file_str = base64.b64encode(file.read()).decode('utf-8')
+            fileType = uploaded_video.name.split(".")[-1]
             uploaded_video.file.seek(0)
             logging.info("Frame Rate: " + str(fps))
-            video_id = getSetDB.set_video(user["id"], file_str, "mp4", fps, 0, "480", 0)
+            video_id = getSetDB.set_video(user["id"], file_str, fileType, fps, 0, "480", 0, uploaded_video.name)
             logging.info("The video id is " + str(video_id))
             frameDict = frameselector.StructuralSimilaritySelector().select_frames(
                 uploaded_video.file, selectors, video_id
@@ -156,8 +158,16 @@ def create_app(test_config = None) -> Flask:
                         analysed = AnalysisResult(my_item['results'], my_item['image'])
                 analysis_results.append(analysed)
             end = time.time()
+            runtime = end - start
             if end - start < 0.001:
                 end = start + selector_result[0]['analysis_time']/(len(selector_result[0]['frames'])/len(frames))
+            if frameSelector["selector"] == 'Structural Similarity':
+                getSetDB.set_video_structural_analysis_runtime(video_id, runtime)
+            elif frameSelector["selector"]  == 'Structural Similarity + Homogeny':
+                getSetDB.set_video_homogeny_analysis_runtime(video_id, runtime)
+            elif frameSelector["selector"]  == 'Frame by Frame':
+                getSetDB.set_video_frame_analysis_runtime(video_id, runtime)
+                
 
             # models = uploaded_video.model.split(", ")
             # for model in models:
