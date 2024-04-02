@@ -354,7 +354,7 @@ def get_video(video_id: int):
                 "frameResolution": row[6],
                 "is_link":row[7],
                 "structural": row[8],
-                "homogeny": [9],
+                "homogeny": row[9],
                 "timestamp": row[10].strftime('%Y-%m-%d %H:%M:%S')
             }, indent = 4)
     except (Exception, psycopg2.Error) as error:

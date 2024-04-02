@@ -69,6 +69,7 @@ function SingleVideoUpload({ video }) {
             formData.append("model", video.models);
             formData.append("frameselector", video.algorithms);
             formData.append("username", JSON.parse(localStorage.getItem("username")));
+            formData.append("videoname", video.name);
             video.uploaded = true;
             setIsUploaded(true);
             let url = "http://localhost:8000/upload";
