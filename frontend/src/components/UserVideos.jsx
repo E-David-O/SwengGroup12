@@ -22,6 +22,7 @@ function UserVideos() {
     const username = JSON.parse(localStorage.getItem("username"));
     const [indexComparison, setIndexComparison] = useState(null);
     const [indexAnalysis, setIndexAnalysis] = useState(null);
+    const [loading, setLoading] = useState(false);
     /**
      * 
      * @param {*} res 
@@ -99,17 +100,18 @@ function UserVideos() {
         setVideos(newVideos);
     }
   useEffect(() => {
+    setLoading(true);
     axios
-      .get(`http://localhost:8000/account_videos${(username) ? `?username=${username}` : ''}`)
-      .then((response) => {
+    .get(`http://localhost:8000/account_videos${(username) ? `?username=${username}` : ''}`)
+    .then((response) => {
         console.log(response.data);
         parseVideos(response.data);
-
-      })
-      .catch((error) => {
+        setLoading(false);
+    })
+    .catch((error) => {
         console.log(error);
         alert(error.response.data.message)
-      });
+    });
   }, []);
 
 
@@ -127,7 +129,17 @@ function UserVideos() {
   return (
     <div className="min-h-screen">
         <Navbar />
-        {console.log(videos),indexComparison === null ? (
+        {loading ? 
+        <div className="flex justify-center items-center h-screen">
+            <div
+                    className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                    role="status">
+                    <span
+                    className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+                    >Loading...</span>
+            </div>
+        </div> :
+        (console.log(videos),indexComparison === null ? (
             videos.length !== 0 ? videos?.map((video, i) => (
                 <UserVideoCard key={i} video={video} setComparison={setComparison}/>
                 
@@ -138,7 +150,8 @@ function UserVideos() {
             ) : (
                 <Analysis video={videos.find((v) => v.name === indexComparison)} setAnalysis={setAnalysis} selector={indexAnalysis} />
             )
-        )}
+        ))
+        }
         <Footer />
     </div>
   );
@@ -354,7 +367,6 @@ function Comparison({results, setComparison, setAnalysis}) {
                    }
                                            
            }
-           console.log(videoJsOptions)
            return (
                    <div>
                            <button
