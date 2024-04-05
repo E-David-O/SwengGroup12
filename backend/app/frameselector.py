@@ -215,6 +215,7 @@ class SelectedFrame:
 class FrameResponse(TypedDict):
     selector : str
     frames : list[SelectedFrame]
+    run_time : float
 
 class FrameResponseFile(TypedDict):
     selector : str
@@ -244,13 +245,12 @@ class StructuralSimilaritySelector(FrameSelector):
                 logging.info(rf)
                 for selector in selectors:
                     start = time.time()
-                    # frames = list(self.__generate_frames(rf.name, selector))
+                    frames = list(self.__generate_frames(rf.name, selector, video_id))
                     end = time.time()
                     response.append(
                         FrameResponse({
                             "selector": selector, 
-                            "frames": list(
-                            self.__generate_frames(rf.name, selector, video_id)),
+                            "frames": frames,
                             "run_time": end - start
                             }))
         return response
