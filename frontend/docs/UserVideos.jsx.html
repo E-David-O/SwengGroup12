@@ -1,4 +1,32 @@
-// @ts-nocheck
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: UserVideos.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: UserVideos.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// @ts-nocheck
 import axios from "axios";
 import { useEffect, useState, useRef, useMemo,  } from "react";
 import Navbar from "./Navbar";
@@ -139,40 +167,40 @@ function UserVideos() {
 
 
   return (
-    <div className="min-h-screen">
-        <Navbar />
+    &lt;div className="min-h-screen">
+        &lt;Navbar />
         {loading ? 
-        <div className="flex justify-center items-center h-screen">
-            <div
+        &lt;div className="flex justify-center items-center h-screen">
+            &lt;div
                     className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
                     role="status">
-                    <span
+                    &lt;span
                     className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-                    >Loading...</span>
-            </div>
-        </div> :
+                    >Loading...&lt;/span>
+            &lt;/div>
+        &lt;/div> :
         (indexComparison === null ? (
-            <div className="gap-4 m-4">
-                <div className="flex justify-center"> 
-                    <div className="grid grid-cols-1 items-center"> 
+            &lt;div className="gap-4 m-4">
+                &lt;div className="flex justify-center"> 
+                    &lt;div className="grid grid-cols-1 items-center"> 
                         {videos.length !== 0 ? videos?.map((video, i) => (
-                            <UserVideoCard key={i} video={video} setComparison={setComparison}/>
-                        )) : <p>No videos uploaded</p>}
-                    </div>
-                </div>
-            </div>
+                            &lt;UserVideoCard key={i} video={video} setComparison={setComparison}/>
+                        )) : &lt;p>No videos uploaded&lt;/p>}
+                    &lt;/div>
+                &lt;/div>
+            &lt;/div>
         ) : (
             indexAnalysis === null ? (
-                <Comparison results={videos.find((v) => v.name === indexComparison).results} setComparison={setComparison} setAnalysis={setAnalysis}/>
+                &lt;Comparison results={videos.find((v) => v.name === indexComparison).results} setComparison={setComparison} setAnalysis={setAnalysis}/>
             ) : (
-                <Analysis video={videos.find((v) => v.name === indexComparison)} setAnalysis={setAnalysis} selector={indexAnalysis} />
+                &lt;Analysis video={videos.find((v) => v.name === indexComparison)} setAnalysis={setAnalysis} selector={indexAnalysis} />
             )
         ))
         
         }
         
-        <Footer />
-    </div>
+        &lt;Footer />
+    &lt;/div>
   );
 }
 
@@ -182,82 +210,82 @@ export default UserVideos;
 
 function UserVideoCard({video, setComparison}) {
 return (
-    <div className="max-w-xl m-2 bg-slate-200 p-6 rounded-xl shadow-lg flex items-center space-x-4">
-    <img 
+    &lt;div className="max-w-xl m-2 bg-slate-200 p-6 rounded-xl shadow-lg flex items-center space-x-4">
+    &lt;img 
         src={`data:image/jpeg;base64,${video.results[0].frames[0].frameData}`} 
         alt={video.name}
         className="object-cover w-48 h-48 rounded-lg shadow-sm"
     />
-    <div className="flex flex-col justify-between space-y-2">
-        <p className="text-2xl font-semibold text-gray-800">
+    &lt;div className="flex flex-col justify-between space-y-2">
+        &lt;p className="text-2xl font-semibold text-gray-800">
             {video.name}
-        </p>
-        <div className="flex space-x-2">
-            <button
+        &lt;/p>
+        &lt;div className="flex space-x-2">
+            &lt;button
                 onClick={() => setComparison(video.name)}
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
             >
                 Comparison
-            </button>
-        </div>
-    </div>
-</div>
+            &lt;/button>
+        &lt;/div>
+    &lt;/div>
+&lt;/div>
 );
 }
 
 function Comparison({results, setComparison, setAnalysis}) {
     return (
-    <div className="grid grid-flow-col md:grid-flow-row md:row-auto grid-cols-1 gap-4 m-4">
-                <div>
-                <button
+    &lt;div className="grid grid-flow-col md:grid-flow-row md:row-auto grid-cols-1 gap-4 m-4">
+                &lt;div>
+                &lt;button
                 onClick={() => setComparison(null)}
                 className="bg-blue-500 m-2 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                 >
                     Back to your videos
-                </button>
+                &lt;/button>
                     {results.length !== 0 ? (
-                        <>
+                        &lt;>
                             {console.log(results),results.map((result, index) => (
-                                <div key={index} className="w-full md:max-w-lg mx-auto bg-slate-200 p-6 mb-2 rounded-xl shadow-lg flex items-center space-x-4">
-                                    <img 
+                                &lt;div key={index} className="w-full md:max-w-lg mx-auto bg-slate-200 p-6 mb-2 rounded-xl shadow-lg flex items-center space-x-4">
+                                    &lt;img 
                                         src={`data:image/jpeg;base64,${result.frames[0].frameData}`} 
                                         alt={result.selector}
                                         className="object-cover w-48 h-48 rounded-lg shadow-sm"
                                     />
-                                    <div className="flex flex-col justify-between space-y-2">
-                                        <p className="text-2xl font-semibold text-blue-500">
+                                    &lt;div className="flex flex-col justify-between space-y-2">
+                                        &lt;p className="text-2xl font-semibold text-blue-500">
                                             {result.selector} 
-                                        </p>
-                                        <p className="text-2xl font-semibold text-gray-800">
+                                        &lt;/p>
+                                        &lt;p className="text-2xl font-semibold text-gray-800">
                                             {result.frames.length} frames analysed
-                                        </p>
-                                        <p className="text-2xl font-semibold text-gray-800">
-                                            Frame Selection: <br></br>{result.run_time.toFixed(2)} seconds
-                                        </p>
-                                        <p className="text-2xl font-semibold text-gray-800">
-                                            Frame Analysis: <br></br>{result.analysis_time.toFixed(2)} seconds
-                                        </p>
-                                        <p className="text-2xl font-bold text-gray-800">
-                                            Total: <br></br>{(result.run_time + result.analysis_time).toFixed(2)} seconds
-                                        </p>
+                                        &lt;/p>
+                                        &lt;p className="text-2xl font-semibold text-gray-800">
+                                            Frame Selection: &lt;br>&lt;/br>{result.run_time.toFixed(2)} seconds
+                                        &lt;/p>
+                                        &lt;p className="text-2xl font-semibold text-gray-800">
+                                            Frame Analysis: &lt;br>&lt;/br>{result.analysis_time.toFixed(2)} seconds
+                                        &lt;/p>
+                                        &lt;p className="text-2xl font-bold text-gray-800">
+                                            Total: &lt;br>&lt;/br>{(result.run_time + result.analysis_time).toFixed(2)} seconds
+                                        &lt;/p>
 
-                                        <div className="flex space-x-2">
-                                            <button
+                                        &lt;div className="flex space-x-2">
+                                            &lt;button
                                                 onClick={(() => setAnalysis(result.selector))}
                                                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                                             >
                                                 Show Analytics
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                            &lt;/button>
+                                        &lt;/div>
+                                    &lt;/div>
+                                &lt;/div>
                             ))}
-                        </>
+                        &lt;/>
                     ) : (
-                        <p>No results</p>
+                        &lt;p>No results&lt;/p>
                     )}
-                </div>
-            </div>
+                &lt;/div>
+            &lt;/div>
          );
    }
 
@@ -326,7 +354,7 @@ function Comparison({results, setComparison, setAnalysis}) {
                            setCurrentTime(time);
                            setPercentComplete((time / player.duration()) * 100);
                            const closestFrame = results.map(f => f.frameNumber).reduce((a,b) => {
-                                   return Math.abs(b -(time * fps)) < Math.abs(a - (time * fps)) ? b : a;
+                                   return Math.abs(b -(time * fps)) &lt; Math.abs(a - (time * fps)) ? b : a;
                            });
                            setClosest(closestFrame);
                            setCurrentFrame(results.find(f => f.frameNumber === closestFrame));
@@ -343,7 +371,7 @@ function Comparison({results, setComparison, setAnalysis}) {
                    });
                };
            let videoJsOptions;
-           if(!video.url.includes("youtube") && !video.url.includes("vimeo") && !video.url.includes("tiktok") && !video.url.includes("youtu.be")) {
+           if(!video.url.includes("youtube") &amp;&amp; !video.url.includes("vimeo") &amp;&amp; !video.url.includes("tiktok") &amp;&amp; !video.url.includes("youtu.be")) {
                    videoJsOptions = {
                            controls: true,
                            preload: 'auto',
@@ -387,51 +415,51 @@ function Comparison({results, setComparison, setAnalysis}) {
                                            
            }
            return (
-                   <div>
-                           <button
+                   &lt;div>
+                           &lt;button
                             onClick={() => setAnalysis(null)}
                             className="bg-blue-500 m-2 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                             >
                                 Back to comparison
-                            </button> 
-                           <div className="flex justify-evenly ">
-                                   <p className="mr-[92px]">Analysis of {video.name} for {selector}</p>
-                                   <p className="mr-[64px]">Total Frames Analysed: {results.length}</p>
-                           </div>
-                           {!video.url.includes("tiktok") ? <VideoJS  options={videoJsOptions} onReady={handlePlayerReady} />:null}
+                            &lt;/button> 
+                           &lt;div className="flex justify-evenly ">
+                                   &lt;p className="mr-[92px]">Analysis of {video.name} for {selector}&lt;/p>
+                                   &lt;p className="mr-[64px]">Total Frames Analysed: {results.length}&lt;/p>
+                           &lt;/div>
+                           {!video.url.includes("tiktok") ? &lt;VideoJS  options={videoJsOptions} onReady={handlePlayerReady} />:null}
                            {videojs.getPlayer('my-player') ? 
-                                   <div>
-                                           <div className="flex justify-evenly m-1">
-                                                   <p>{currentTime.toFixed(2)} seconds elapsed</p>
-                                                   <p>{percentComplete.toFixed(2)}%</p>
-                                                   <p>Current frame {(currentTime * 
-                                                   fps).toPrecision(6)}</p>
-                                           </div>
-                                           <div className="flex justify-center">
-                                                   <img className="object-fill" src={`data:image/jpeg;base64,${currentFrame.frameData}`}/>
-                                           </div> 
-                                           <p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Closest Frame Analysis: frame {closest} </p>
-                                           <div className="grid grid-cols-3 gap-1 m-2">
+                                   &lt;div>
+                                           &lt;div className="flex justify-evenly m-1">
+                                                   &lt;p>{currentTime.toFixed(2)} seconds elapsed&lt;/p>
+                                                   &lt;p>{percentComplete.toFixed(2)}%&lt;/p>
+                                                   &lt;p>Current frame {(currentTime * 
+                                                   fps).toPrecision(6)}&lt;/p>
+                                           &lt;/div>
+                                           &lt;div className="flex justify-center">
+                                                   &lt;img className="object-fill" src={`data:image/jpeg;base64,${currentFrame.frameData}`}/>
+                                           &lt;/div> 
+                                           &lt;p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Closest Frame Analysis: frame {closest} &lt;/p>
+                                           &lt;div className="grid grid-cols-3 gap-1 m-2">
                                            { currentFrame.Objects.length !== 0 ? currentFrame.Objects?.map((f, i) => {
-                                                   return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f.objectDetected}, confidence: {f.confidence}</div>
-                                           }) : <p>No objects detected</p>}
-                                           </div>
-                                           <p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis</p>
-                                           <div className="grid grid-cols-3 gap-1 m-2">
+                                                   return &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f.objectDetected}, confidence: {f.confidence}&lt;/div>
+                                           }) : &lt;p>No objects detected&lt;/p>}
+                                           &lt;/div>
+                                           &lt;p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis&lt;/p>
+                                           &lt;div className="grid grid-cols-3 gap-1 m-2">
                                            { data.length !== 0 ? data?.map((f, i) => {
-                                                   return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}</div>
-                                           }) : <p>No Total Results</p>}
-                                           </div>
+                                                   return &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}&lt;/div>
+                                           }) : &lt;p>No Total Results&lt;/p>}
+                                           &lt;/div>
                                            
-                                   </div>
+                                   &lt;/div>
                            // @ts-ignore
                            : 
                            video.url.includes("tiktok") ? (
-                                   <TiktokSlider props={{ results, video, data }} />
+                                   &lt;TiktokSlider props={{ results, video, data }} />
                            ) : null
                            
                            }
-                </div>
+                &lt;/div>
            );
    }
 
@@ -469,16 +497,16 @@ function TiktokSlider({props}) {
        const currentFrame = props.results[index];
    
        return (
-           <div className="">
-               <div className="flex justify-evenly">
-                   <div className="m-2">
-                       <iframe  src={`https://www.tiktok.com/embed/v2/${props.video.url.split("/").slice(-1).toString().split("?")[0]}`} title="tiktok" height="700" ></iframe>
-                   </div>
-                   <div className="m-2" >
-                       <div className="rounded-full bg-gray-600 px-2 text-center text-sm text-white">
-                       <span>{index + 1}</span>/<span>{images.length}</span>
-                       </div>  
-                       <Carousel
+           &lt;div className="">
+               &lt;div className="flex justify-evenly">
+                   &lt;div className="m-2">
+                       &lt;iframe  src={`https://www.tiktok.com/embed/v2/${props.video.url.split("/").slice(-1).toString().split("?")[0]}`} title="tiktok" height="700" >&lt;/iframe>
+                   &lt;/div>
+                   &lt;div className="m-2" >
+                       &lt;div className="rounded-full bg-gray-600 px-2 text-center text-sm text-white">
+                       &lt;span>{index + 1}&lt;/span>/&lt;span>{images.length}&lt;/span>
+                       &lt;/div>  
+                       &lt;Carousel
                            images={images}
                            setWidth={setWidth}
                            xPosition={xPosition}
@@ -486,21 +514,21 @@ function TiktokSlider({props}) {
                            handleClicknext={handleClicknext}
                            index={index}
                        />
-                   </div>
-               </div>  
-                   <p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Closest Frame Analysis: frame {currentFrame.frame_number} </p>
-                   <div className="grid grid-cols-3 gap-1 m-2">
+                   &lt;/div>
+               &lt;/div>  
+                   &lt;p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Closest Frame Analysis: frame {currentFrame.frame_number} &lt;/p>
+                   &lt;div className="grid grid-cols-3 gap-1 m-2">
                    { currentFrame !== null ? currentFrame.Objects?.map((f, i) => {
-                           return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f.objectDetected}, confidence: {f.confidence}</div>
-                   }) : <p>No objects detected</p>}
-                   </div>
-                   <p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis</p>
-                   <div className="grid grid-cols-3 gap-1 m-2">
+                           return &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f.objectDetected}, confidence: {f.confidence}&lt;/div>
+                   }) : &lt;p>No objects detected&lt;/p>}
+                   &lt;/div>
+                   &lt;p className="m-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-full">Aggregate Video Analysis&lt;/p>
+                   &lt;div className="grid grid-cols-3 gap-1 m-2">
                    { props.data.length !== 0 ? props.data?.map((f, i) => {
-                           return <div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}</div>
-                   }) : <p>No Total Results</p>}
-                   </div>
-           </div>
+                           return &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-1 text-s" key={i}>Object: {f[0]}, Occurances: {f[1]}&lt;/div>
+                   }) : &lt;p>No Total Results&lt;/p>}
+                   &lt;/div>
+           &lt;/div>
        );
        }
    
@@ -521,27 +549,27 @@ function TiktokSlider({props}) {
        }
      }, [setWidth]);
        return (
-       <div className="relative w-full h-5/6">
-         <div className='transition-transform ease-in-out duration-500' style={{ transform: `translateX(${xPosition}px)`}} ref={slideRef}>
+       &lt;div className="relative w-full h-5/6">
+         &lt;div className='transition-transform ease-in-out duration-500' style={{ transform: `translateX(${xPosition}px)`}} ref={slideRef}>
            {images.length !== 0 ? 
-             <img className="h-[600px]" src={`data:image/jpeg;base64,${images[index]}`} />
+             &lt;img className="h-[600px]" src={`data:image/jpeg;base64,${images[index]}`} />
            : 
-           <p>No images</p>}
-         </div>
-         <Buttons
+           &lt;p>No images&lt;/p>}
+         &lt;/div>
+         &lt;Buttons
            handleClickPrev={handleClickPrev}
            handleClicknext={handleClicknext}
          />
-       </div>
+       &lt;/div>
      );
    }
    
    function Buttons ({handleClickPrev, handleClicknext}) {
        return (
-       <div className="absolute ml-4 mr-4 z-10 top-1/2 left-0 cursor-pointer right-0 flex justify-between" style={{ transform: `translateY(-50}%)`}}>
-         <button onClick={handleClickPrev} ><LeftOutlined style={{ fontSize: '150%', color: 'white'}}></LeftOutlined></button>
-         <button onClick={handleClicknext} ><RightOutlined style={{ fontSize: '150%', color: 'white'}}></RightOutlined></button>
-       </div>
+       &lt;div className="absolute ml-4 mr-4 z-10 top-1/2 left-0 cursor-pointer right-0 flex justify-between" style={{ transform: `translateY(-50}%)`}}>
+         &lt;button onClick={handleClickPrev} >&lt;LeftOutlined style={{ fontSize: '150%', color: 'white'}}>&lt;/LeftOutlined>&lt;/button>
+         &lt;button onClick={handleClicknext} >&lt;RightOutlined style={{ fontSize: '150%', color: 'white'}}>&lt;/RightOutlined>&lt;/button>
+       &lt;/div>
      );
    }
    
@@ -555,7 +583,7 @@ function TiktokSlider({props}) {
            const buffer = new ArrayBuffer(imageContent.length);
            const view = new Uint8Array(buffer);
          
-           for (let n = 0; n < imageContent.length; n++) {
+           for (let n = 0; n &lt; imageContent.length; n++) {
              view[n] = imageContent.charCodeAt(n);
            }
            const type = 'image/jpeg';
@@ -569,11 +597,11 @@ const sliceSize = 512;
 var byteCharacters = atob(b64Data);
 var byteArrays = [];
 
-for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+for (var offset = 0; offset &lt; byteCharacters.length; offset += sliceSize) {
     var slice = byteCharacters.slice(offset, offset + sliceSize);
 
     var byteNumbers = new Array(slice.length);
-    for (var i = 0; i < slice.length; i++) {
+    for (var i = 0; i &lt; slice.length; i++) {
     byteNumbers[i] = slice.charCodeAt(i);
     }
 
@@ -585,4 +613,26 @@ for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
 var blob = new Blob(byteArrays, {type: contentType});
 
 return new File([blob], filename, {type: contentType});
-}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#About">About</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Services">Services</a></li><li><a href="global.html#SingleVideoUpload">SingleVideoUpload</a></li><li><a href="global.html#URLUpload">URLUpload</a></li><li><a href="global.html#VideoUpload">VideoUpload</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Apr 05 2024 10:38:08 GMT+0100 (Irish Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
