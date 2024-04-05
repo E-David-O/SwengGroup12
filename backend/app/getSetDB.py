@@ -664,6 +664,27 @@ def return_all_video_info(video_id: int):
     return json.dumps(video_data)
 
 
+def delete_all_test_data():
+    try:
+        connection, cursor = connect_to_database()
+        if connection and cursor:
+            cursor.execute("DELETE FROM Users;")
+            cursor.execute("DELETE FROM Videos;")
+            cursor.execute("DELETE FROM SelectedFrame;")
+            cursor.execute("DELETE FROM AnalyzedFrames;")
+
+    except (Exception, psycopg2.Error) as error:
+        if connection:
+            print("Could connect, but failed to insert data: ", error)
+        else:
+            print("Failed to connect: ", error)
+    finally:
+        if connection:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+
 def main():
 
 

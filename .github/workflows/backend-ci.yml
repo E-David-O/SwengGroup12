@@ -22,12 +22,32 @@ jobs:
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
+        networks:
+          db-network:
+            ipv4_address: 172.20.0.10 
         # Needed to keep the container running until tests are done
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      minio:
+        image: docker.io/bitnami/minio:2022
+        ports:
+          - '9000:9000'
+          - '9001:9001'
+        networks:
+          db-network:
+            ipv4_address: 172.20.0.50 
+        volumes:
+          - 'minio_data:/data'
+        environment:
+          - MINIO_ROOT_USER=minioConnect
+          - MINIO_ROOT_PASSWORD=connectMinio
+          - MINIO_DEFAULT_BUCKETS=videos
+          - MINIO_ACCESS_KEY=minioConnect
+          - MINIO_SECRET_KEY=connectMinio
+      
 
     steps:
     - uses: actions/checkout@v4
@@ -55,4 +75,17 @@ jobs:
       working-directory: ./backend
       run: |
         pytest
+    - name: Testing database
+      working-directory: ./backend/app
+      run: |
+        python3 db_tests.py
     # Add deployment steps
+
+
+networks:
+  postgres-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.0.20.0/24
