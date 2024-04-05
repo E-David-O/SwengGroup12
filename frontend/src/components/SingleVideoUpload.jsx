@@ -92,12 +92,14 @@ function SingleVideoUpload({ video }) {
                 })
             .catch(function (error) {
                 // handle error
-                alert(error.response.data.message)
+                if (error.response) {
+                    alert(error.response.data.message);
+                }
                 video.uploaded = false;
                 setIsUploaded(false);
                 setUploadProgress(null);
                 console.log(error);
-            });  
+            });
             
         }
       }
