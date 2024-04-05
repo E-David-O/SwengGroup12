@@ -33,7 +33,9 @@ function UserVideos() {
         let results = [];
         console.log(res);
         if(res.homogeny !== undefined) {
-            if(res.homogeny !== null) {
+            if(res.homogeny === null || res.homogeny_analysis === null) {
+                
+            } else {
                 let result = {
                     selector: "Structural Similarity + Homogeny",
                     frames: res.Frames.filter((f) => f.selectionMethod === 1),
@@ -42,9 +44,11 @@ function UserVideos() {
                 }
                 results.push(result);
             }
-        } 
+        }  
         if(res.structural !== undefined) {
-            if(res.structural !== null) {
+            if(res.structural === null || res.structural_analysis === null) {
+                
+            } else {
                 let result = {
                     selector: "Structural Similarity",
                     frames: res.Frames.filter((f) => f.selectionMethod === 0),
@@ -55,7 +59,9 @@ function UserVideos() {
             }
         } 
         if(res.frame_selection !== undefined ) {
-            if(res.frame_selection !== null) {
+            if(res.frame_selection === null || res.frame_selection_analysis === null) {
+               
+            } else {
                 let result = {
                     selector: "Frame by Frame",
                     frames: res.Frames.filter((f) => f.selectionMethod === 2),
@@ -81,18 +87,24 @@ function UserVideos() {
             if(res.encoded_video.includes("youtube.com") || res.encoded_video.includes("youtu.be") || res.encoded_video.includes("vimeo") ){
                 if(res.Frames.length !== 0) {
                     let results = parseFrames(res);
-                    newVideos.push({name: res.video_name, url: res.encoded_video, results: results, fps: res.frameRate});
+                    if(results.length !== 0) {
+                        newVideos.push({name: res.video_name, url: res.encoded_video, results: results, fps: res.frameRate});
+                    }
                 }
             } else if (res.encoded_video.includes("tiktok")) {
                 if(res.Frames.length !== 0) {
                     let results = parseFrames(res);
-                    newVideos.push({name: res.video_name, url: res.encoded_video, results: results, fps: res.frameRate});
+                    if(results.length !== 0) {
+                        newVideos.push({name: res.video_name, url: res.encoded_video, results: results, fps: res.frameRate});
+                    }
                 }
             } else {
                 if(res.Frames.length !== 0) {
                     let blob = b64toBlob(res.encoded_video, "video/mp4", res.video_name.split(".")[0] + ".mp4");
                     let results = parseFrames(res);
-                    newVideos.push({name: res.video_name, url: URL.createObjectURL(blob), results: results, fps: res.frameRate});
+                    if(results.length !== 0) {
+                        newVideos.push({name: res.video_name, url: URL.createObjectURL(blob), results: results, fps: res.frameRate});
+                    }
                 }
             }
         }
@@ -139,11 +151,16 @@ function UserVideos() {
                     >Loading...</span>
             </div>
         </div> :
-        (console.log(videos),indexComparison === null ? (
-            videos.length !== 0 ? videos?.map((video, i) => (
-                <UserVideoCard key={i} video={video} setComparison={setComparison}/>
-                
-            )) : <p>No videos uploaded</p>
+        (indexComparison === null ? (
+            <div className="gap-4 m-4">
+                <div className="flex justify-center"> 
+                    <div className="grid grid-cols-1 items-center"> 
+                        {videos.length !== 0 ? videos?.map((video, i) => (
+                            <UserVideoCard key={i} video={video} setComparison={setComparison}/>
+                        )) : <p>No videos uploaded</p>}
+                    </div>
+                </div>
+            </div>
         ) : (
             indexAnalysis === null ? (
                 <Comparison results={videos.find((v) => v.name === indexComparison).results} setComparison={setComparison} setAnalysis={setAnalysis}/>
@@ -151,7 +168,9 @@ function UserVideos() {
                 <Analysis video={videos.find((v) => v.name === indexComparison)} setAnalysis={setAnalysis} selector={indexAnalysis} />
             )
         ))
+        
         }
+        
         <Footer />
     </div>
   );
@@ -188,7 +207,7 @@ return (
 
 function Comparison({results, setComparison, setAnalysis}) {
     return (
-    <div className="flex flex-col justify-center gap-4 m-4">
+    <div className="grid grid-flow-col md:grid-flow-row md:row-auto grid-cols-1 gap-4 m-4">
                 <div>
                 <button
                 onClick={() => setComparison(null)}

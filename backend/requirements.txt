@@ -13,3 +13,5 @@ Minio
 yt-dlp[default]
 vimeo_downloader
 clip
+pytest
+

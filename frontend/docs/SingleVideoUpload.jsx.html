@@ -32,11 +32,11 @@
 } from "@ant-design/icons";
 import axios from "axios";
 import { VideoContext} from "./VideoUtil";
-import { useContext, useState, useEffect } from "react";
-import io from 'socket.io-client';
+import { useContext, useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import DropDown from "./DropDown";
 import './typedef'
+
 /** 
  * @param {Video} video
  * @returns SingleVideoUpload component
@@ -46,11 +46,12 @@ import './typedef'
  */
 // @ts-ignore
 function SingleVideoUpload({ video }) {
-    const { videos, setVideos } = useContext(VideoContext)
+    const { videos, setVideos, resultList, setResultList } = useContext(VideoContext)
     const [uploadProgress, setUploadProgress] = useState(null)
     const [frameRate, setFrameRate] = useState("")
     const [resolution, setResolution] = useState("")
     const [isUploaded, setIsUploaded] = useState(false)
+    const [isAnalyzed, setIsAnalyzed] = useState(false)
     {
     // useEffect(() => {
     //     const socket = io("")
@@ -60,15 +61,13 @@ function SingleVideoUpload({ video }) {
     // }, [])
 }
     useEffect(() => {
-    console.log(uploadProgress);
     if(video.analysed !== true &amp;&amp; video.uploaded === true) {
         const intervalId = setInterval(() => {
         setUploadProgress((uploadProgress) => {
             if (uploadProgress >= 100) {
-            clearInterval(intervalId);
-            return 0;
+                return 100;
             } else {
-            return uploadProgress + 10;
+                return uploadProgress + 1;
             }
         });
         }, 1000);
@@ -76,13 +75,7 @@ function SingleVideoUpload({ video }) {
     }
     }, [isUploaded])
 
-    useEffect(() => {
-        console.log(uploadProgress);
-        if (uploadProgress === 100) {
-            video.analysed = true;
-        }
-    }, [uploadProgress])
-
+   
     
 
     /**
@@ -94,23 +87,43 @@ function SingleVideoUpload({ video }) {
         e.preventDefault();
         console.log(video);
         if (video) {
+            if (video.algorithms == "") {
+                video.algorithms = "Structural Similarity"
+            } 
             const formData = new FormData();
             formData.append("video", video.file);
             formData.append("resolution", resolution);
             formData.append("frameRate", frameRate);
+            formData.append("model", video.models);
+            formData.append("frameselector", video.algorithms);
+            formData.append("username", JSON.parse(localStorage.getItem("username")));
+            formData.append("videoname", video.name);
+            video.uploaded = true;
+            setIsUploaded(true);
+            let url = "http://localhost:8000/upload";
             axios({
                 method: 'post',
-                url: "http://localhost:8000/upload",
+                url: url,
                 data: formData,
                 headers: {'Content-Type': 'multipart/form-data' }
             })
-            .then(() => {
+            .then((response) => {
                 console.log("Video uploaded");
-                video.uploaded = true;
-                setIsUploaded(true);
+                video.analysed = true;
+                setIsAnalyzed(true);
+                console.log(response.data);
+                let newArr = [...videos];
+                let index = newArr.findIndex((v) => v.name === video.name);
+                newArr[index] = video;
+                setVideos(newArr);
+                setResultList([...resultList, { name: video.name, results: response.data.results, fps: response.data.fps}]);
                 })
             .catch(function (error) {
                 // handle error
+                alert(error.response.data.message)
+                video.uploaded = false;
+                setIsUploaded(false);
+                setUploadProgress(null);
                 console.log(error);
             });  
             
@@ -124,20 +137,22 @@ function SingleVideoUpload({ video }) {
      * @description This function is used to delete the video from the list of videos 
      */
 
-    const deleteVideo = (e) => {
-        e.preventDefault();
+    // &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+    //     &lt;Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" to={`/analysis/${video.name}`}>Click Here to View Analysis of {video.name}&lt;/Link>
+    //     &lt;button onClick={deleteVideo}>&lt;DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/>&lt;/button>
+    // &lt;/div>
+
+    const deleteVideo = useCallback(() => {
         console.log(videos);
         setVideos(videos.filter(videos => videos.name !== video.name));
-    }
+    }, [videos, video, setVideos])
     return (
         &lt;div>
-        { video.uploaded ? ( (video.analysed || (uploadProgress === 100)) ? ( 
-           &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
-                &lt;Link className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" to={`/analysis/${video.name}`}>Click Here to View Analysis of {video.name}&lt;/Link>
-                &lt;button onClick={e => deleteVideo(e)}>&lt;DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/>&lt;/button>
+        { video.uploaded ? ( (video.analysed) ? ( 
+           &lt;div>
             &lt;/div> ) : (
             (
-                &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+                &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-300 p-8 text-xl">
             &lt;div className="w-full bg-gray-200 content-centre rounded-full h-2.5 dark:bg-gray-700 shadow-lg">
                 {uploadProgress ?
                 &lt;>&lt;div
@@ -151,13 +166,13 @@ function SingleVideoUpload({ video }) {
             &lt;/div> 
             &lt;/div>)))
          : (
-        &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-900 p-4 text-xl">
+        &lt;div className="flex content-center justify-between shadow-lg rounded-full hover:bg-blue-300 p-4 text-xl">
             &lt;FileOutlined style={{ fontSize: '250%'}}/>
             &lt;h3 className="pt-3">{video.name}&lt;/h3>
-            &lt;button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}&lt;/button>
+            &lt;button className="bg-blue-500 hover:bg-blue-200 text-white font-bold py-2 px-4 rounded-full" onClick={handleSubmit}>{"Submit"}&lt;/button>
             &lt;DropDown label={"Select Resolution"} options={["Auto","1080","720","480"]} selected={resolution} setSelected={setResolution} />
             &lt;DropDown label={"Select Frame Rate"} options={["Auto","60","30","15"]} selected={frameRate} setSelected={setFrameRate} />
-            &lt;button onClick={e => deleteVideo(e)}>&lt;DeleteOutlined className="hover:bg-blue-700" style={{ fontSize: '250%'}}/>&lt;/button>
+            &lt;button onClick={deleteVideo}>&lt;DeleteOutlined className="hover:bg-blue-300" style={{ fontSize: '250%'}}/>&lt;/button>
         &lt;/div> )}
         &lt;/div>
     );
@@ -176,13 +191,13 @@ export default SingleVideoUpload;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#SingleVideoUpload">SingleVideoUpload</a></li><li><a href="global.html#VideoUpload">VideoUpload</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#About">About</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Services">Services</a></li><li><a href="global.html#SingleVideoUpload">SingleVideoUpload</a></li><li><a href="global.html#URLUpload">URLUpload</a></li><li><a href="global.html#VideoUpload">VideoUpload</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Feb 21 2024 10:10:24 GMT+0000 (Greenwich Mean Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Apr 05 2024 10:38:08 GMT+0100 (Irish Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

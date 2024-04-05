@@ -64,6 +64,19 @@ volumes:
   minio_data:
     driver: local  
 
+  test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: pytest -v
+    ports:
+      - "8000:5000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - backnet
+      - frontnet
+
 networks:
   db-network:
     driver: bridge

@@ -36,7 +36,7 @@ function VideoCard(props) {
                 <p className="text-2xl font-semibold text-gray-800">
                     {videoName}
                 </p>
-                <p className="text-gray-600">Video Length: {duration}</p>
+                {/* <p className="text-gray-600">Video Length: {duration}</p> */}
                 <div className="flex space-x-2">
                     <Link 
                         to={`/comparison/${videoName}`}
