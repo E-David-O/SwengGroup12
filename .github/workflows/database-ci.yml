@@ -1,0 +1,20 @@
+---
+name: Test Database
+"on": [push, pull_request]
+
+jobs:
+  test_db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start database
+        run: docker-compose up --build -d db minio
+
+      - name: Initialise
+        run: docker-compose run --rm database-setup
+
+      - name: Test DB
+        run: docker-compose run --rm test-db
