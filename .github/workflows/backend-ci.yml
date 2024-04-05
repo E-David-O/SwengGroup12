@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'backend/**'
+      - 'db-integration-merge'
   pull_request:
     paths:
       - 'backend/**'
@@ -52,6 +53,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Start DB for connection
+      run: |
+        docker-compose up --build -d db
+        docker-compose run database-setup
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -76,10 +82,8 @@ jobs:
       run: |
         pytest
     - name: Testing database
-      working-directory: ./backend/app
       run: |
-        python3 db_tests.py
-    # Add deployment steps
+        docker-compose run --rm backend python3 app/db_tests.py
 
 
 networks:
