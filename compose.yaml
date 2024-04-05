@@ -11,6 +11,20 @@ services:
       - backnet
       - frontnet
       - db-network
+
+  test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: pytest -v
+    ports:
+      - "8000:5000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - backnet
+      - frontnet
+      
   db:
     image: postgres
     restart: unless-stopped
@@ -64,18 +78,7 @@ volumes:
   minio_data:
     driver: local  
 
-  test:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    command: pytest -v
-    ports:
-      - "8000:5000"
-    volumes:
-      - ./backend:/app
-    networks:
-      - backnet
-      - frontnet
+
 
 networks:
   db-network:
