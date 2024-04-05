@@ -50,6 +50,7 @@ export default function Login() {
         })
         .catch(function (error) {
             // handle error
+            alert(error.response.data.message)
             console.log(error);
             setNoUserFound(true);
         }); 

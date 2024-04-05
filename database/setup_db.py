@@ -33,21 +33,12 @@ def setup_tables():
         connection, cursor = connect_to_database()
         if connection and cursor:
 
-            # cursor.execute(""" 
-            # DO $$ 
-            #     BEGIN
-            #         IF NOT EXISTS(SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'public') THEN
-            #             CREATE SCHEMA public;
-            #         END IF;
-            # END $$;
-            # """)
-            
+            cursor.execute("""CREATE EXTENSION IF NOT EXISTS citext; """)
             # Setting up the Image metadata table   
             cursor.execute("""CREATE TABLE IF NOT EXISTS Users (
                 id SERIAL PRIMARY KEY UNIQUE NOT NULL,
-                username VARCHAR(60000) NOT NULL,
+                username CITEXT UNIQUE NOT NULL ,
                 _password VARCHAR(60000) NOT NULL,
-                jsonAuthToken VARCHAR(60000) NOT NULL,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -59,6 +50,14 @@ def setup_tables():
                 frameRate INT,
                 videoLength VARCHAR(60000),
                 frame_resolution VARCHAR(60000),
+                is_link INT,
+                structural FLOAT,
+                homogeny FLOAT,
+                frame_selection FLOAT,
+                structural_analysis FLOAT,
+                homogeny_analysis FLOAT,
+                frame_selection_analysis FLOAT,
+                video_name VARCHAR(60000),
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -67,6 +66,8 @@ def setup_tables():
                 idFrame INT,
                 idVideo INT,
                 frameNumber INT,
+                selectionMethod INT,
+                frameData BYTEA,
                 _timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             );""")
 
@@ -75,7 +76,7 @@ def setup_tables():
                 idFrame VARCHAR(60000),
                 objectDetected VARCHAR(60000),
                 confidence FLOAT,
-                framePath VARCHAR(60000),
+                modelMethod INT,
                 _timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );""")
 

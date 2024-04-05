@@ -5,7 +5,7 @@ import SingleVideoUpload from "./SingleVideoUpload";
 import VideoCard from "./VideoCard";
 import { VideoContext } from "./VideoUtil";
 import axios from "axios";
-import { useLocation} from "react-router-dom";
+import MultiDropDown from "./MultiDropDown";
 
 /**
  * 
@@ -21,11 +21,23 @@ function VideoUpload() {
 
     const dragRef = useRef(null);
     const inputRef = useRef(null);
-    const [url, setUrl] = useState("");
+    const [algorithm, setAlgorithm] = useState([]);
+    const [model, setModel] = useState([]);
 
     const [isDragging, setIsDragging] = useState(false);
     const [uploadVideoCount, setUploadVideoCount] = useState(0);
-
+    useEffect(() => {
+        let uploadedVideoCount = 0
+        for (let i = 0; i < videos.length; i++){
+            if (!videos[i].youtube){
+                uploadedVideoCount++
+            }
+        }
+           console.log({uploadedVideoCount})
+          console.log(`videos.length: ${videos.length}`)
+          console.log(JSON.stringify(videos))
+          setUploadVideoCount(uploadedVideoCount)
+      }, [videos]);
     const formatDuration = (seconds) => {
         let hours = -1
         let minutes = -1
@@ -81,7 +93,9 @@ function VideoUpload() {
                     analysed: false,
                     name: file.name,
                     youtube: false,
-                    duration: formatDuration(duration)
+                    duration: formatDuration(duration),
+                    algorithms: [...algorithm].join(", "),
+                    models: [...model].join(", "),
                 };
     
                 if (videos.length > 0) {
@@ -101,28 +115,15 @@ function VideoUpload() {
 
     }
 
-    useEffect(() => {
-        let uploadedVideoCount = 0
-        for (let i = 0; i < videos.length; i++){
-            if (!videos[i].youtube){
-                uploadedVideoCount++
-            }
-        }
-        console.log({uploadedVideoCount})
-        console.log(`videos.length: ${videos.length}`)
-        console.log(JSON.stringify(videos))
-        setUploadVideoCount(uploadedVideoCount)
-    }, [videos]);
+
+    
+      
     
     const handleUploadClick = (e) => {
         e.preventDefault();
         inputRef.current?.click();
       };
     
-    const handleChange = (event) => {
-        event.persist();
-        setUrl(event.target.value);
-    }
 
     const onDragEnter = (e) => {
         e.preventDefault();
@@ -160,7 +161,30 @@ function VideoUpload() {
             <form autoComplete="off" className="mt-8">
                 <div className="text-center">
 
-                    <div 
+                    
+                        
+                        <div className="flex justify-evenly">
+                            <MultiDropDown
+                                formFieldName={"Select the frame selection algorithm"}
+                                options={["Structural Similarity", "Structural Similarity + Homogeny", "Frame by Frame"]}
+                                onChange={(selected) => {
+                                    console.log(selected)
+                                    setAlgorithm(selected)
+                                }}
+                                prompt={"Select frame selection algorithm(s)"}
+                            />
+                            {/* <MultiDropDown
+                                formFieldName={"Select the frame analysis model"}
+                                options={["Small", "Large"]}
+                                onChange={(selected) => {
+                                    console.log(selected)
+                                    setModel(selected)
+                                }}
+                                prompt={"Select frame analysis model(s)"}
+                            /> */}
+
+                        </div>
+                        <div 
                         className={`border-2 inline-block ${isDragging ? "border-blue-500 bg-blue-100" : "border-dashed border-gray-500"} rounded-lg py-10 px-10 text-center my-2`}
                         ref={dragRef}
                         onDragEnter={onDragEnter}
@@ -178,7 +202,9 @@ function VideoUpload() {
                             onChange={handleFile}
                             ref={inputRef}
                             hidden
-                        />
+
+                            />
+                        </div>
                     </div>
 
                     <div className="text-2xl text-center bg-gray-300 py-2 px-2 mt-12">
@@ -186,7 +212,7 @@ function VideoUpload() {
                             Analysed videos <p className={`inline-block ${uploadVideoCount == 4 ? 'text-red-600' : 'text-black'}`}>({uploadVideoCount}/4)</p>
                         </div>
                     </div>
-                </div>
+                
                 <div className="grid grid-cols-1 gap-4 m-5 mt-2">
                     {
                         videos.length > 0
@@ -203,10 +229,11 @@ function VideoUpload() {
                             })}
                             {
                                 [...resultList].map((result, index) => {
-                                    if (videos[index] && !videos[index].youtube) {
-                                        // @ts-ignore
-                                        return <VideoCard key={index} result={result} video={videos[index]}/>
-                                    }
+                                    const video = videos.find((r) => r.name === result.name);
+                                        console.log(video)
+                                        if (video && !video.youtube){
+                                            return <VideoCard key={index} result={result} />
+                                        }
                             })}
 
                         </>

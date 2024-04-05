@@ -41,15 +41,21 @@ describe('VideoUpload', () => {
         const dummyResult = {
             name: "test.mp4",
             results: [{
-                frame_number: 1,
-                results: [{ class_id: "test", conf: 0.62 }],
-                image: "base64imageString"
-            },
-            {
-                frame_number: 1,
-                results: [{ class_id: "test", conf: 0.54 }],
-                image: "base64imageString"
-            }]
+                selector: "test",
+                run_time: 0.34,
+                frames: [
+                    {
+                        frame_number: 1,
+                        results: [{ class_id: "test", conf: 0.62 }],
+                        image: "base64imageString"
+                    },
+                    {
+                        frame_number: 1,
+                        results: [{ class_id: "test", conf: 0.54 }],
+                        image: "base64imageString"
+                    }
+                ]}
+            ]
         };
 
         rerender(

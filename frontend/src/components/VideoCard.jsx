@@ -11,7 +11,11 @@ function VideoCard(props) {
 
     const videoName = props.result.name;
     const duration = props.video ? props.video.duration : "23 seconds";
-    const base64ImageData = props.result.results[1].image;
+ 
+    let base64ImageData = ""
+    if (props.result.results[0].frames.length > 0) {
+        base64ImageData = props.result.results[0].frames[0].image;
+    }
     const imageDataUrl = `data:image/jpeg;base64,${base64ImageData}`;
 
     const deleteVideo = useCallback(() => {
@@ -32,13 +36,13 @@ function VideoCard(props) {
                 <p className="text-2xl font-semibold text-gray-800">
                     {videoName}
                 </p>
-                <p className="text-gray-600">Video Length: {duration}</p>
+                {/* <p className="text-gray-600">Video Length: {duration}</p> */}
                 <div className="flex space-x-2">
                     <Link 
-                        to={`/analysis/${videoName}`}
+                        to={`/comparison/${videoName}`}
                         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
                     >
-                        Analytics
+                        Comparison
                     </Link>
                     <button 
                         onClick={deleteVideo}

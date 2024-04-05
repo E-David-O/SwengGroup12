@@ -5,7 +5,6 @@ import {
 import axios from "axios";
 import { VideoContext} from "./VideoUtil";
 import { useContext, useState, useEffect, useCallback } from "react";
-import io from 'socket.io-client';
 import { Link } from "react-router-dom";
 import DropDown from "./DropDown";
 import './typedef'
@@ -60,16 +59,20 @@ function SingleVideoUpload({ video }) {
         e.preventDefault();
         console.log(video);
         if (video) {
+            if (video.algorithms == "") {
+                video.algorithms = "Structural Similarity"
+            } 
             const formData = new FormData();
             formData.append("video", video.file);
             formData.append("resolution", resolution);
             formData.append("frameRate", frameRate);
+            formData.append("model", video.models);
+            formData.append("frameselector", video.algorithms);
+            formData.append("username", JSON.parse(localStorage.getItem("username")));
+            formData.append("videoname", video.name);
             video.uploaded = true;
             setIsUploaded(true);
             let url = "http://localhost:8000/upload";
-            if(video.youtube) {
-                url = url + "/youtube";
-            }
             axios({
                 method: 'post',
                 url: url,
@@ -89,11 +92,14 @@ function SingleVideoUpload({ video }) {
                 })
             .catch(function (error) {
                 // handle error
+                if (error.response) {
+                    alert(error.response.data.message);
+                }
                 video.uploaded = false;
                 setIsUploaded(false);
                 setUploadProgress(null);
                 console.log(error);
-            });  
+            });
             
         }
       }

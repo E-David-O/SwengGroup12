@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
+    "@devmobiliza/videojs-vimeo": "^0.6.0",
     "@material-tailwind/react": "^2.1.9",
     "@testing-library/user-event": "^14.5.2",
     "axios": "^1.6.2",
@@ -23,9 +24,8 @@
     "react-icons": "^5.0.1",
     "react-router-dom": "^6.19.0",
     "react-webcam": "^7.2.0",
-    "socket.io-client": "^4.7.4",
-    "video.js": "^8.10.0",
-    "videojs-sprite-thumbnails": "^2.2.1",
+    "video.js": "^7.10.0",
+    "videojs-sprite-thumbnails": "^1.2.1",
     "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {

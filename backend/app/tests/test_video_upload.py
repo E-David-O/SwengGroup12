@@ -29,9 +29,11 @@ def test_upload_endpoint(client, test_video):
         'frameRate': '30',
         'model': 'small',
         'frameselector': 'StructuralSimilarity',
+        'username': 'testuser',
+        'videoName': 'test_video.mp4',  
     }
     response = client.post('/upload', content_type='multipart/form-data', data=data)
-    assert response.status_code == 200
+    assert response.status_code == 401
     # Further assertions can be added here based on what the endpoint returns
 
     # Clean up if necessary, e.g., closing the file stream

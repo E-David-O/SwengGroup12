@@ -14,6 +14,8 @@ import Signup from './components/Signup';
 import Services from './components/Services';
 import About from './components/About';
 import Contact from './components/Contact';
+import SelectorComparison from './components/SelectorComparison';
+import UserVideos from './components/UserVideos';
 
 function App() {
   const { token, deleteData, logout } = useContext(VideoContext);
@@ -39,7 +41,9 @@ function App() {
                 <Route path="/video" element={<VideoUpload />} />
                 <Route path="/url" element={<URLUpload />} />
                 <Route path="/live" element={<LiveVideo />} />
-                <Route path="/analysis/:id" element={<VideoAnalysis />}/>
+                <Route path="/analysis/:selector/:id" element={<VideoAnalysis />}/>
+                <Route path="/comparison/:id" element={<SelectorComparison />}/>
+                <Route path="/your-videos" element={<UserVideos />} />
               </>
           }
         </Routes>
