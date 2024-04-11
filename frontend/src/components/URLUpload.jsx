@@ -5,7 +5,7 @@ import SingleVideoUpload from "./SingleVideoUpload";
 import { VideoContext } from "./VideoUtil";
 import axios from "axios";
 import VideoCard from "./VideoCard";
-import { FaYoutube } from 'react-icons/fa';
+import { FaYoutube, FaTiktok, FaVimeo } from 'react-icons/fa';
 import MultiDropDown from "./MultiDropDown";
 /**
  * 
@@ -144,7 +144,9 @@ function URLUpload() {
                 <form autoComplete="off">
                 <div className="text-center">
                         <div>
-                            <label htmlFor="website" className="block my-4 text-3xl font-medium text-gray-900 bg-slate-200 p-4 rounded-xl inline-block"><FaYoutube className="text-red-600 text-6xl inline-block mx-2" />Youtube Video Analysis</label>
+                        <label htmlFor="website" className="block my-4 mx-2 text-3xl font-medium text-gray-900 bg-slate-200 p-4 rounded-xl inline-block"><FaTiktok className="text-black text-6xl inline-block mx-2" />Tiktok</label>
+                            <label htmlFor="website" className="block my-4 mx-2 text-3xl font-medium text-gray-900 bg-slate-200 p-4 rounded-xl inline-block"><FaYoutube className="text-red-600 text-6xl inline-block mx-2" />Youtube</label>
+                            <label htmlFor="website" className="block my-4 mx-2 text-3xl font-medium text-gray-900 bg-slate-200 p-4 rounded-xl inline-block"><FaVimeo className="text-slate-200 bg-blue-600 text-6xl inline-block mx-2" />Vimeo</label>
                             <div className="flex justify-center">
                             <input  
                                 onChange={handleChange}
@@ -152,7 +154,7 @@ function URLUpload() {
                                 type="url" 
                                 id="website"
                                 className="my-4 w-3/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                                placeholder="Insert your youtube url" 
+                                placeholder="Insert your url" 
                                 required 
                             />
                             </div>
