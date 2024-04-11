@@ -19,7 +19,7 @@ function Services() {
         { 
           id: 1, 
           title: "Analyse a Live video", 
-          history: "With the option to upload via live recorded video, our platform allows users to share content in real-time while maintaining stringent safety standards. AI-driven analysis swiftly assesses the content from anywhere with the ease of using live video. This feature not only enhances content moderation capabilities but also facilitates the creation of a secure media environment conducive to advertising on social platforms." 
+          history: "Our platform's Live video fwature enables users to upload live-recorded videos, ensuring real-time content sharing within a secure environment. Utilizing advanced AI analysis, the system immediately evaluates live-streamed videos against strict safety standards, scanning for inappropriate content or behavior with minimal latency. This not only upholds a high level of digital safety but also enhances user engagement by allowing authentic, immediate interaction between creators and their audience. The AI-driven moderation technology continuously evolves, improving its efficiency in content analysis and moderation, making the platform safer and more attractive for both users and advertisers. By creating a trusted environment, we offer advertisers a valuable space for social media marketing, where their brands are associated with responsibly curated content. This balance of real-time content sharing and rigorous content moderation establishes our platform as a leading choice for digital safety and advertising opportunities in the social media landscape." 
         },
         { 
           id: 2, 
@@ -39,19 +39,16 @@ function Services() {
     <>
       <Navbar />
       <h1 className="text-center text-4xl font-bold py-4">Our Services</h1>
-      <div className="text-center py-4">
-        <h1 className="inline-block text-3xl font-bold"> Three dynamic ways to get your videos analysed! </h1>
-      </div>
 
       <div className="main" style={{ marginTop: "30px" } }>
         <div className="box">
-          <h2 className="box-title text-3xl font-bold mb-6">{selectedFruit.title}</h2>
+        <h2 className="box-title text-3xl font-bold mb-6" style={{ color: 'white' }}>{selectedFruit.title}</h2>
           <div className="box-paragraph-container" style={{ backgroundColor: "white", padding: "10px", borderRadius: "25px", border: "1px solid black", width: "40%", margin: "0 auto" }}>
             <p className="box-paragraph" style={{ fontSize: "1.2rem" }} dangerouslySetInnerHTML={{ __html: selectedFruit.history }}></p>
           </div>
         </div>
         <div className="text-center" style={{ marginTop: "30px" }}>
-          <p className="text-xl py-2" style={{ fontWeight: "bold", color: "black", border: "2px solid white", padding: "10px", display: "inline-block" }}>Click each logo below to learn <br />more about our services</p>
+          <p className="text-xl py-2" style={{ fontWeight: "bold", color: "white", border: "3px solid white", padding: "10px", display: "inline-block" }}>Click each logo below to learn <br />more about each of our services</p>
         </div>
         <div className="flex_row">
           {fruits.map((fruit, index) => (

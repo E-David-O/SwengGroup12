@@ -1,8 +1,11 @@
 .main {
-    text-align: center;
-    margin-top: 30px;
-  }
-  
+  text-align: center;
+  margin-top: 60px;
+  background-image: linear-gradient(to right, #282e3c, #3a4562); /* Gradient from dark blue to a slightly lighter blue */
+}
+
+
+
   .flex_row {
     justify-content: center;
     display: flex;

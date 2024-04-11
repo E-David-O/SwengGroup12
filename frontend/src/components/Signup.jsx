@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { useState, useContext} from 'react';
-import {Link, useNavigate } from 'react-router-dom';
+import { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { VideoContext } from './VideoUtil';
 import Navbar from './Navbar';
 import Footer from "./Footer";
@@ -10,7 +10,7 @@ export default function Signup() {
     const [password, setPassword] = useState('');
     const [inputError, setInputError] = useState({ username: false, password: false });
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const {setToken} = useContext(VideoContext);
+    const { setToken } = useContext(VideoContext);
 
     const navigate = useNavigate();
 
@@ -40,7 +40,7 @@ export default function Signup() {
             method: 'post',
             url: "http://localhost:8000/auth/register",
             data: formData,
-            headers: {'Content-Type': 'multipart/form-data' }
+            headers: { 'Content-Type': 'multipart/form-data' }
         })
         .then((response) => {
             console.log("Successful registration");
@@ -50,7 +50,7 @@ export default function Signup() {
         .catch(function (error) {
             // handle error
             console.log(error);
-            alert(error.response.data.message)
+            alert(error.response.data.message);
         });
     }
 
@@ -59,13 +59,37 @@ export default function Signup() {
 
     return (
         <>
+            <style>{`
+            @keyframes backgroundChange {
+                0% { background-color: rgba(173, 216, 230, 1); } /* Light Blue */
+                10% { background-color: rgba(0, 105, 148, 1); } /* Slightly darker blue */
+                20% { background-color: rgba(0, 105, 148, 0.8); }
+                40% { background-color: rgba(0, 105, 148, 0.6); }
+                50% { background-color: rgba(0, 105, 148, 0.5); }
+                60% { background-color: rgba(0, 105, 148, 0.6); }
+                80% { background-color: rgba(0, 105, 148, 0.8); }
+                100% { background-color: rgba(173, 216, 230, 1); } /* Back to Light Blue */
+            }            
+                
+
+                .dynamic-background {
+                    animation: backgroundChange 10s ease-in-out infinite;
+                }
+
+                .signup-message {
+                    font-size: 28px; /* Larger font size */
+                    font-weight: bold; /* Bold font weight */
+                    color: white; /* Bold font weight */
+                    margin-bottom: 2rem; /* Adds space below the text, pushing the sign-up box down */
+                }
+            `}</style>
             <Navbar/>
-            <div className="bg-gray-50 dark:bg-gray-900">
+            <div className="dynamic-background">
                 <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                     <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                                Sign Up to create your account
+                                Register now to create your account
                             </h1>
                             <form>
                                 <div>
